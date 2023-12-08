@@ -180,11 +180,9 @@ After sucessfully preparing an SD card, a copy of the last settings will be in y
 
 ## On the Raspberry Pi
 
-Any system-wide installation will link to the `/opt/dotpi` directory. Except two things.
+Any system-wide installation will link to the `/opt/dotpi` directory. Except the following.
 
 The `/boot/firmware` folder (mounted as `/bootfs` as a local SD card) contains the `config.txt` file.
-
-Node is installed via `n` in `/home/pi/n` and linked in `/usr/bin/`.
 
 
 ### Commands
@@ -211,19 +209,17 @@ Use `dotpi` or `sudo dotpi` to run any `dotpi_function` function.
 
 #### `/opt/dotpi/share`
 
-- `dotpi-manager` contains the client and the service
-- `jackd` contains the configuration and the service
-- `limits` contains the limits that were copied to `/etc/security/limits.d`
+- `dotpi-manager` contains the client and the service. Use `sudo dotpi manager_update` to update the client.
+- `jackd` contains the configuration and the service.
+- `limits` contains the limits that were copied to `/etc/security/limits.d`.
+- `n` contains the node version manager. `node.js` itself, is in `/home/pi/n/bin/node` and linked in `/usr/bin/node`.
 
 #### `/opt/dotpi/var/log`
 
 Log files.
 
 - `dotpi_prepare_system_*.log` contains the log of the system preparation
-
-#### `/home/pi/n`
-
-Node is installed via `n` in `/home/pi/n/bin/node` and linked in `/usr/bin/node`
+- `dotpi_manager_update_*.log` contain the logs of the dotpi-manager updates
 
 #### `/usr/local/bin`
 
