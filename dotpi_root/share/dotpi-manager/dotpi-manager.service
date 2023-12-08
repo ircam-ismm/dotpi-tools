@@ -1,7 +1,7 @@
 [Unit]
 Description=dotpi manager
 Wants=network-online.target
-After=network-online.target
+After=network-online.target jackd.service
 
 [Service]
 Type=idle
