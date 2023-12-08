@@ -1,0 +1,100 @@
+#!/bin/bash
+
+set +e
+
+############### bootstrap
+
+# This script MUST be executed by `pi` user
+FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
+if [[ $(whoami) != "${FIRSTUSER}" ]] ; then
+   dotpi echo_error "This script MUST be executed by pi user (or first user)"
+   exit 1
+fi
+
+DOTPI_ROOT="${DOTPI_ROOT:-/opt/dotpi}"
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+
+############### system packages via apt
+
+# in case dpkg was interrupted
+sudo dpkg --configure -a
+
+dotpi echo_info "Uninstall apt packages: ${dotpi_apt_uninstall[@]}"
+sudo dotpi apt_get purge "${dotpi_apt_uninstall[@]}"
+
+sudo dotpi apt_get clean
+sudo dotpi apt_get autoremove -y
+
+dotpi echo_info "Update and dist-upgrade"
+sudo dotpi apt_get update
+sudo dotpi apt_get dist-upgrade
+
+dotpi echo_info "Install apt packages: ${dotpi_apt_install[@]}"
+sudo dotpi apt_get install "${dotpi_apt_install[@]}"
+
+
+############### node.js
+
+dotpi echo_info "Install Node.js"
+
+word_size="$(dotpi file_word_size "$(which file)" )"
+if [[ $word_size == "32" ]] ; then
+   node_arch=armv7l
+else
+   node_arch=arm64
+fi
+
+(set -o pipefail ; curl -L https://bit.ly/n-install | bash -s -- -y -a "$node_arch" "$dotpi_node_version") && (
+   cat >> "${HOME}/.bashrc" << EOF
+
+# dotpi: force the usage of -a for correct architecture
+# (n relies on uname, which tells about the kernel, not the executables)
+
+alias n="n -a ${node_arch}"
+
+EOF
+)
+
+source="${HOME}/n/bin"
+destination="/usr/bin"
+executables=(
+   corepack
+   node
+   npm
+   npx
+)
+for executable in "${executables[@]}" ; do
+    sudo ln -s "${source}/${executable}" "${destination}/${executable}"
+done
+
+# source now, to update bash environment
+source "${HOME}/.bashrc"
+
+
+############## jackd2
+
+dotpi echo_info "Install Jackd daemon"
+
+sudo dpkg-reconfigure -f noninteractive -p high jackd2
+
+dotpi echo_warning "You should close all active session windows for jackd high priority"
+
+sudo dotpi daemon_install "${DOTPI_ROOT}/share/jackd/jackd.service"
+
+
+############## dotpi-manager
+
+dotpi echo_info "Install dotpi manager"
+destination_path="${DOTPI_ROOT}/share/dotpi-manager/runtime"
+sudo mkdir -p "$destination_path"
+sudo chown "$FIRSTUSER" -R "$destination_path"
+git clone https://github.com/ircam-ismm/dotpi-manager.git "$destination_path"
+(
+   cd -- "$destination_path"
+   npm install
+   npm run build
+)
+sudo dotpi daemon_install "${DOTPI_ROOT}/share/dotpi-manager/dotpi-manager.service"
+
+dotpi_echo_info "System prepared"

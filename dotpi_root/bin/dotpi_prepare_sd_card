@@ -1,0 +1,494 @@
+#!/bin/bash
+
+set +e
+
+_dotpi_command="$(basename -- "$0")"
+
+####### Bootstrap
+
+dotpi_echo_error() {
+  printf 'ERROR: %s\n' "$1" >&2
+}
+
+dotpi_echo_warning() {
+  printf 'WARNING: %s\n' "$1" >&2
+}
+
+####### Command-line options
+
+_dotpi_usage() {
+  echo "Usage: ${_dotpi_command} --project <project_path> [--instance-number]"
+}
+
+_echo_empty_option_error() {
+  dotpi_echo_error "$1 requires a non-empty option argument."
+}
+
+while true ; do
+  case $1 in
+
+    -h|-\?|--help)
+      _dotpi_usage    # Display a usage synopsis.
+      exit 0
+      ;;
+
+    -p|--project)       # Takes an option argument; ensure it has been specified.
+      if [ -z "$2" ] ; then
+        _echo_empty_option_error "$1"
+        _dotpi_usage
+        exit 1
+      else
+        project="$2"
+        shift
+      fi
+      ;;
+
+    -i|--instance-number) # Takes an option argument; ensure it has been specified.
+      if [ -z "$2" ] ; then
+        _echo_empty_option_error "$1"
+        _dotpi_usage
+        exit 1
+      else
+        instance_number="$2"
+        shift
+      fi
+      ;;
+
+    --)              # End of all options.
+      shift
+      break
+      ;;
+
+    -?*) # Unknown
+      dotpi_echo_error "Unknown option: $1"
+      _dotpi_usage
+      exit 1
+      ;;
+
+    *)               # Default case: No more options, so break out of the loop.
+      break
+
+  esac
+
+  shift
+done
+
+if [ -z ${project+x} ] ; then
+  dotpi_echo_error "missing project option"
+  _dotpi_usage
+  exit 1
+fi
+
+project_path="$( (cd -- "$project" && pwd) 2> /dev/null || {
+  dotpi_echo_error "unable to access project ${project}"
+} )"
+if [ -z "$project_path" ] ; then
+  exit 1
+fi
+
+local_path="$( (cd -- "$(dirname -- "$0")" && pwd) 2> /dev/null || {
+  dotpi_echo_error "unable to access local path $(dirname -- "$0")"
+} )"
+if [ -z "$local_path" ] ; then
+  exit 1
+fi
+
+# script in "bin"
+DOTPI_ROOT="${local_path}/.."
+
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+tmp_path="${project_path}/tmp"
+mkdir -p "$tmp_path"
+
+# self log
+log_file="${tmp_path}/${_dotpi_command}_$(date +"%Y%m%d-%H%M%S").log"
+dotpi_echo_info "Log of this command is here: ${log_file}"
+exec &> >(dotpi_log "$log_file")
+
+file_system_mirror="${tmp_path}/file-system"
+rm -rf "$file_system_mirror"
+mkdir -p "$file_system_mirror"
+
+echo "# file-system mirror: ${file_system_mirror}"
+
+tar_options=()
+while read pattern ; do
+
+  # avoid empty pattern
+  if [ -z "$pattern" ] ; then
+    continue
+  fi
+
+  tar_options+=( '--exclude' "${pattern}" )
+done < "${DOTPI_ROOT}/etc/dotpi_tarignore"
+
+# regular files only
+if [[ "$(uname)" == "Darwin" ]] ; then
+  tar_options+=( '--no-mac-metadata' )
+fi
+tar_options+=( '--no-xattrs' )
+
+source_path="$DOTPI_ROOT"
+destination_path="${file_system_mirror}/opt/dotpi"
+mkdir -p "$destination_path"
+(set -o pipefail ; \
+ cd -- "$source_path" && tar c "${tar_options[@]}" '.'  \
+     | tar x -C "$destination_path") || {
+  dotpi_echo_error "Error while copying defaults from ${source_path} to ${destination_path}"
+  exit 1
+}
+
+source_path="$project_path"
+destination_path="${file_system_mirror}/opt/dotpi/etc"
+mkdir -p "$destination_path"
+source_file_path="${source_path}/configuration/dotpi_project.bash"
+destination_file_path="${destination_path}/dotpi_environment_project.bash"
+if [ -r "$source_file_path" ] ; then
+  cp "$source_file_path" "$destination_file_path"
+fi
+
+####################################################
+# mirror should be complete, now: switch to mirror #
+####################################################
+
+DOTPI_ROOT="${file_system_mirror}/opt/dotpi"
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+######## project name
+
+destination_path="${DOTPI_ROOT}/etc"
+destination_file_path="${destination_path}/dotpi_environment_project.bash"
+
+# default project name is directory of project
+if [[ -z "$dotpi_project_name" ]] ; then
+  dotpi_project_name="$(basename "$project_path")"
+  dotpi_echo_warning "Project name not found. Using project folder name: ${dotpi_project_name}"
+  dotpi_configuration_write --file "$destination_file_path" --key "dotpi_project_name" --value "$dotpi_project_name"
+fi
+
+######## read extra files
+
+### tmp for instance number
+
+# keep reference of file to increment at the end
+environment_tmp_file="${tmp_path}/dotpi_tmp.bash"
+dotpi_source_if_available "$environment_tmp_file"
+
+if [ -n "$instance_number" ] ; then
+  # from command-line
+  dotpi_instance_number="$instance_number"
+else
+  # from environment_tmp
+  if [ -z "$dotpi_instance_number" ] ; then
+    dotpi_instance_number=1
+  fi
+
+  echo ''
+  echo '##########################################################'
+  echo ''
+  echo " Please type instance number, or type enter for ${dotpi_instance_number}"
+  echo -n ' '
+
+  read user_instance_number
+  if [ -n "$user_instance_number" ] ; then
+    dotpi_instance_number="${user_instance_number}"
+  fi
+
+  echo ''
+  echo '##########################################################'
+  echo ''
+fi
+
+if [ -z "$dotpi_hostname_prefix" ] ; then
+  dotpi_echo_error "Bad dotpi_hostname_prefix: ${dotpi_hostname_prefix}"
+  echo "Check ${project_path}/configuration/dotpi_project.bash"
+  exit 1
+fi
+
+dotpi_instance_hostname="${dotpi_hostname_prefix}-${dotpi_project_name}-$(printf %03d ${dotpi_instance_number})"
+if (( $? != 0 )) ; then
+  dotpi_echo_error "Bad dotpi_instance_number: ${dotpi_instance_number}"
+  exit 1
+fi
+dotpi_echo_info "hostname is ${dotpi_instance_hostname}"
+
+destination_file="${DOTPI_ROOT}/etc/dotpi_environment_instance.bash"
+dotpi_configuration_write --file "$destination_file" --key 'dotpi_instance_number' --value "$dotpi_instance_number"
+dotpi_configuration_write --file "$destination_file" --key 'dotpi_instance_hostname' --value "$dotpi_instance_hostname"
+
+
+### secrets for password
+
+source_file="${project_path}/secrets/dotpi_secrets.bash"
+destination_file="${DOTPI_ROOT}/etc/dotpi_environment_project.bash"
+if ! [ -r "$source_file" ] ; then
+  dotpi_echo_error "unable to read secrets file ${source_file}"
+  exit 1
+else
+  source "$source_file"
+
+  if [ -z "$dotpi_password" ] ; then
+    dotpi_echo_warning "no password provided in ${source_file}, use default"
+  else
+    hash6="$(openssl passwd -6 "$dotpi_password")"
+    dotpi_configuration_write --file "$destination_file" --key 'dotpi_password_hash6' --value "$hash6"
+  fi
+fi
+
+### secrets for ssh public keys
+
+source_path="${project_path}/secrets/ssh"
+destination_path="${DOTPI_ROOT}/etc/ssh"
+mkdir -p "$destination_path"
+if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
+  (set -o pipefail ; \
+   cd -- "$source_path" && tar c "${tar_options[@]}" *.pub \
+       | tar x -C "$destination_path") || {
+    dotpi_echo_error "No public key found in ${source_path}"
+    exit 1
+  }
+fi
+
+### secrets for NetworkManager connections from project
+
+source_path="${project_path}/secrets/network"
+destination_path="${DOTPI_ROOT}/etc/network"
+mkdir -p "$destination_path"
+if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
+  (set -o pipefail ; \
+   cd -- "$source_path" && tar c "${tar_options[@]}" *.nmconnection \
+       | tar x -C "$destination_path") || {
+    dotpi_echo_error "No network connection found in ${source_path}"
+    exit 1
+  }
+fi
+
+# update connections in DOTPI_ROOT
+
+if ! $(wpa_passphrase test 12345678 > /dev/null 2>&1) ; then
+  dotpi_echo_warning "wpa_passphrase is needed to salt passwords."
+else
+
+  for file in "${destination_path}"/*.nmconnection ; do
+    key='wifi-security.psk'
+    psk="$(dotpi_connection_read --file "$file" --key "$key")"
+
+    # not salted
+    if (( ${#psk} < 64 )) ; then
+      key='wifi.ssid'
+      ssid="$(dotpi_connection_read --file "$file" --key "$key")"
+      passphrase="$(wpa_passphrase "$ssid" "$psk" | dotpi_configuration_read --key 'psk' )"
+      key='wifi-security.psk'
+      dotpi_connection_write --file "$file" --key "$key" --value "$passphrase"
+    fi
+
+  done
+fi
+
+
+######## SD card
+
+bootfs_name="bootfs"
+
+if [[ "$(uname)" != "Darwin" ]] ; then
+  echo ""
+  echo "############################################################"
+  echo ""
+  echo " This script is for MacOS (Darwin) only."
+  echo " Please adapt it for you environment and send you feedback."
+  echo ""
+  echo "############################################################"
+  echo ""
+  exit 1
+fi
+
+bootfs_path="/Volumes/${bootfs_name}"
+
+# try to mount if unmounted (but not ejected)
+if [ -x $(which diskutil) ] ; then
+  diskutil mount "$bootfs_name"
+fi
+
+if [ ! -d "$bootfs_path" ] ; then
+  echo ""
+  echo "############################################################"
+  echo ""
+  echo " Please mount SD card and try again."
+  echo ""
+  echo "############################################################"
+  echo ""
+  exit 1
+fi
+
+
+######### config.txt
+
+config_filename='config.txt'
+config_file="${project}/${config_filename}"
+destination_path="${DOTPI_ROOT}/etc"
+
+mkdir -p "$destination_path"
+
+if [ -r "$config_file" ] ; then
+  echo "using project config file ${config_file}"
+else
+  config_file="${bootfs_path}/${config_filename}"
+  echo "# copy config file from imager"
+fi
+
+cp "$config_file" "$destination_path"
+
+config_file="${destination_path}/${config_filename}"
+
+echo "# edit ${config_file}"
+
+# keep quotes here to keep quotes hereafter
+cat >> "${config_file}" << EOF
+
+############
+# dotpi
+#
+
+[all]
+
+EOF
+
+if [[ "$dotpi_word_size" == "32" ]] ; then
+  word_size="$(dotpi_file_word_size "${bootfs_path}/start.elf" )"
+  if [[ "$word_size" == "32" ]] ; then
+
+    file="$config_file"
+    key="arm_64bits"
+
+    # comment original value
+    dotpi_configuration_comment --file "$file" --key "$key"
+    dotpi_configuration_write \
+      --file "$file" --key "$key" \
+      --value "0" --prepend-line-if-new '# true 32bit system'
+  fi
+fi
+
+######### sound-card
+
+# set model before, as it will select jackd configuration
+dotpi_soundcard_select --model "$dotpi_soundcard" --config "$config_file"
+
+# copy configuration files from project for over-rides
+source_path="${project_path}/configuration/jackd"
+destination_path="${DOTPI_ROOT}/share/jackd"
+mkdir -p "$destination_path"
+if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
+  (set -o pipefail ; \
+   cd -- "$source_path" && tar c "${tar_options[@]}" '.' \
+       | tar x -C "$destination_path") || {
+    dotpi_echo_error "Unable to install files from ${source_path}"
+    exit 1
+  }
+fi
+
+
+# back-up imager config
+
+destination_filename="imager_${config_filename}"
+
+# install config.txt to /boot to be ready for first run
+cp "$config_file" "$bootfs_path"
+
+######### configure first run
+
+echo "# set-up first run"
+
+source_file_path="${bootfs_path}/firstrun.sh"
+if [ -f "$source_file_path" ] ; then
+  # back-up imager firstrun.sh
+
+  destination_filename='imager_firstrun.sh'
+
+  # keep a copy on bootfs
+  destination_path="${bootfs_path}/dotpi"
+  mkdir -p "$destination_path"
+
+  if [ -r "${destination_path}/${destination_filename}" ] ; then
+     dotpi_echo_warning "Keep existing imager first-run script: ${destination_path}/${destination_filename}"
+  else
+     cp "$source_file_path" "${destination_path}/${destination_filename}"
+
+     destination_path="${DOTPI_ROOT}/etc"
+     mkdir -p "$destination_path"
+     cp "$source_file_path" "${destination_path}/${destination_filename}"
+  fi
+
+fi
+
+# replace first run with custom, that will over-ride imager settings
+# run dotpi_firstrun.bash
+cat > "${bootfs_path}/firstrun.sh" << "EOF"
+#!/bin/bash
+
+set +e
+
+# since Raspberry Pi OS Bookworm
+local_path='/boot/firmware'
+
+if ! [ -d "$local_path" ] ; then
+  # for Raspberry Pi OS Bullseye
+  local_path='/boot'
+fi
+
+# log to boot partition to access it even on errors
+log_file="${local_path}/firstrun-$(date +"%Y%m%d-%H%M%S").log"
+
+clean_up() {
+  rm -f "${local_path}/firstrun.sh"
+  sed -i 's| systemd.run.*||g' "${local_path}/cmdline.txt"
+}
+
+(cd -- / && tar xz -m --no-same-owner --no-same-permissions --no-overwrite-dir -f "${local_path}/dotpi/file_system.tgz")
+
+source_path="/opt/dotpi"
+cd -- "$source_path" || { clean_up ; exit 1; }
+"bin/dotpi_firstrun" "$log_file"
+
+clean_up
+
+exit 0
+
+EOF
+
+
+########## archive mirror to bootfs
+
+echo "# archive mirror"
+
+source_path="$file_system_mirror"
+destination_path="${bootfs_path}/dotpi"
+mkdir -p "$destination_path"
+
+# create archive for installing, later
+# this overcomes the limitiations of the FAT32 boot volume
+tar cz "${tar_options[@]}" -C "${source_path}" '.' > "${destination_path}/file_system.tgz"
+
+# try to mount if unmounted (but not ejected)
+if [ -x $(type -P diskutil) ] ; then
+  diskutil umount "$bootfs_name" || :
+fi
+
+dotpi_echo_info "Mirror of file-system is here: ${file_system_mirror}"
+
+(( dotpi_instance_number++ ))
+dotpi_configuration_write --file "$environment_tmp_file" --key dotpi_instance_number --value "$dotpi_instance_number"
+
+echo ""
+echo "####################################################"
+echo ""
+echo " Please put SD card in Raspberry Pi and power on."
+echo ""
+echo "####################################################"
+echo ""
+
+dotpi_echo_info "You can monitor the preparation of the system with the following command"
+dotpi_echo_info "(You will have to wait until the network is ready.)"
+dotpi_echo_info ''
+dotpi_echo_info "ssh ${dotpi_user}@${dotpi_instance_hostname}.local 'tail -f /opt/dotpi/var/log/dotpi_prepare_system_*.log'"
+

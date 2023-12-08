@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Busy-box like wrapper
+
+# Main usage is for sudo, to source ${DOTPI_ROOT}/share/dotpi_init.bash before the command
+
+# installation with a link in the path
+
+# sudo dotpi echo_info "dotpi root is ${DOTPI_ROOT}"
+
+
+# `readlink -f` is not available for MacOS
+# https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+dotpi_readlink_follow() (
+  target_file="$1"
+
+  cd -- "$(dirname -- "$target_file")" || {
+    echo ''
+    return 1
+  }
+  target_file="$(basename -- "$target_file")"
+
+  # Iterate down a (possible) chain of symlinks
+  while [[ -L "$target_file" ]] ; do
+    target_file="$(readlink -- "$target_file")"
+    cd -- "$(dirname -- "$target_file")" || {
+      echo ''
+      return 1
+    }
+    target_file="$(basename -- "$target_file")"
+  done
+
+  # Compute the canonicalized name by finding the physical path
+  # for the directory we're in and appending the target file.
+  target_path="$(pwd -P)"
+  result="${target_path}/${target_file}"
+  echo "$result"
+)
+
+local_file="$(dotpi_readlink_follow "$0")"
+local_path="$(dirname -- "$local_file")"
+local_root="$(cd -- "${local_path}/.." && pwd -P)"
+
+DOTPI_ROOT="${DOTPI_ROOT:-${local_root}}"
+
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+self_command="$(basename -- "$0")"
+self_usage() {
+  echo "Usage: ${self_command} <command> [ <arguments> ]"
+}
+
+# allow for '_' of '-' in sub-commands
+# sudo dotpi system_set_hostname dotpi-dev-123
+# sudo dotpi system-set-hostname dotpi-dev-123
+
+sub_command="${1//-/_}"
+
+if [[ -z "$sub_command" ]] ; then
+  dotpi_echo_error "Missing command as first argument"
+  self_usage
+  exit 1
+fi
+
+
+"dotpi_${sub_command}" "${@:2}"

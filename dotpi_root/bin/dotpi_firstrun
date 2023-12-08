@@ -1,0 +1,177 @@
+#!/bin/bash
+
+set +e
+
+local_file="$(readlink -f -- "$0")"
+local_path="$(dirname -- "$local_file")"
+
+log_file="${1:-${local_file}-$(date +"%Y%m%d-%H%M%S").log}"
+
+DOTPI_ROOT="${DOTPI_ROOT:-/opt/dotpi}"
+
+# run imager firstrun before, to allow for over-rides
+file_name="${local_path}/imager_firstrun.sh"
+if [ -x "$file_name" ] ; then
+   # do not source to avoid exit
+   "$file_name"
+fi
+
+# install dotpi wrapper
+ln -s "${DOTPI_ROOT}/bin/dotpi" /usr/bin
+
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+# Self log
+exec &> >(dotpi log "$log_file")
+
+dotpi echo_info "Configure first user .bashrc"
+
+FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
+FIRSTUSERHOME="$(getent passwd 1000 | cut -d: -f6)"
+
+mkdir -p "$FIRSTUSERHOME"
+
+IFS= read -r -d '' bashrc_append << EOF
+
+### dotpi
+
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+EOF
+
+echo "$bashrc_append" >> "${FIRSTUSERHOME}/.bashrc"
+
+# make sure .bashrc can be sourced when not in interactive mode
+substitution="# dotpi: source even if non-interactive"
+dotpi configuration_replace_region 'case $- in' 'esac' "$substitution" "${FIRSTUSERHOME}/.bashrc"
+
+####### hostname
+
+dotpi echo_info "Set hostname to ${dotpi_instance_hostname}"
+
+dotpi system_set_hostname "$dotpi_instance_hostname"
+
+####### ssh
+
+dotpi echo_info "Configure SSH"
+
+keys=()
+for file in "${DOTPI_ROOT}/etc/ssh/"*.pub ; do
+    if [ -r "$file" ] ; then
+       keys+=( "$(cat "$file" )" )
+    fi
+done
+
+# install first key
+key="${keys[0]}"
+if [ -f /usr/lib/raspberrypi-sys-mods/imager_custom ] ; then
+   /usr/lib/raspberrypi-sys-mods/imager_custom enable_ssh -k "$key"
+else
+   install -o "$FIRSTUSER" -m 700 -d "$FIRSTUSERHOME/.ssh"
+   install -o "$FIRSTUSER" -m 600 <(printf "$key") "$FIRSTUSERHOME/.ssh/authorized_keys"
+   systemctl enable ssh
+fi
+
+mkdir -p "${FIRSTUSERHOME}/.ssh"
+# start from second element
+for key in "${keys[@]: 1}" ; do
+    echo "key" >> "$FIRSTUSERHOME/.ssh/authorized_keys"
+done
+
+# delete if already set
+sed -i -e '/^PasswordAuthentication/d' /etc/ssh/sshd_config
+
+# allow for password authentication
+# (after exclusive imager_custom enable_ssh -k)
+echo "PasswordAuthentication ${dotpi_ssh_allow_password_authentication}" >>/etc/ssh/sshd_config
+
+####### user
+
+dotpi echo_info "Configure first user login"
+
+if [ -f /usr/lib/userconf-pi/userconf ] ; then
+   if [ -n "$dotpi_password_hash6" ] ; then
+      /usr/lib/userconf-pi/userconf "$dotpi_user" "$dotpi_password_hash6"
+   fi
+else
+   if [ -n "$dotpi_password_hash6" ] ; then
+      echo "${FIRSTUSER}:${dotpi_password_hash6}" | chpasswd -e
+   fi
+   if [ "$FIRSTUSER" != "$dotpi_user" ]; then
+      usermod -l "$dotpi_user" "$FIRSTUSER"
+      usermod -m -d "/home/${dotpi_user}" "$dotpi_user"
+      groupmod -n "$dotpi_user" "$FIRSTUSER"
+      if grep -q "^autologin-user=" /etc/lightdm/lightdm.conf ; then
+         sed /etc/lightdm/lightdm.conf -i -e "s/^autologin-user=.*/autologin-user=PI-USER/"
+      fi
+      if [ -f /etc/systemd/system/getty@tty1.service.d/autologin.conf ]; then
+         sed /etc/systemd/system/getty@tty1.service.d/autologin.conf -i -e "s/${FIRSTUSER}/${dotpi_user}/"
+      fi
+      if [ -f /etc/sudoers.d/010_pi-nopasswd ]; then
+         sed -i "s/^${FIRSTUSER} /${dotpi_user} /" /etc/sudoers.d/010_pi-nopasswd
+      fi
+   fi
+fi
+
+####### wifi
+
+dotpi echo_info "Configure wifi"
+
+# Do *not* install wpa_supplicant
+# - Bullseye: it should be sufficient in /boot
+# - Bookworm: it breaks NetworkManager
+
+source_path="${DOTPI_ROOT}/etc/network"
+destination_path='/etc/NetworkManager/system-connections'
+if [ -d "${source_path}" ] ; then
+   tar c -C "$source_path" '.' | tar xv -C "$destination_path"
+fi
+chmod 'u=rw,go=' "${destination_path}"/*
+
+# unblock wifi in any case
+rfkill unblock wifi
+for file in /var/lib/systemd/rfkill/*:wlan ; do
+    echo 0 > $file
+done
+
+####### limits (real-time audio)
+
+dotpi echo_info "Configure limits"
+
+source_path="${DOTPI_ROOT}/share/limits"
+destination_path='/etc/security/limits.d'
+if [ -r "$source_path" ] ; then
+   mkdir -p "$destination_path"
+   tar c -C "$source_path" '.' | tar x -C "$destination_path"
+fi
+
+###### keymap and timezone
+
+dotpi echo_info "Configure keymap and timezone"
+
+if [ -f /usr/lib/raspberrypi-sys-mods/imager_custom ]; then
+   /usr/lib/raspberrypi-sys-mods/imager_custom set_keymap "$dotpi_keymap"
+   /usr/lib/raspberrypi-sys-mods/imager_custom set_timezone "$dotpi_timezone"
+else
+   rm -f /etc/localtime
+   echo "$dotpi_timezone" >/etc/timezone
+   dpkg-reconfigure -f noninteractive tzdata
+cat >/etc/default/keyboard <<'KBEOF'
+XKBMODEL="pc105"
+XKBLAYOUT="$dotpi_keymap"
+XKBVARIANT=""
+XKBOPTIONS=""
+
+KBEOF
+   dpkg-reconfigure -f noninteractive keyboard-configuration
+fi
+
+# read again as it may have changed
+FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
+
+if [[ "$dotpi_prepare_system_automatic" == 'yes' ]] ; then
+   dotpi echo_info "Automatic: Run prepare system"
+
+   sudo dotpi system_execute_on_reboot "$FIRSTUSER" "${DOTPI_ROOT}/bin/dotpi_prepare_system"
+fi
+

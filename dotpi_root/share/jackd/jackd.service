@@ -1,0 +1,15 @@
+[Unit]
+Description=Jack daemon
+After=sound.target
+
+[Service]
+LimitRTPRIO=infinity
+LimitMEMLOCK=infinity
+User=pi
+Group=audio
+ExecStart=/opt/dotpi/share/jackd/dotpi_jackd_command
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

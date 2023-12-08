@@ -1,0 +1,8 @@
+# MacOS
+.DS_Store
+
+# private files in projects: ssh and network connections
+secrets/
+
+# temporary files
+tmp/

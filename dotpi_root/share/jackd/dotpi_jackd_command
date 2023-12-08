@@ -1,0 +1,17 @@
+#!/bin/bash
+
+local_file="$(dotpi readlink_follow "$0")"
+local_path="$(dirname -- "$local_file")"
+
+source "${local_path}/dotpi_jackd.bash"
+
+echo "dotpi_jackd_command"
+
+echo "ENV: ${DOTPI_JACKD_ENVIRONMENT[@]}"
+echo "ARGS: ${DOTPI_JACKD_ARGUMENTS[@]}"
+
+for e in "${DOTPI_JACKD_ENVIRONMENT[@]}" ; do
+    export "$e"
+done
+
+jackd "${DOTPI_JACKD_ARGUMENTS[@]}"
