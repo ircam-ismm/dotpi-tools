@@ -1,6 +1,6 @@
 [Unit]
 Description=dotpi manager
-Wants=network-online.target
+Wants=network-online.target jackd.service
 After=network-online.target
 
 [Service]

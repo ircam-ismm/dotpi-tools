@@ -45,8 +45,14 @@ else
    node_arch=arm64
 fi
 
-(set -o pipefail ; curl -L https://bit.ly/n-install | bash -s -- -y -a "$node_arch" "$dotpi_node_version") && (
-   cat >> "${HOME}/.bashrc" << EOF
+# install n for sudo usage
+N_PREFIX="${DOTPI_ROOT}/share/n"
+sudo mkdir -p "$N_PREFIX"
+curl -L https://bit.ly/n-install -o /tmp/n-install
+sudo N_PREFIX="${DOTPI_ROOT}/share/n" bash /tmp/n-install -y -a "$node_arch" "$dotpi_node_version"
+if [[ $? ]] ; then
+   rm /tmp/n-install
+   sudo bash -c 'cat >> "/root/.bashrc" << EOF
 
 # dotpi: force the usage of -a for correct architecture
 # (n relies on uname, which tells about the kernel, not the executables)
@@ -54,22 +60,22 @@ fi
 alias n="n -a ${node_arch}"
 
 EOF
-)
+'
 
-source="${HOME}/n/bin"
+fi
+
+source="${N_PREFIX}/bin"
 destination="/usr/bin"
 executables=(
    corepack
+   n
    node
    npm
    npx
 )
 for executable in "${executables[@]}" ; do
-    sudo ln -s "${source}/${executable}" "${destination}/${executable}"
+    sudo ln -s -f "${source}/${executable}" "${destination}/${executable}"
 done
-
-# source now, to update bash environment
-source "${HOME}/.bashrc"
 
 
 ############## jackd2
