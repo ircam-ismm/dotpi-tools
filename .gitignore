@@ -6,3 +6,6 @@ secrets/
 
 # temporary files
 tmp/
+
+projects/
+!projects/example-*
