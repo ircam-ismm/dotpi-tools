@@ -129,6 +129,8 @@ if [[ "$(uname)" == "Darwin" ]] ; then
 fi
 tar_options+=( '--no-xattrs' )
 
+#### copy defaults from dotpi_root
+
 source_path="$DOTPI_ROOT"
 destination_path="${file_system_mirror}/opt/dotpi"
 mkdir -p "$destination_path"
@@ -139,6 +141,8 @@ mkdir -p "$destination_path"
   exit 1
 }
 
+#### copy project configuration
+
 source_path="$project_path"
 destination_path="${file_system_mirror}/opt/dotpi/etc"
 mkdir -p "$destination_path"
@@ -148,28 +152,7 @@ if [ -r "$source_file_path" ] ; then
   cp "$source_file_path" "$destination_file_path"
 fi
 
-####################################################
-# mirror should be complete, now: switch to mirror #
-####################################################
-
-DOTPI_ROOT="${file_system_mirror}/opt/dotpi"
-source "${DOTPI_ROOT}/share/dotpi_init.bash"
-
-######## project name
-
-destination_path="${DOTPI_ROOT}/etc"
-destination_file_path="${destination_path}/dotpi_environment_project.bash"
-
-# default project name is directory of project
-if [[ -z "$dotpi_project_name" ]] ; then
-  dotpi_project_name="$(basename "$project_path")"
-  dotpi_echo_warning "Project name not found. Using project folder name: ${dotpi_project_name}"
-  dotpi_configuration_write --file "$destination_file_path" --key "dotpi_project_name" --value "$dotpi_project_name"
-fi
-
-######## read extra files
-
-### tmp for instance number
+#### select instance
 
 # keep reference of file to increment at the end
 environment_tmp_file="${tmp_path}/dotpi_tmp.bash"
@@ -200,13 +183,50 @@ else
   echo ''
 fi
 
+# remove any padding zero to avoid octal interpretation (sic)
+dotpi_instance_number="$((10#${dotpi_instance_number}))"
+
+#### copy instance over-rides
+
+source_path="$project_path"
+destination_path="${file_system_mirror}/opt/dotpi/etc"
+mkdir -p "$destination_path"
+source_file_path="${source_path}/configuration/dotpi_instance_$(printf "%03d" "${dotpi_instance_number}").bash"
+destination_file_path="${destination_path}/dotpi_environment_instance.bash"
+if [ -r "$source_file_path" ] ; then
+  dotpi_echo_info "Using instance-specific coonfiguration ${source_file_path}"
+  cp "$source_file_path" "$destination_file_path"
+fi
+
+
+####################################################
+# mirror should be complete, now: switch to mirror #
+####################################################
+
+DOTPI_ROOT="${file_system_mirror}/opt/dotpi"
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+######## project name
+
+destination_path="${DOTPI_ROOT}/etc"
+destination_file_path="${destination_path}/dotpi_environment_project.bash"
+
+# default project name is directory of project
+if [[ -z "$dotpi_project_name" ]] ; then
+  dotpi_project_name="$(basename "$project_path")"
+  dotpi_echo_warning "Project name not found. Using project folder name: ${dotpi_project_name}"
+  dotpi_configuration_write --file "$destination_file_path" --key "dotpi_project_name" --value "$dotpi_project_name"
+fi
+
+######## read extra files
+
 if [ -z "$dotpi_hostname_prefix" ] ; then
   dotpi_echo_error "Bad dotpi_hostname_prefix: ${dotpi_hostname_prefix}"
   echo "Check ${project_path}/configuration/dotpi_project.bash"
   exit 1
 fi
 
-dotpi_instance_hostname="${dotpi_hostname_prefix}-${dotpi_project_name}-$(printf %03d ${dotpi_instance_number})"
+dotpi_instance_hostname="${dotpi_hostname_prefix}-${dotpi_project_name}-$(printf "%03d" "${dotpi_instance_number}")"
 if (( $? != 0 )) ; then
   dotpi_echo_error "Bad dotpi_instance_number: ${dotpi_instance_number}"
   exit 1
