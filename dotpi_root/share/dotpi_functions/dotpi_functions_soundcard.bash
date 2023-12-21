@@ -177,19 +177,29 @@ dotpi_soundcard_select() (
 
   esac
 
-  if [[ "$model_normalised" == "$(dotpi_soundcard_model_normalise "$dotpi_soundcard")" ]] ; then
+  # use xargs to unquote value
+  model_project="$(dotpi_configuration_read \
+                     --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
+                     --key dotpi_soundcard \
+                     | xargs)"
+
+
+  if [[ "$model_normalised" == "$(dotpi_soundcard_model_normalise "$model_project")" ]] ; then
     # no need to update environment
     return 0;
   fi
+
+  dotpi_echo_warning 'Sound-card model is specific to this instance'
 
   # comment setting in project
   dotpi_configuration_comment --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
                             --key dotpi_soundcard
 
-
+  # escape double-quote for now, to quote when writing later
   model_value="$(echo "$model" | dotpi_sed 's/"/\\"/g')"
 
   # write changed setting in instance
+  # be sure to quote value
   dotpi_configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
                             --key dotpi_soundcard \
                             --value \""${model_value}"\"
