@@ -316,11 +316,9 @@ Please do report them.
 
 ## Todo
 
-- [ ] use 64bit system as default configuration
-
-- [ ] publish on github
-  - [ ] remove any secret (no history)
-  - [ ] publish secrets in examples
+- [ ] dotpi-manager: dependency to jackd should be soft
+  - [ ] allow client to run without audio
+  - [ ] client should continue to run if audio stops
 
 - [ ] Make a command-line interface
   - [ ] choose between options
