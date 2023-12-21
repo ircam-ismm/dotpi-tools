@@ -59,6 +59,10 @@ _dotpi_soundcard_get_options() {
 
 }
 
+dotpi_soundcard_model_normalise() {
+  echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 dotpi_soundcard_select() (
   # sub-shell to keep everything local (functions and variables)
 
@@ -101,9 +105,9 @@ dotpi_soundcard_select() (
   fi
 
   # lowercase everything
-  model="$( echo "$model" | tr '[:upper:]' '[:lower:]')"
+  model_normalised="$(dotpi_soundcard_model_normalise "$model")"
 
-  case "$model" in
+  case "$model_normalised" in
 
     # HiFiBerry
     # Cf. https://www.hifiberry.com/docs/software/configuring-linux-3-18-x/
@@ -172,18 +176,35 @@ dotpi_soundcard_select() (
       ;;
 
   esac
+
+  if [[ "$model_normalised" == "$(dotpi_soundcard_model_normalise "$dotpi_soundcard")" ]] ; then
+    # no need to update environment
+    return 0;
+  fi
+
+  # comment setting in project
+  dotpi_configuration_comment --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
+                            --key dotpi_soundcard
+
+
+  model_value="$(echo "$model" | dotpi_sed 's/"/\\"/g')"
+
+  # write changed setting in instance
+  dotpi_configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
+                            --key dotpi_soundcard \
+                            --value \""${model_value}"\"
 )
 
 _dotpi_soundcard_jackd_set_configuration() (
   model="$1"
   (cd "${DOTPI_ROOT}/share/jackd" && ln -s -f "dotpi_jackd_${model}.bash" 'dotpi_jackd.bash') || {
-    dotpi echo_error "Unable to change jackd configuration to ${model}"
+    dotpi_echo_error "Unable to change jackd configuration to ${model}"
     return 1
   }
 
   # we can change soundcard in a temporary file-system, too
-  if dotpi system_is_raspberry_pi ; then
-    dotpi echo_warning "Restart jackd service"
+  if dotpi_system_is_raspberry_pi ; then
+    dotpi_echo_warning "Restart jackd service"
     service='jackd'
     systemctl is-active "$service" > /dev/null 2>&1 \
       && systemctl restart "$service" || {
