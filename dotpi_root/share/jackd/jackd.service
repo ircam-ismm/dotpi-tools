@@ -3,6 +3,7 @@ Description=Jack daemon
 After=sound.target
 
 [Service]
+Type=exec
 LimitRTPRIO=infinity
 LimitMEMLOCK=infinity
 User=pi
