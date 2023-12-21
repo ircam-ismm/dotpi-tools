@@ -4,7 +4,7 @@ Wants=network-online.target
 After=network-online.target jackd.service
 
 [Service]
-Type=idle
+Type=exec
 ExecStart=/usr/bin/node /opt/dotpi/share/dotpi-manager/runtime/.build/clients/thing/index.js
 WorkingDirectory=/opt/dotpi/share/dotpi-manager/runtime
 StandardOutput=inherit
