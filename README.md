@@ -114,10 +114,10 @@ dotpi_project_name='dev'
 The remote machine hosnames will be on the form `dotpi-dev-xxx` with `xxx` as the instance numbers.
 
 
-You can also choose your sound-card.
+You can also choose your audio device.
 
 ```sh
-dotpi_soundcard='HiFiBerry DAC+ ADC Pro'
+dotpi_audio_device='HiFiBerry DAC+ ADC Pro'
 ```
 
 ##### `jackd` folder
@@ -323,7 +323,7 @@ Please do report them.
 - [ ] Make a command-line interface
   - [ ] choose between options
     - [ ] project name
-    - [ ] sound-card model
+    - [ ] audio device model
     - [ ] jackd configuration
   - [ ] make pair of ssh keys
   - [ ] wifi/network configuration

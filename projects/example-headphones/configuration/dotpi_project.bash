@@ -4,7 +4,7 @@ dotpi_project_name='example'
 
 dotpi_ssh_allow_password_authentication='yes'
 
-dotpi_soundcard='Headphones'
+dotpi_audio_device='Headphones'
 
 # add packages
 # be sure to keep the parentheses, even for a single line

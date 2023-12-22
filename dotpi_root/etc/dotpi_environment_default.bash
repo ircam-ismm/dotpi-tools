@@ -26,7 +26,7 @@ dotpi_timezone='Europe/Paris'
 
 dotpi_keymap='fr'
 
-dotpi_soundcard='default'
+dotpi_audio_device='default'
 
 # run /opt/dotpi/bin/dotpi_prepare_system after the first reboot
 dotpi_prepare_system_automatic='yes'

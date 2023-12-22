@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# specific soundcard model fir this instance
-dotpi_soundcard='HiFiBerry DAC+ ADC'
+# specific audio device fir this instance
+dotpi_audio_device='HiFiBerry DAC+ ADC'

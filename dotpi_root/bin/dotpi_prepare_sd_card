@@ -389,10 +389,10 @@ if [[ "$dotpi_word_size" == "32" ]] ; then
   fi
 fi
 
-######### sound-card
+######### audio device
 
 # set model before, as it will select jackd configuration
-dotpi_soundcard_select --model "$dotpi_soundcard" --config "$config_file"
+dotpi_audio_device_select --model "$dotpi_audio_device" --config "$config_file"
 
 # copy configuration files from project for over-rides
 source_path="${project_path}/configuration/jackd"

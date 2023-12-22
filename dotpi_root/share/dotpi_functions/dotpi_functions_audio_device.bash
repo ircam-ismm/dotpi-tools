@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_dotpi_soundcard_get_options() {
+_dotpi_audio_device_get_options() {
 
   _echo_empty_option_error() {
     dotpi_echo_error "$1 requires a non-empty option argument."
@@ -59,11 +59,11 @@ _dotpi_soundcard_get_options() {
 
 }
 
-dotpi_soundcard_model_normalise() {
+dotpi_audio_device_model_normalise() {
   echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
-dotpi_soundcard_select() (
+dotpi_audio_device_select() (
   # sub-shell to keep everything local (functions and variables)
 
   _dotpi_command="$(basename -- "${FUNCNAME[0]:-"$0"}")"
@@ -76,7 +76,7 @@ dotpi_soundcard_select() (
   model=
   config_file=
 
-  if ! _dotpi_soundcard_get_options "${@}" ; then
+  if ! _dotpi_audio_device_get_options "${@}" ; then
     return $?
   fi
 
@@ -105,7 +105,7 @@ dotpi_soundcard_select() (
   fi
 
   # lowercase everything
-  model_normalised="$(dotpi_soundcard_model_normalise "$model")"
+  model_normalised="$(dotpi_audio_device_model_normalise "$model")"
 
   case "$model_normalised" in
 
@@ -114,64 +114,64 @@ dotpi_soundcard_select() (
 
     'hifiberry dac for raspberry pi 1'|'hifiberry dac+ light'|'hifiberry dac zero'|'hifiberry miniamp'|'hifiberry beocreate'|'hifiberry dac+ dsp'|'hifiberry dac+ rtc')
       dtoverlay=hifiberry-dac
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     'hifiberry dac+ standard'|'hifiberry pro'|'hifiberry amp2')
       dtoverlay=hifiberry-dacplus
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     'hifiberry dac2 hd')
       dtoverlay=hifiberry-dacplushd
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     'hifiberry dac+ adc')
       dtoverlay=hifiberry-dacplusadc
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     'hifiberry dac+ adc pro')
       dtoverlay=hifiberry-dacplusadcpro
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     'hifiberry digi+')
       dtoverlay=hifiberry-digi
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     'hifiberry digi+ pro')
       dtoverlay=hifiberry-digi-pro
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     'hifiberry amp+')
       dtoverlay=hifiberry-amp
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     'hifiberry amp3')
       dtoverlay=hifiberry-amp3
-      _dotpi_soundcard_select_hifiberry
+      _dotpi_audio_device_select_hifiberry
       ;;
 
     headphones)
-      _dotpi_soundcard_select_headphones
+      _dotpi_audio_device_select_headphones
       ;;
 
     default)
-      dotpi_echo_warning "Not installing a specific soundcard, keeping defaults"
+      dotpi_echo_warning "Not installing a specific audio device, keeping defaults"
       ;;
 
     none)
-      _dotpi_soundcard_disable_all
+      _dotpi_audio_device_disable_all
       ;;
 
     -?*) # Unknown
       _dotpi_usage
-      dotpi_echo_error "Unknown soundcard model: ${model}"
+      dotpi_echo_error "Unknown audio device model: ${model}"
       return 1
       ;;
 
@@ -180,20 +180,20 @@ dotpi_soundcard_select() (
   # use xargs to unquote value
   model_project="$(dotpi_configuration_read \
                      --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
-                     --key dotpi_soundcard \
+                     --key dotpi_audio_device \
                      | xargs)"
 
 
-  if [[ "$model_normalised" == "$(dotpi_soundcard_model_normalise "$model_project")" ]] ; then
+  if [[ "$model_normalised" == "$(dotpi_audio_device_model_normalise "$model_project")" ]] ; then
     # no need to update environment
     return 0;
   fi
 
-  dotpi_echo_warning 'Sound-card model is specific to this instance'
+  dotpi_echo_warning 'Audio device model is specific to this instance'
 
   # comment setting in project
   dotpi_configuration_comment --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
-                            --key dotpi_soundcard
+                            --key dotpi_audio_device
 
   # escape double-quote for now, to quote when writing later
   model_value="$(echo "$model" | dotpi_sed 's/"/\\"/g')"
@@ -201,18 +201,18 @@ dotpi_soundcard_select() (
   # write changed setting in instance
   # be sure to quote value
   dotpi_configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
-                            --key dotpi_soundcard \
+                            --key dotpi_audio_device \
                             --value \""${model_value}"\"
 )
 
-_dotpi_soundcard_jackd_set_configuration() (
+_dotpi_audio_device_jackd_set_configuration() (
   model="$1"
   (cd "${DOTPI_ROOT}/share/jackd" && ln -s -f "dotpi_jackd_${model}.bash" 'dotpi_jackd.bash') || {
     dotpi_echo_error "Unable to change jackd configuration to ${model}"
     return 1
   }
 
-  # we can change soundcard in a temporary file-system, too
+  # we can change audio device in a temporary file-system, too
   if dotpi_system_is_raspberry_pi ; then
     dotpi_echo_warning "Restart jackd service"
     service='jackd'
@@ -223,52 +223,52 @@ _dotpi_soundcard_jackd_set_configuration() (
 fi
 )
 
-_dotpi_soundcard_disable_all() (
-  dotpi_echo_info "Disabling all sound-cards"
+_dotpi_audio_device_disable_all() (
+  dotpi_echo_info "Disabling all audio devices"
 
-  _dotpi_soundcard_disable_headphones
-  _dotpi_soundcard_disable_hdmi
-  _dotpi_soundcard_disable_hifiberry
+  _dotpi_audio_device_disable_headphones
+  _dotpi_audio_device_disable_hdmi
+  _dotpi_audio_device_disable_hifiberry
 )
 
-_dotpi_soundcard_select_headphones() (
-  dotpi_echo_info "Installing Headphones (default) sound-card"
+_dotpi_audio_device_select_headphones() (
+  dotpi_echo_info "Installing Headphones (default) audio device"
 
-  _dotpi_soundcard_disable_hdmi
-  _dotpi_soundcard_disable_hifiberry
+  _dotpi_audio_device_disable_hdmi
+  _dotpi_audio_device_disable_hifiberry
 
   # un-comment  dtparam=audio as it must be set first
   # (setting at the end the the file fails)
   pattern="$(dotpi_configuration_get_pattern --prefix "# dtparam=audio")"
   perl -pe "s/${pattern}/"'dtparam=audio=on/' -i "$config_file"
 
-  _dotpi_soundcard_jackd_set_configuration "headphones"
+  _dotpi_audio_device_jackd_set_configuration "headphones"
 )
 
-_dotpi_soundcard_select_hifiberry() (
-  dotpi_echo_info "Configuring HiFiBerry sound-card '${model}'"
+_dotpi_audio_device_select_hifiberry() (
+  dotpi_echo_info "Configuring HiFiBerry audio device '${model}'"
 
-  _dotpi_soundcard_disable_headphones
-  _dotpi_soundcard_disable_hdmi
-  _dotpi_soundcard_disable_hifiberry
+  _dotpi_audio_device_disable_headphones
+  _dotpi_audio_device_disable_hdmi
+  _dotpi_audio_device_disable_hifiberry
 
   mkdir -p "$(dirname -- "$config_file")"
   cat >> "$config_file" << EOF
 
-# dotpi: overlay for soundcard '${model}'
+# dotpi: overlay for audio device '${model}'
 dtoverlay=${dtoverlay}
 
 EOF
 
-  _dotpi_soundcard_jackd_set_configuration "hifiberry"
+  _dotpi_audio_device_jackd_set_configuration "hifiberry"
 )
 
-_dotpi_soundcard_disable_headphones() (
-  # disable internal soundcard
+_dotpi_audio_device_disable_headphones() (
+  # disable internal audio device
   dotpi_configuration_comment --file "$config_file" --key 'dtparam=audio'
 )
 
-_dotpi_soundcard_disable_hdmi() (
+_dotpi_audio_device_disable_hdmi() (
   # disable HDMI audio
 
   # new systems
@@ -280,7 +280,7 @@ _dotpi_soundcard_disable_hdmi() (
   perl -pe "s/${pattern}/"'${1}${2},audio=off/' -i "$config_file"
 )
 
-_dotpi_soundcard_disable_hifiberry() (
+_dotpi_audio_device_disable_hifiberry() (
   # disable hifiberry
   pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=hifiberry-")"
   perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i "$config_file"
