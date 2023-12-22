@@ -109,6 +109,27 @@ dotpi_audio_device_select() (
 
   case "$model_normalised" in
 
+    ######## Generic devices
+
+    'default')
+      dotpi_echo_warning "Not installing a specific audio device, keeping defaults"
+      ;;
+
+    'none')
+      _dotpi_audio_device_disable_all
+      ;;
+
+    'headphones')
+      _dotpi_audio_device_select_headphones
+      ;;
+
+    'bluetooth')
+      dotpi_echo_info "Installing generic bluetooth device"
+      _dotpi_audio_device_select_bluetooth
+      ;;
+
+    ######## Specific devices
+
     # HiFiBerry
     # Cf. https://www.hifiberry.com/docs/software/configuring-linux-3-18-x/
 
@@ -157,19 +178,16 @@ dotpi_audio_device_select() (
       _dotpi_audio_device_select_hifiberry
       ;;
 
-    headphones)
-      _dotpi_audio_device_select_headphones
+    ####### Ultimate Ears (UE)
+
+    'ue boom 2'|'ue boom 3'|'ue megaboom 2'|'ue megaboom 3')
+      _dotpi_audio_device_select_bluetooth
       ;;
 
-    default)
-      dotpi_echo_warning "Not installing a specific audio device, keeping defaults"
-      ;;
 
-    none)
-      _dotpi_audio_device_disable_all
-      ;;
+    ########### Unknown device
 
-    -?*) # Unknown
+    *) # other
       _dotpi_usage
       dotpi_echo_error "Unknown audio device model: ${model}"
       return 1
@@ -245,6 +263,14 @@ _dotpi_audio_device_select_headphones() (
   _dotpi_audio_device_jackd_set_configuration "headphones"
 )
 
+_dotpi_audio_device_select_bluetooth() (
+  _dotpi_audio_device_disable_headphones
+  _dotpi_audio_device_disable_hdmi
+  _dotpi_audio_device_disable_hifiberry
+
+  _dotpi_audio_device_jackd_set_configuration "bluetooth"
+)
+
 _dotpi_audio_device_select_hifiberry() (
   dotpi_echo_info "Configuring HiFiBerry audio device '${model}'"
 
@@ -285,3 +311,96 @@ _dotpi_audio_device_disable_hifiberry() (
   pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=hifiberry-")"
   perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i "$config_file"
 )
+
+_dotpi_audio_device_volume_set_alsa() (
+  amixer -- sset "$control" "$volume"
+  alsactl store
+
+  if [[ "$volume" ==  "$dotpi_audio_volume" ]] ; then
+    # no change to write
+    return 0
+  fi
+
+  # comment setting in project
+  dotpi_configuration_comment --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
+                              --key dotpi_audio_volume
+
+  # escape double-quote for now, to quote when writing later
+  model_value="$(echo "$model" | dotpi_sed 's/"/\\"/g')"
+
+  # write changed setting in instance
+  dotpi_configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
+                            --key dotpi_audio_volume \
+                            --value "$volume"
+)
+
+dotpi_audio_device_volume_set() (
+  volume="$1"
+
+  model="$dotpi_audio_device"
+  # lowercase everything
+  model_normalised="$(dotpi_audio_device_model_normalise "$model")"
+
+  case "$model_normalised" in
+
+    ####### Generic devices
+
+    'headphones')
+      control='PCM'
+      _dotpi_audio_device_volume_set_alsa
+      ;;
+
+    'bluetooth')
+      dotpi_audio_bluetooth_destination_volume_set "$volume"
+      ;;
+
+
+    ####### Specific devices
+
+    # HiFiBerry
+    # Cf. https://www.hifiberry.com/docs/archive/mixer-controls-on-the-hifiberry-boards/
+
+
+    'hifiberry dac+ dsp'|'hifiberry dac+ rtc'|'hifiberry dac+ standard'|'hifiberry amp2'|'hifiberry dac+ adc'|'hifiberry dac+ adc pro'|'hifiberry amp3')
+      control='Digital'
+      _dotpi_audio_device_volume_set_alsa
+      ;;
+
+    'hifiberry dac2 hd')
+      control='DAC'
+      _dotpi_audio_device_volume_set_alsa
+      ;;
+
+    'hifiberry amp+')
+      control='Master'
+      _dotpi_audio_device_volume_set_alsa
+      ;;
+
+    ####### Ultimate Ears (UE)
+
+    'ue boom 2'|'ue boom 3'|'ue megaboom 2'|'ue megaboom 3')
+      dotpi_audio_bluetooth_destination_volume_set "$volume"
+      ;;
+
+    ########### Unknown device
+
+    *) # other
+      dotpi_echo_error "Unable to set volume for unknown audio device model: ${model}"
+      return 1
+      ;;
+
+
+  esac
+)
+
+dotpi_audio_device_volume_init() (
+  if [[ -z "$dotpi_audio_volume" ]] ; then
+    dotpi_echo_warning "dotpi_audio_volume not set, keeping default volume"
+    return 0
+  fi
+
+  destination_volume="$dotpi_audio_volume"
+  dotpi_audio_device_volume_set "$destination_volume"
+)
+
+
