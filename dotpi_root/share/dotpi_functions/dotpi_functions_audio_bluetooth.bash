@@ -3,16 +3,7 @@
 _dotpi_audio_bluetooth_controller='hci0'
 
 dotpi_audio_bluetooth_destination_connect() (
-  clean_up() {
-    if [[ -n ${btctl_process} ]] ; then
-      dotpi_echo_info "Ending bluetoothctl process"
-      kill "${btctl_process_PID}"
-    fi
-  }
-  trap clean_up EXIT ERR SIGHUP SIGTERM SIGINT
-
   destination_mac="$dotpi_audio_bluetooth_mac"
-
 
   dotpi_echo_info "Starting bluetoothctl process"
   status='init'
@@ -104,12 +95,10 @@ dotpi_audio_bluetooth_destination_connect() (
       echo "exit" >&${btctl_process[1]}
       dotpi_echo_info "Done"
       status='done'
+      break
     fi
 
   done <&${btctl_process[0]}
-
-  clean_up
-
 )
 
 dotpi_audio_bluetooth_destination_disconnect() (
@@ -118,8 +107,15 @@ dotpi_audio_bluetooth_destination_disconnect() (
 
 _dotpi_audio_bluetooth_destination_start_ue() (
   destination_mac="$dotpi_audio_bluetooth_mac"
+  destination_descriptor="${dotpi_audio_bluetooth_mac//:/_}"
+
   trusted_mac="$(hciconfig "$_dotpi_audio_bluetooth_controller" \
      | perl -ne 'if (m/BD Address:\s*([\w:]+).*$/i) { print "${1}\n"; }')"
+
+  coproc btctl_process { bluetoothctl; }
+
+  # test if already here
+  echo 'transport.list' >&${btctl_process[1]}
 
   gatttool \
     --adapter "$_dotpi_audio_bluetooth_controller" \
@@ -128,8 +124,17 @@ _dotpi_audio_bluetooth_destination_start_ue() (
     --handle 0x0003 \
     --value "${trusted_mac//:/}01"
 
-  # TODO: wait for transport volume
-  sleep 10
+  while IFS= read -r output ; do
+    echo "$output" >&2
+
+    # Connected and transport volume available
+    if [[ "$output" =~ [CHG].*Transport.*/org/bluez/.*dev_"${destination_descriptor}".*Volume ]] \
+         || [[ "$output" =~ ^Transport.*/org/bluez/.*dev_"${destination_descriptor}" ]] ; then
+      kill ${btctl_process_PID}
+      break
+    fi
+  done <&${btctl_process[0]}
+
 )
 
 dotpi_audio_bluetooth_destination_start() (
@@ -154,9 +159,16 @@ dotpi_audio_bluetooth_destination_start() (
 
 _dotpi_audio_bluetooth_destination_stop_ue() (
   destination_mac="$dotpi_audio_bluetooth_mac"
+  destination_descriptor="${dotpi_audio_bluetooth_mac//:/_}"
+
   trusted_mac="$(hciconfig "$_dotpi_audio_bluetooth_controller" \
      | perl -ne 'if (m/BD Address:\s*([\w:]+).*$/i) { print "${1}\n"; }')"
 
+  dotpi echo_info "Starting bluetoothctl monitor process"
+  coproc btctl_process { bluetoothctl; }
+
+  # will trigger a connection, even if destination if off, for write request (BLE)
+  # hence the [CHG] ... Connected: no
   gatttool \
     --adapter "$_dotpi_audio_bluetooth_controller" \
     --device "${destination_mac}" \
@@ -164,10 +176,18 @@ _dotpi_audio_bluetooth_destination_stop_ue() (
     --handle 0x0003 \
     --value "${trusted_mac//:/}02"
 
-  # TODO: wait for disconnection
-  sleep 10
-)
+  while IFS= read -r output ; do
+    echo "$output" >&2
 
+    # destination disconnected
+    if [[ "$output" =~ [DEL].*Endpoint.*/org/bluez/.*dev_"${destination_descriptor}" ]] \
+         || [[ "$output" =~ [CHG].*Device.*"$destination_mac".*Connected:.*no ]] ; then
+
+      kill ${btctl_process_PID}
+      break
+    fi
+  done <&${btctl_process[0]}
+)
 
 dotpi_audio_bluetooth_destination_stop() (
   model_normalised="$(dotpi_audio_device_model_normalise "$dotpi_audio_device")"

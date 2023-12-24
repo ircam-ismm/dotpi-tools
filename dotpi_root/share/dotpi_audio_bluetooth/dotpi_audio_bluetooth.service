@@ -1,0 +1,23 @@
+[Unit]
+Description=dotpi bluetooth audio daemon
+Requires=bluetooth.service bluealsa.service
+
+# TODO: stop on system stop
+
+[Service]
+Type=exec
+User=pi
+
+ExecStart=/opt/dotpi/share/dotpi_audio_bluetooth/dotpi_audio_bluetooth_command
+
+Restart=always
+
+# wait before restarting
+RestartSec=1s
+
+# Do not stop to try restarting service
+StartLimitBurst=0
+
+[Install]
+WantedBy=multi-user.target
+
