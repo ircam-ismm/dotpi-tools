@@ -22,5 +22,11 @@ while IFS= read -r output ; do
         dotpi echo_error "jackd stopped, it will be killed."
         kill "$jackd_pid"
     fi
+
+    if [[ "$output" =~ JackAudioDriver.*Process.*error ]] ; then
+        dotpi echo_error "jackd process error, it will be killed."
+        kill "$jackd_pid"
+    fi
+
 done < <( jackd "${DOTPI_JACKD_ARGUMENTS[@]}" 2>&1)
 
