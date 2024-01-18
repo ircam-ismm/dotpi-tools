@@ -12,7 +12,7 @@ StandardError=inherit
 Restart=always
 
 # wait before restarting
-RestartSec=1s
+RestartSec=5s
 
 # Do not stop to try restarting service
 StartLimitBurst=0
