@@ -14,7 +14,6 @@ fi
 DOTPI_ROOT="${DOTPI_ROOT:-/opt/dotpi}"
 source "${DOTPI_ROOT}/share/dotpi_init.bash"
 
-
 ############### system packages via apt
 
 # in case dpkg was interrupted
@@ -99,9 +98,12 @@ dotpi echo_info "Install dotpi manager"
 destination_path="${DOTPI_ROOT}/share/dotpi-manager/runtime"
 sudo mkdir -p "$destination_path"
 sudo chown "$FIRSTUSER" -R "$destination_path"
-git clone https://github.com/ircam-ismm/dotpi-manager.git "$destination_path"
+git clone --depth=1 https://github.com/ircam-ismm/dotpi-manager.git "$destination_path"
 (
-   cd -- "$destination_path"
+   cd -- "$destination_path" || {
+      dotpi_echo_error "could not change directory to runtime: ${destination_path}"
+      exit 1
+   }
    npm install
    npm run build
 )

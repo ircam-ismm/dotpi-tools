@@ -22,13 +22,14 @@ cd "${DOTPI_ROOT}" || {
   exit 1
 }
 
-for i in {31..36} ; do
-  ssh -o ConnectTimeout=1 "dotpi-dev-0${i}.local" "dotpi echo_info 'dotpi-dev-0${i}.local connected'" && {
+for i in {11..76} ; do
+  d="dotpi-dev-0${i}.local"
+  ssh -o ConnectTimeout=1 "${d}" "dotpi echo_info '${d}: connected'" && {
 
-    dotpi_echo_info "rsync dotpi-dev-0${i}.local"
-    rsync --rsync-path="sudo rsync" --archive --archive --hard-links --acls --one-file-system --relative './' "dotpi-dev-0${i}.local:/opt/dotpi"
+    dotpi_echo_info "${d}: rsync"
+    rsync --rsync-path="sudo rsync" --archive --archive --hard-links --acls --one-file-system --relative './' "${d}:/opt/dotpi"
 
-    dotpi_echo_info "update dotpi-dev-0${i}.local"
-    ssh "dotpi-dev-0${i}.local" "/opt/dotpi/share/dotpi-install/update_to_v1.0.0_pi"
+    dotpi_echo_info "${d}: update"
+    ssh "${d}" "/opt/dotpi/share/dotpi-install/update_to_v1.0.0_pi"
   }&
 done

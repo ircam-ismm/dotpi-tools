@@ -26,8 +26,6 @@ dotpi echo_info "$(hostname): enable user services"
 
 dotpi echo_info "$(hostname): enable linger for ${FIRSTUSER}"
 sudo loginctl enable-linger "$FIRSTUSER"
-dotpi echo_info "$(hostname): install systemd-container"
-sudo dotpi apt-get install systemd-container
 
 service='/opt/dotpi/share/dotpi-manager/dotpi-manager.service'
 dotpi echo_info "$(hostname): new user service ${service}"

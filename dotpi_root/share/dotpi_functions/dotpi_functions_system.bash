@@ -155,5 +155,16 @@ SHELL=/bin/bash
 
 EOF
 
-
 )
+
+dotpi_system_update() {
+  _dotpi_command="$(basename -- "${FUNCNAME[0]:-"$0"}")"
+  log_file="${DOTPI_ROOT}/var/log/${_dotpi_command}_$(date +"%Y%m%d-%H%M%S").log"
+  exec &> >(dotpi log "$log_file")
+
+  dotpi_echo_info "Log of dotpi-manager update: ${log_file}"
+
+  dotpi_echo_info "Update and dist-upgrade"
+  dotpi_apt_get update
+  dotpi_apt_get dist-upgrade
+}
