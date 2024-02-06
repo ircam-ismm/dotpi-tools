@@ -1,0 +1,37 @@
+#!/bin/bash
+
+_dotpi_command="$(basename -- "$0")"
+log_file="${DOTPI_ROOT}/var/log/${_dotpi_command}_$(date +"%Y%m%d-%H%M%S").log"
+exec &> >(sudo dotpi log "$log_file")
+
+dotpi echo_info "Log of dotpi-manager update: ${log_file}"
+
+# This script MUST be executed by `pi` user
+FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
+if [[ $(whoami) != "${FIRSTUSER}" ]] ; then
+   dotpi echo_error "$(hostname): This script MUST be executed by pi user (or first user)"
+   exit 1
+fi
+
+dotpi echo_info update definitions
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+service='dotpi-manager.service'
+dotpi echo_info "$(hostname): dameon-reload"
+sudo systemctl daemon-reload
+dotpi echo_info "$(hostname): remove old system service ${service}"
+sudo dotpi service_uninstall "$service"
+
+dotpi echo_info "$(hostname): enable user services"
+
+dotpi echo_info "$(hostname): enable linger for ${FIRSTUSER}"
+sudo loginctl enable-linger "$FIRSTUSER"
+
+service='/opt/dotpi/share/dotpi-manager/dotpi-manager.service'
+dotpi echo_info "$(hostname): new user service ${service}"
+sudo dotpi service_install --user "$service"
+
+dotpi echo_info "$(hostname): ${_dotpi_command}: finished"
+
+# dotpi echo_info "$(hostname): reboot"
+# sudo reboot

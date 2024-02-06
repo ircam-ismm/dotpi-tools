@@ -1,0 +1,35 @@
+#!/bin/bash
+
+####### Bootstrap
+
+dotpi_echo_error() {
+  printf 'ERROR: %s\n' "$1" >&2
+}
+
+local_path="$( (cd -- "$(dirname -- "$0")" && pwd) 2> /dev/null || {
+  dotpi_echo_error "unable to access local path $(dirname -- "$0")"
+} )"
+if [ -z "$local_path" ] ; then
+  exit 1
+fi
+
+# script in "share/dotpi-install"
+DOTPI_ROOT="${local_path}/../.."
+source "${DOTPI_ROOT}/share/dotpi_init.bash"
+
+cd "${DOTPI_ROOT}" || {
+  dotpi_echo_error "unable to change directory to ${DOTPI_ROOT}"
+  exit 1
+}
+
+for i in {11..76} ; do
+  d="dotpi-dev-0${i}.local"
+  ssh -o ConnectTimeout=1 "${d}" "dotpi echo_info '${d}: connected'" && {
+
+    dotpi_echo_info "${d}: rsync"
+    rsync --rsync-path="sudo rsync" --archive --archive --hard-links --acls --one-file-system --relative './' "${d}:/opt/dotpi"
+
+    dotpi_echo_info "${d}: update"
+    ssh "${d}" "/opt/dotpi/share/dotpi-install/update_to_v1.0.0_pi"
+  }&
+done

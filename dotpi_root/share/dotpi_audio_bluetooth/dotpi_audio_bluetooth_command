@@ -1,0 +1,73 @@
+#!/bin/bash
+
+local_file="$(dotpi readlink_follow "$0")"
+local_path="$(dirname -- "$local_file")"
+
+source /opt/dotpi/share/dotpi_init.bash
+
+dotpi echo_info "############ Start command"
+clean_up() {
+  if [[ -n ${btctl_process_PID} ]] ; then
+      dotpi echo_info "########### clean_up"
+      dotpi echo_info "Ending bluetoothctl process ${btctl_process_PID}"
+      kill "${btctl_process_PID}"
+      dotpi echo_info "Stopping audio bluetooth destination"
+      sudo dotpi audio_bluetooth_destination_stop
+  fi
+}
+trap clean_up HUP TERM INT
+
+destination_mac="${dotpi_audio_bluetooth_mac}"
+destination_descriptor="${dotpi_audio_bluetooth_mac//:/_}"
+
+# dotpi echo_info "Stopping audio bluetooth destination"
+# sudo dotpi audio_bluetooth_destination_stop
+
+dotpi echo_info "Starting audio bluetooth destination"
+sudo dotpi audio_bluetooth_destination_start
+
+dotpi echo_info "Starting bluetoothctl monitor process"
+coproc btctl_process { bluetoothctl; }
+
+status='init'
+dotpi echo_warning "status: $status"
+while IFS= read -r output ; do
+    echo "$output" >&2
+
+    # destination disconnected
+
+    if [[ "$output" =~ [DEL].*Endpoint.*/org/bluez/.*dev_"${destination_descriptor}" ]] ; then
+        # connect again
+        dotpi echo_error "Audio bluetooth destination (${destination_mac}) disconnected."
+        dotpi echo_info "Connecting again"
+
+        sleep 2
+
+        sudo dotpi audio_bluetooth_destination_start
+    fi
+
+    # if [[ "$status" == "init" ]] \
+    #     && [[ "$output" =~ [DEL].*Endpoint.*/org/bluez/.*dev_"${destination_descriptor}" ]] ; then
+    #     status='deleted'
+    #     dotpi echo_warning "status: $status"
+    # fi
+
+    # if [[ "$status" == "deleted" ]] \
+    #     && [[ "$output" =~ [CHG].*Device.*"${destination_mac}".*Connected:.*no ]] ; then
+
+    #     # connect again
+    #     dotpi echo_error "Audio bluetooth destination (${destination_mac}) disconnected."
+    #     dotpi echo_info "Connecting again"
+
+    #     status='init'
+    #     dotpi echo_warning "status: $status"
+
+    #     sudo dotpi audio_bluetooth_destination_start
+    # fi
+
+done <&${btctl_process[0]}
+
+dotpi echo_info "############ Start ending"
+
+dotpi echo_info "Stopping audio bluetooth destination"
+sudo dotpi audio_bluetooth_destination_stop

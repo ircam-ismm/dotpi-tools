@@ -3,9 +3,11 @@
 #### default functions
 
 for file in "${DOTPI_ROOT}/share/dotpi_functions/"* ; do
-  source "$file"
+  # continue on error
+  source "$file" || true
 done
 
 #### dotpi-manager
 
-dotpi_source_if_available "${DOTPI_ROOT}/share/dotpi-manager/dotpi_manager.bash"
+# continue on error
+dotpi_source_if_available "${DOTPI_ROOT}/share/dotpi-manager/dotpi-manager.bash" || true

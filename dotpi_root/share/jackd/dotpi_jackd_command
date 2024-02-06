@@ -14,4 +14,13 @@ for e in "${DOTPI_JACKD_ENVIRONMENT[@]}" ; do
     export "$e"
 done
 
-jackd "${DOTPI_JACKD_ARGUMENTS[@]}"
+while IFS= read -r output ; do
+    jackd_pid="$!"
+    # forward output
+    echo "$output"
+    if [[ "$output" =~ JackAudioDriver.*stopping ]] ; then
+        dotpi echo_error "jackd stopped, it will be killed."
+        kill "$jackd_pid"
+    fi
+done < <( jackd "${DOTPI_JACKD_ARGUMENTS[@]}" 2>&1)
+

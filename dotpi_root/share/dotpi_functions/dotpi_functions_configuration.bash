@@ -93,8 +93,8 @@ _dotpi_configuration_get_options() {
 }
 
 dotpi_configuration_escape_string() (
-  # escape / and \
-  echo "$(echo "$1" | perl -pe 's#([\/\\\$])#\\${1}#g')"
+  # escape / \ $
+  echo "$(echo "$1" | perl -pe 's#([/\\\$])#\\${1}#g')"
 )
 
 dotpi_configuration_get_pattern() (
@@ -143,6 +143,7 @@ dotpi_configuration_get_pattern() (
         _dotpi_configuration_pattern_value_with_spaces='((\s+[^#\s]+)*)'
 
         # trailing spaces and trailing comments until the end of line
+        # (including the end of line)
         _dotpi_configuration_pattern_trailing='(\s*#?.*$)'
 
         echo "\
@@ -154,7 +155,7 @@ $_dotpi_configuration_pattern_value_with_spaces\
 $_dotpi_configuration_pattern_trailing\
 "
   elif [ -n "$prefix" ] ; then
-        # [<leading>] <preifx>  [<trailing>]
+        # [<leading>] <prefix> [<trailing>]
 
         # start of line, and spaces
         # invert for no comment, no non-spaces
@@ -166,6 +167,7 @@ $_dotpi_configuration_pattern_trailing\
         _dotpi_configuration_pattern_prefix="(${prefix_escaped})"
 
         # anything until the end of line
+        # (including the end of line)
         _dotpi_configuration_pattern_trailing='(.*$)'
 
         echo "\
@@ -207,8 +209,8 @@ dotpi_configuration_comment() (
   fi
 
   pattern="$(dotpi_configuration_get_pattern --key "$key")"
-  # keep leading spaces
-  perl -pe "s/${pattern}/"'${1}# ${2}${3}${4}${5}${6}\n/' "${perl_options[@]}"
+  # keep leading spaces, and trailing (including end of line)
+  perl -pe "s/${pattern}/"'${1}# ${2}${3}${4}${5}${7}/' "${perl_options[@]}"
   return $?
 )
 
@@ -253,7 +255,8 @@ dotpi_configuration_write() (
 
   pattern="$(dotpi_configuration_get_pattern --key "$key")"
   value_escaped="$(dotpi_configuration_escape_string "$value")"
-  perl_command=('perl' '-pe' "s/${pattern}/"'${1}${2}${3}'"${value_escaped}"'${6}\n/')
+  # trailing includes the end of line
+  perl_command=('perl' '-pe' "s/${pattern}/"'${1}${2}${3}'"${value_escaped}"'${7}/')
 
   find_command=('dotpi_configuration_find' '--key' "$key")
 

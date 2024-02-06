@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# variables are used in dotpi_environment.bash, not in this file
+# shellcheck disable=SC2034
+
 # force 32bit executable
 # (and kernel for Raspberry Pi v3, not v4)
 # 32 for 32bit system, 64 for 64bit system
@@ -26,7 +29,7 @@ dotpi_timezone='Europe/Paris'
 
 dotpi_keymap='fr'
 
-dotpi_soundcard='default'
+dotpi_audio_device='default'
 
 # run /opt/dotpi/bin/dotpi_prepare_system after the first reboot
 dotpi_prepare_system_automatic='yes'

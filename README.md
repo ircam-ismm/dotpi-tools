@@ -114,10 +114,10 @@ dotpi_project_name='dev'
 The remote machine hosnames will be on the form `dotpi-dev-xxx` with `xxx` as the instance numbers.
 
 
-You can also choose your sound-card.
+You can also choose your audio device.
 
 ```sh
-dotpi_soundcard='HiFiBerry DAC+ ADC Pro'
+dotpi_audio_device='HiFiBerry DAC+ ADC Pro'
 ```
 
 ##### `jackd` folder
@@ -316,16 +316,14 @@ Please do report them.
 
 ## Todo
 
-- [ ] use 64bit system as default configuration
-
-- [ ] publish on github
-  - [ ] remove any secret (no history)
-  - [ ] publish secrets in examples
+- [ ] dotpi-manager: dependency to jackd should be soft
+  - [ ] allow client to run without audio
+  - [ ] client should continue to run if audio stops
 
 - [ ] Make a command-line interface
   - [ ] choose between options
     - [ ] project name
-    - [ ] sound-card model
+    - [ ] audio device model
     - [ ] jackd configuration
   - [ ] make pair of ssh keys
   - [ ] wifi/network configuration

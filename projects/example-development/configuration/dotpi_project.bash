@@ -15,7 +15,7 @@ dotpi_password_hash6=
 dotpi_timezone='Europe/Paris'
 dotpi_keymap='fr'
 
-dotpi_soundcard='HiFiBerry DAC+ ADC Pro'
+dotpi_audio_device='HiFiBerry DAC+ ADC Pro'
 
 # use node.js specific version
 # default is lts
