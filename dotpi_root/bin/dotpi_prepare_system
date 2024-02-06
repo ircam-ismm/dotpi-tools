@@ -77,16 +77,20 @@ for executable in "${executables[@]}" ; do
     sudo ln -s -f "${source}/${executable}" "${destination}/${executable}"
 done
 
+############## services
+
+# allow to run user services without login
+sudo loginctl enable-linger "$FIRSTUSER"
 
 ############## jackd2
 
-dotpi echo_info "Install Jackd daemon"
+dotpi echo_info "Install Jackd service"
 
 sudo dpkg-reconfigure -f noninteractive -p high jackd2
 
 dotpi echo_warning "You should close all active session windows for jackd high priority"
 
-sudo dotpi daemon_install "${DOTPI_ROOT}/share/jackd/jackd.service"
+sudo dotpi service_install "${DOTPI_ROOT}/share/jackd/jackd.service"
 
 
 ############## dotpi-manager
@@ -101,6 +105,6 @@ git clone https://github.com/ircam-ismm/dotpi-manager.git "$destination_path"
    npm install
    npm run build
 )
-sudo dotpi daemon_install "${DOTPI_ROOT}/share/dotpi-manager/dotpi-manager.service"
+sudo dotpi service_install --user "${DOTPI_ROOT}/share/dotpi-manager/dotpi-manager.service"
 
 dotpi_echo_info "System prepared"

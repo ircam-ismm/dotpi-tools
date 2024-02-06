@@ -9,7 +9,10 @@ dotpi_manager_update() {
 
   dotpi echo_info "Log of dotpi-manager update: ${log_file}"
 
-  cd -- "${DOTPI_ROOT}/share/dotpi-manager/runtime"
+  cd -- "${DOTPI_ROOT}/share/dotpi-manager/runtime" || {
+    dotpi_echo_error "dotpi-manager: could not change directory to runtime: ${DOTPI_ROOT}/share/dotpi-manager/runtime"
+    return 1
+  }
 
   service_name='dotpi-manager.service'
 

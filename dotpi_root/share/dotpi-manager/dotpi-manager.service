@@ -17,8 +17,5 @@ RestartSec=5s
 # Do not stop to try restarting service
 StartLimitBurst=0
 
-User=pi
-Group=audio
-
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

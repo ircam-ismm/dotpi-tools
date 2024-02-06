@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# variables are used in dotpi_environment.bash, not in this file
+# shellcheck disable=SC2034
+
 # force 32bit executable
 # (and kernel for Raspberry Pi v3, not v4)
 # 32 for 32bit system, 64 for 64bit system

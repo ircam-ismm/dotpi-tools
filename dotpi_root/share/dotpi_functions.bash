@@ -10,4 +10,4 @@ done
 #### dotpi-manager
 
 # continue on error
-dotpi_source_if_available "${DOTPI_ROOT}/share/dotpi-manager/dotpi_manager.bash" || true
+dotpi_source_if_available "${DOTPI_ROOT}/share/dotpi-manager/dotpi-manager.bash" || true

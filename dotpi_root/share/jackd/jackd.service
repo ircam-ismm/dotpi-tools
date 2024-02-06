@@ -1,5 +1,5 @@
 [Unit]
-Description=Jack daemon
+Description=Jack service
 After=sound.target
 
 [Service]
