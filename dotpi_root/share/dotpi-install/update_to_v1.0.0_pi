@@ -31,6 +31,8 @@ service='/opt/dotpi/share/dotpi-manager/dotpi-manager.service'
 dotpi echo_info "$(hostname): new user service ${service}"
 sudo dotpi service_install --user "$service"
 
+sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_monitor.service"
+
 dotpi echo_info "$(hostname): ${_dotpi_command}: finished"
 
 # dotpi echo_info "$(hostname): reboot"

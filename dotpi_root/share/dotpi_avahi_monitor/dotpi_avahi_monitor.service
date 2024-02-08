@@ -1,0 +1,22 @@
+[Unit]
+Description=avahi monitor
+After=avahi-daemon.service
+
+[Service]
+Type=exec
+LimitRTPRIO=infinity
+LimitMEMLOCK=infinity
+User=pi
+Group=audio
+ExecStart=/opt/dotpi/share/dotpi_avahi_monitor/dotpi_avahi_monitor_command
+Restart=always
+
+# wait before restarting
+RestartSec=10s
+
+# Do not stop to try restarting service
+StartLimitBurst=0
+
+[Install]
+WantedBy=multi-user.target
+
