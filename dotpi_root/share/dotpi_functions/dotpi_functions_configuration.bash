@@ -270,6 +270,8 @@ dotpi_configuration_write() (
   fi
 
   if (( found == 0 )) ; then
+      # add a new line in case file does not already end with one
+      echo '' >> "$output_file"
       if [ -n "$prepend_line_if_new" ] ; then
           echo "$prepend_line_if_new" >> "$output_file"
       fi
