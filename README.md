@@ -16,8 +16,9 @@ Do not forget to install the pair SSH keys from `projects/example-dev/secrets/ss
 
 - Download and install the Raspberry Pi Imager.
 - Select OS (operating system)
-- Choose `Rapsberry Pi OS (other)`
-- Choose `Rapsberry Pi OS Lite (32-bit)`
+  - Choose `Rapsberry Pi OS (other)`
+  - Choose `Rapsberry Pi OS Lite (64-bit)`
+  - For Raspberry Pi 3, you may need to separately download a non-legacy OS, and choose `Use custom`
 - Insert a new SD card in your computer
 - Select it as the storage
 
