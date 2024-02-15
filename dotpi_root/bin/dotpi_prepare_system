@@ -81,6 +81,11 @@ done
 # allow to run user services without login
 sudo loginctl enable-linger "$FIRSTUSER"
 
+############# avahi (multicast DNS, bonjour)
+
+# restart when hostname is not resolved by mDNS
+sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_monitor.service"
+
 ############## jackd2
 
 dotpi echo_info "Install Jackd service"

@@ -3,7 +3,7 @@
 _dotpi_audio_bluetooth_controller='hci0'
 
 # bash v5 is available on Raspberry Pi, and provides named co-processes
-if (( $BASH_VERSINFO < 5 )) ; then
+if (( "${BASH_VERSINFO:-0}" < 5 )) ; then
   return 0;
 fi
 
