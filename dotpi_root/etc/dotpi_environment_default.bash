@@ -34,6 +34,9 @@ dotpi_audio_device='default'
 # run /opt/dotpi/bin/dotpi_prepare_system after the first reboot
 dotpi_prepare_system_automatic='yes'
 
+# install dotpi-manager service
+dotpi_manager_install='yes'
+
 # Let the user choose (lite or not)
 dotpi_apt_uninstall=()
 
