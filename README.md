@@ -2,13 +2,14 @@
 
 ## Intro
 
-This utility prepares a Raspberry Pi for running in a `dotpi` system. It serves several purposes:
+This utility prepares a Raspberry Pi for running in a `dotpi` distributed system. It serves several purposes:
 
 - locally configure a project
 - run locally to prepare the SD card
 - run on Raspberry Pi to prepare the remote system
+- add utilities and services to the remote system
 
-## Quick start
+## Getting started
 
 In the `project` folder, select a project that is close to your needs: `example-dev` is quite complete.
 
@@ -316,6 +317,8 @@ file $(which file)
 Please do report them.
 
 ## Todo
+
+- [ ] option not to install dotpi-manager
 
 - [ ] dotpi-manager: dependency to jackd should be soft
   - [ ] allow client to run without audio
