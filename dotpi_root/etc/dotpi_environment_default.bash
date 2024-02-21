@@ -16,10 +16,10 @@ dotpi_user='pi'
 # no default password:
 # - keep the one set by the imager
 # - or set `dotpi_password` in <project>/secrets/dotpi_secrets.bash
-#   (this will over-ride `dotpi_password_hash6' in dotpi_environment_project.bash)
-dotpi_password_hash6=
-# # openssl passwd -6
-# dotpi_password_hash6='$6$...'
+#   (this will over-ride `dotpi_password_hash' in dotpi_environment_project.bash)
+dotpi_password_hash=
+# # openssl passwd -1
+# dotpi_password_hash='$1$...'
 
 # no default key
 dotpi_ssh_authorized_keys=()

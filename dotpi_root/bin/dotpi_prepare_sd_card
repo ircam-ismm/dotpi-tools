@@ -251,8 +251,8 @@ else
   if [ -z "$dotpi_password" ] ; then
     dotpi_echo_warning "no password provided in ${source_file}, use default"
   else
-    hash6="$(openssl passwd -6 "$dotpi_password")"
-    dotpi_configuration_write --file "$destination_file" --key 'dotpi_password_hash6' --value "$hash6"
+    hash="$(openssl passwd -1 "$dotpi_password")"
+    dotpi_configuration_write --file "$destination_file" --key 'dotpi_password_hash' --value "$hash"
   fi
 fi
 
