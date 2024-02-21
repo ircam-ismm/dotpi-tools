@@ -90,12 +90,14 @@ echo "PasswordAuthentication ${dotpi_ssh_allow_password_authentication}" >>/etc/
 dotpi echo_info "Configure first user login"
 
 if [ -f /usr/lib/userconf-pi/userconf ] ; then
-   if [ -n "$dotpi_password_hash6" ] ; then
-      /usr/lib/userconf-pi/userconf "$dotpi_user" "$dotpi_password_hash6"
+   if [ -n "$dotpi_password_hash" ] ; then
+      dotpi echo_info "Set password with userconf-pi, using hash: ${dotpi_password_hash}"
+      /usr/lib/userconf-pi/userconf "$dotpi_user" "$dotpi_password_hash"
    fi
 else
-   if [ -n "$dotpi_password_hash6" ] ; then
-      echo "${FIRSTUSER}:${dotpi_password_hash6}" | chpasswd -e
+   if [ -n "$dotpi_password_hash" ] ; then
+      dotpi echo_info "Set password with chpasswd, using hash: ${dotpi_password_hash}"
+      echo "${FIRSTUSER}:${dotpi_password_hash}" | chpasswd -e
    fi
    if [ "$FIRSTUSER" != "$dotpi_user" ]; then
       usermod -l "$dotpi_user" "$FIRSTUSER"
