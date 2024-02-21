@@ -294,8 +294,8 @@ else
     key='wifi-security.psk'
     psk="$(dotpi_connection_read --file "$file" --key "$key")"
 
-    # not salted
-    if (( ${#psk} < 64 )) ; then
+    # psk present and not salted
+    if (( ${#psk} > 0 && ${#psk} < 64 )) ; then
       key='wifi.ssid'
       ssid="$(dotpi_connection_read --file "$file" --key "$key")"
       passphrase="$(wpa_passphrase "$ssid" "$psk" | dotpi_configuration_read --key 'psk' )"
