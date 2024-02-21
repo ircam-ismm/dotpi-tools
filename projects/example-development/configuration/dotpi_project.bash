@@ -8,9 +8,9 @@ dotpi_ssh_allow_password_authentication='yes'
 # no default password:
 # - keep the one set by the imager
 # - or over-ride in dotpi_environment_project.bash
-dotpi_password_hash6=
-# # openssl passwd -6
-# dotpi_password_hash6='$6$...'
+dotpi_password_hash=
+# # openssl passwd -1
+# dotpi_password_hash='$1$...'
 
 dotpi_timezone='Europe/Paris'
 dotpi_keymap='fr'

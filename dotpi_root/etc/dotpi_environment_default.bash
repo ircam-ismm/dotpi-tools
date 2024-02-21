@@ -15,10 +15,11 @@ dotpi_user='pi'
 
 # no default password:
 # - keep the one set by the imager
-# - or over-ride in dotpi_environment_project.bash
-dotpi_password_hash6=
-# # openssl passwd -6
-# dotpi_password_hash6='$6$...'
+# - or set `dotpi_password` in <project>/secrets/dotpi_secrets.bash
+#   (this will over-ride `dotpi_password_hash' in dotpi_environment_project.bash)
+dotpi_password_hash=
+# # openssl passwd -1
+# dotpi_password_hash='$1$...'
 
 # no default key
 dotpi_ssh_authorized_keys=()
@@ -33,6 +34,9 @@ dotpi_audio_device='default'
 
 # run /opt/dotpi/bin/dotpi_prepare_system after the first reboot
 dotpi_prepare_system_automatic='yes'
+
+# install dotpi-manager service
+dotpi_manager_install='yes'
 
 # Let the user choose (lite or not)
 dotpi_apt_uninstall=()
