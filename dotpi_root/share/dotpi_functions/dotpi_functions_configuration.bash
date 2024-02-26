@@ -319,7 +319,7 @@ dotpi_configuration_read() (
   values=()
   # split values with new line, keep spaces
   while IFS= read -r line ; do
-    values+="$line"
+    values+=("$line")
   done < <(perl -ne 'if (m/'"$pattern"'/) { print "${4}${5}\n" }' "${perl_options[@]}" )
 
   if (( ${#values} == 0 )) ; then
