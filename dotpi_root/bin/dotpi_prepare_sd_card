@@ -249,7 +249,8 @@ else
   source "$source_file"
 
   if [ -z "$dotpi_password" ] ; then
-    dotpi_echo_warning "no password provided in ${source_file}, use default"
+    dotpi_echo_error "You must define a password: set dotpi_password in ${source_file} to a non-empty string."
+    exit 1
   else
     hash="$(openssl passwd -1 "$dotpi_password")"
     dotpi_configuration_write --file "$destination_file" --key 'dotpi_password_hash' --value "$hash"
