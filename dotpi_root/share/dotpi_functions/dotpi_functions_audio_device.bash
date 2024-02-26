@@ -258,7 +258,7 @@ _dotpi_audio_device_select_headphones() (
   # un-comment  dtparam=audio as it must be set first
   # (setting at the end the the file fails)
   pattern="$(dotpi_configuration_get_pattern --prefix "# dtparam=audio")"
-  perl -pe "s/${pattern}/"'dtparam=audio=on/' -i "$config_file"
+  perl -pe "s/${pattern}/"'dtparam=audio=on/' -i -- "$config_file"
 
   _dotpi_audio_device_jackd_set_configuration "headphones"
 )
@@ -299,17 +299,17 @@ _dotpi_audio_device_disable_hdmi() (
 
   # new systems
   pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=vc4-kms-v3d")"
-  perl -pe "s/${pattern}/"'${1}${2},noaudio/' -i "$config_file"
+  perl -pe "s/${pattern}/"'${1}${2},noaudio/' -i -- "$config_file"
 
   # old systems
   pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=vc4-fkms-v3d")"
-  perl -pe "s/${pattern}/"'${1}${2},audio=off/' -i "$config_file"
+  perl -pe "s/${pattern}/"'${1}${2},audio=off/' -i -- "$config_file"
 )
 
 _dotpi_audio_device_disable_hifiberry() (
   # disable hifiberry
   pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=hifiberry-")"
-  perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i "$config_file"
+  perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i -- "$config_file"
 )
 
 _dotpi_audio_device_volume_set_alsa() (
