@@ -441,6 +441,31 @@ if [ -f "$source_file_path" ] ; then
 
 fi
 
+# configure cmdline.txt for firstun script, if not already here
+source_file_name='cmdline.txt'
+source_file_path="${bootfs_path}/${source_file_name}"
+destination_path="${bootfs_path}/dotpi/imager_${source_file_name}"
+pattern='systemd.run=/boot/firstrun.sh'
+pattern_escaped="$(dotpi_configuration_escape_string "$pattern")"
+first_run_configured="$(perl -ne 'if (m/'"$pattern_escaped"'/) { print "1"; }' "$source_file_path")"
+if (( first_run_configured != 1 )) ; then
+  dotpi_echo_info "Configuring firstrun in ${source_file_path}"
+  # keep a copy of originalc command-line
+  mkdir -p -- "$destination_path"
+  cp -- "$source_file_path" "$destination_path"
+  # append:run script and reboot on success
+  arguments=(
+    'systemd.run=/boot/firstrun.sh'
+    'systemd.run_success_action=reboot'
+    'systemd.unit=kernel-command-line.target'
+  )
+  pattern="${arguments[*]}"
+  pattern_escaped="$(dotpi_configuration_escape_string "$pattern")"
+  # do not append to a new line
+  # append a space to separate from previous arguments (extra does not hurt)
+  dotpi_sed 's/$/${1} '"$pattern_escaped"'/' -i -- "$source_file_path"
+fi
+
 # replace first run with custom, that will over-ride imager settings
 # run dotpi_firstrun.bash
 cat > "${bootfs_path}/firstrun.sh" << "EOF"
