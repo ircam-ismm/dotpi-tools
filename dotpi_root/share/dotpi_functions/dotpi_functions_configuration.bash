@@ -261,7 +261,7 @@ dotpi_configuration_write() (
   find_command=('dotpi_configuration_find' '--key' "$key")
 
   if [ -n "$file" ] ; then
-      "${perl_command[@]}" -i "$file"
+      "${perl_command[@]}" -i -- "$file"
       found=$( "${find_command[@]}" --file "$file" )
       output_file="$file"
   else

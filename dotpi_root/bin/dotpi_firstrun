@@ -29,7 +29,7 @@ dotpi echo_info "Configure first user .bashrc"
 FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
 FIRSTUSERHOME="$(getent passwd 1000 | cut -d: -f6)"
 
-mkdir -p "$FIRSTUSERHOME"
+mkdir -p -- "$FIRSTUSERHOME"
 
 IFS= read -r -d '' bashrc_append << EOF
 
@@ -72,7 +72,7 @@ else
    systemctl enable ssh
 fi
 
-mkdir -p "${FIRSTUSERHOME}/.ssh"
+mkdir -p -- "${FIRSTUSERHOME}/.ssh"
 # start from second element
 for key in "${keys[@]: 1}" ; do
     echo "key" >> "$FIRSTUSERHOME/.ssh/authorized_keys"

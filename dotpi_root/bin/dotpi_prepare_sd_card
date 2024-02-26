@@ -99,7 +99,7 @@ DOTPI_ROOT="${local_path}/.."
 source "${DOTPI_ROOT}/share/dotpi_init.bash"
 
 tmp_path="${project_path}/tmp"
-mkdir -p "$tmp_path"
+mkdir -p -- "$tmp_path"
 
 # self log
 log_file="${tmp_path}/${_dotpi_command}_$(date +"%Y%m%d-%H%M%S").log"
@@ -108,7 +108,7 @@ exec &> >(dotpi_log "$log_file")
 
 file_system_mirror="${tmp_path}/file-system"
 rm -rf "$file_system_mirror"
-mkdir -p "$file_system_mirror"
+mkdir -p -- "$file_system_mirror"
 
 echo "# file-system mirror: ${file_system_mirror}"
 
@@ -133,7 +133,7 @@ tar_options+=( '--no-xattrs' )
 
 source_path="$DOTPI_ROOT"
 destination_path="${file_system_mirror}/opt/dotpi"
-mkdir -p "$destination_path"
+mkdir -p -- "$destination_path"
 (set -o pipefail ; \
  cd -- "$source_path" && tar c "${tar_options[@]}" '.'  \
      | tar x -C "$destination_path") || {
@@ -145,11 +145,11 @@ mkdir -p "$destination_path"
 
 source_path="$project_path"
 destination_path="${file_system_mirror}/opt/dotpi/etc"
-mkdir -p "$destination_path"
+mkdir -p -- "$destination_path"
 source_file_path="${source_path}/configuration/dotpi_project.bash"
 destination_file_path="${destination_path}/dotpi_environment_project.bash"
 if [ -r "$source_file_path" ] ; then
-  cp "$source_file_path" "$destination_file_path"
+  cp -- "$source_file_path" "$destination_file_path"
 fi
 
 #### select instance
@@ -173,7 +173,7 @@ else
   echo " Please type instance number, or type enter for ${dotpi_instance_number}"
   echo -n ' '
 
-  read user_instance_number
+  read -r user_instance_number
   if [ -n "$user_instance_number" ] ; then
     dotpi_instance_number="${user_instance_number}"
   fi
@@ -190,12 +190,12 @@ dotpi_instance_number="$((10#${dotpi_instance_number}))"
 
 source_path="$project_path"
 destination_path="${file_system_mirror}/opt/dotpi/etc"
-mkdir -p "$destination_path"
+mkdir -p -- "$destination_path"
 source_file_path="${source_path}/configuration/dotpi_instance_$(printf "%03d" "${dotpi_instance_number}").bash"
 destination_file_path="${destination_path}/dotpi_environment_instance.bash"
 if [ -r "$source_file_path" ] ; then
   dotpi_echo_info "Using instance-specific coonfiguration ${source_file_path}"
-  cp "$source_file_path" "$destination_file_path"
+  cp -- "$source_file_path" "$destination_file_path"
 fi
 
 
@@ -260,7 +260,7 @@ fi
 
 source_path="${project_path}/secrets/ssh"
 destination_path="${DOTPI_ROOT}/etc/ssh"
-mkdir -p "$destination_path"
+mkdir -p -- "$destination_path"
 if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
   (set -o pipefail ; \
    cd -- "$source_path" && tar c "${tar_options[@]}" *.pub \
@@ -274,7 +274,7 @@ fi
 
 source_path="${project_path}/secrets/network"
 destination_path="${DOTPI_ROOT}/etc/network"
-mkdir -p "$destination_path"
+mkdir -p -- "$destination_path"
 if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
   (set -o pipefail ; \
    cd -- "$source_path" && tar c "${tar_options[@]}" *.nmconnection \
@@ -348,7 +348,7 @@ config_filename='config.txt'
 config_file="${project}/${config_filename}"
 destination_path="${DOTPI_ROOT}/etc"
 
-mkdir -p "$destination_path"
+mkdir -p -- "$destination_path"
 
 if [ -r "$config_file" ] ; then
   echo "using project config file ${config_file}"
@@ -357,7 +357,7 @@ else
   echo "# copy config file from imager"
 fi
 
-cp "$config_file" "$destination_path"
+cp -- "$config_file" "$destination_path"
 
 config_file="${destination_path}/${config_filename}"
 
@@ -397,7 +397,7 @@ dotpi_audio_device_select --model "$dotpi_audio_device" --config "$config_file"
 # copy configuration files from project for over-rides
 source_path="${project_path}/configuration/jackd"
 destination_path="${DOTPI_ROOT}/share/jackd"
-mkdir -p "$destination_path"
+mkdir -p -- "$destination_path"
 if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
   (set -o pipefail ; \
    cd -- "$source_path" && tar c "${tar_options[@]}" '.' \
@@ -413,7 +413,7 @@ fi
 destination_filename="imager_${config_filename}"
 
 # install config.txt to /boot to be ready for first run
-cp "$config_file" "$bootfs_path"
+cp -- "$config_file" "$bootfs_path"
 
 ######### configure first run
 
@@ -427,16 +427,16 @@ if [ -f "$source_file_path" ] ; then
 
   # keep a copy on bootfs
   destination_path="${bootfs_path}/dotpi"
-  mkdir -p "$destination_path"
+  mkdir -p -- "$destination_path"
 
   if [ -r "${destination_path}/${destination_filename}" ] ; then
      dotpi_echo_warning "Keep existing imager first-run script: ${destination_path}/${destination_filename}"
   else
-     cp "$source_file_path" "${destination_path}/${destination_filename}"
+     cp -- "$source_file_path" "${destination_path}/${destination_filename}"
 
      destination_path="${DOTPI_ROOT}/etc"
-     mkdir -p "$destination_path"
-     cp "$source_file_path" "${destination_path}/${destination_filename}"
+     mkdir -p -- "$destination_path"
+     cp -- "$source_file_path" "${destination_path}/${destination_filename}"
   fi
 
 fi
@@ -483,7 +483,7 @@ echo "# archive mirror"
 
 source_path="$file_system_mirror"
 destination_path="${bootfs_path}/dotpi"
-mkdir -p "$destination_path"
+mkdir -p -- "$destination_path"
 
 # create archive for installing, later
 # this overcomes the limitiations of the FAT32 boot volume
