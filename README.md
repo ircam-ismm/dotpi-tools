@@ -331,3 +331,5 @@ Please do report them.
     - [ ] jackd configuration
   - [ ] make pair of ssh keys
   - [ ] wifi/network configuration
+  
+- [ ] share dotpi_manager_update w/ install
