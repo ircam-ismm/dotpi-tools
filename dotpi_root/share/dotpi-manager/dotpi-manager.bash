@@ -22,8 +22,7 @@ dotpi_manager_update() (
 
   git pull origin main
   rm -rf node_modules
-  npm install --loglevel verbose
-  npm run build
+  npm install --omit=dev --loglevel verbose
 
   "${command_prefix[@]}" start "${service_name}"
 )
