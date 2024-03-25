@@ -110,11 +110,9 @@ if [[ "$dotpi_manager_install" == "yes" ]]; then
       dotpi_echo_error "could not change directory to runtime: ${destination_path}"
       exit 1
     }
-    npm install --loglevel verbose
-    npm run build
+    npm install --omit=dev --loglevel verbose
   )
   sudo dotpi service_install --user "${DOTPI_ROOT}/share/dotpi-manager/dotpi-manager.service"
-
 fi
 
 dotpi_echo_info "System prepared"

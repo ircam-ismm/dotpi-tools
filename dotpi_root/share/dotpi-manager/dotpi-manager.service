@@ -5,7 +5,7 @@ After=network-online.target jackd.service
 
 [Service]
 Type=exec
-ExecStart=/usr/bin/node /opt/dotpi/share/dotpi-manager/runtime/.build/clients/thing/index.js
+ExecStart=/usr/bin/npm run dotpi
 WorkingDirectory=/opt/dotpi/share/dotpi-manager/runtime
 StandardOutput=inherit
 StandardError=inherit
