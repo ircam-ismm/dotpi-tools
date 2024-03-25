@@ -19,7 +19,7 @@ Do not forget to install the pair SSH keys from `projects/example-dev/secrets/ss
 - Select OS (operating system)
   - Choose `Rapsberry Pi OS (other)`
   - Choose `Rapsberry Pi OS Lite (64-bit)`
-  - For Raspberry Pi 3, you may need to separately download a non-legacy OS, and choose `Use custom`
+  - For Raspberry Pi 3, you may need to select `No filtering` or separately download a non-legacy OS, and choose `Use custom`.
 - Insert a new SD card in your computer
 - Select it as the storage
 
@@ -315,6 +315,8 @@ file $(which file)
 ## Known bugs
 
 Please do report them.
+
+- [ ] do not allow `.` character in project, it generates an invalid hostname.
 
 ## Todo
 
