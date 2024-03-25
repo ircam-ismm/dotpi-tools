@@ -9,8 +9,9 @@ dotpi_manager_update() (
 
   dotpi echo_info "Log of dotpi-manager update: ${log_file}"
 
-  cd -- "${DOTPI_ROOT}/share/dotpi-manager/runtime" || {
-    dotpi_echo_error "dotpi-manager: could not change directory to runtime: ${DOTPI_ROOT}/share/dotpi-manager/runtime"
+  destination="${DOTPI_ROOT}/share/dotpi-manager/runtime"
+  cd -- "$destination" || {
+    dotpi_echo_error "dotpi-manager: could not change directory to runtime: ${destination}"
     return 1
   }
 
