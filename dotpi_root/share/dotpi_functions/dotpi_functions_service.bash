@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Usage: dotpi_service_install [--user] <service_file>
+# note: <service_file> is a path
 dotpi_service_install() (
   _dotpi_command="$(basename -- "${FUNCNAME[0]:-"$0"}")"
 
@@ -56,6 +58,7 @@ dotpi_service_install() (
   "${command_prefix[@]}" "${command_options[@]}" start "${service_name}"
 )
 
+# Usage: dotpi_service_uninstall [--user] <service_name>
 dotpi_service_uninstall() (
   _dotpi_command="$(basename -- "${FUNCNAME[0]:-"$0"}")"
 

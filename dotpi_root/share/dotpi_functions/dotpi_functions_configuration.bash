@@ -180,7 +180,7 @@ $_dotpi_configuration_pattern_trailing\
 
         return 0
 )
-
+# comment a key in a configuration file
 dotpi_configuration_comment() (
   # sub-shell to keep everything local (functions and variables)
 
@@ -214,6 +214,7 @@ dotpi_configuration_comment() (
   return $?
 )
 
+# write a value corresponding to a key in a configuration file
 dotpi_configuration_write() (
   # sub-shell to keep everything local (functions and variables)
 
@@ -282,6 +283,7 @@ dotpi_configuration_write() (
   return $?
 )
 
+# read a value corresponfing to a key in a configuration file
 dotpi_configuration_read() (
   # sub-shell to keep everything local (functions and variables)
 
@@ -331,6 +333,7 @@ dotpi_configuration_read() (
   fi
 )
 
+# find a key in a configuration file
 dotpi_configuration_find() (
   # sub-shell to keep everything local (functions and variables)
 
@@ -365,6 +368,7 @@ dotpi_configuration_find() (
   return $return_value
 )
 
+# delete a key in a configuration file
 dotpi_configuration_delete() (
   # sub-shell to keep everything local (functions and variables)
 
@@ -405,6 +409,7 @@ dotpi_configuration_delete() (
   return $?
 )
 
+# replace a region in a configuration file
 dotpi_configuration_replace_region() {
   command_name="${FUNCNAME[0]}"
   if (( ${#} < 3 )) ; then

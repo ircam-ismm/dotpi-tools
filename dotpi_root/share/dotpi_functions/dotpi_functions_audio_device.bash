@@ -63,12 +63,14 @@ dotpi_audio_device_model_normalise() {
   echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
+# Usage: sudo dotpi audio_device_select --model <model> [--config <config_file_path>]
+# if --config is not provided, it will use the system default config file
 dotpi_audio_device_select() (
   # sub-shell to keep everything local (functions and variables)
 
   _dotpi_command="$(basename -- "${FUNCNAME[0]:-"$0"}")"
   _dotpi_usage() {
-    echo "Usage: ${_dotpi_command} --model <model> --config <config_file_path>"
+    echo "Usage: ${_dotpi_command} --model <model> [--config <config_file_path>]"
   }
 
   # Initialize all the option variables.
@@ -334,6 +336,7 @@ _dotpi_audio_device_volume_set_alsa() (
                             --value "$volume"
 )
 
+# set and store volume for the current audio device
 dotpi_audio_device_volume_set() (
   volume="$1"
 
@@ -393,6 +396,7 @@ dotpi_audio_device_volume_set() (
   esac
 )
 
+# restore volume for the current audio device
 dotpi_audio_device_volume_init() (
   if [[ -z "$dotpi_audio_volume" ]] ; then
     dotpi_echo_warning "dotpi_audio_volume not set, keeping default volume"

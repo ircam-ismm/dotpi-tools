@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# echo 'raspberry' or 'other'
 dotpi_system_is_raspberry_pi() (
   model='other'
 
@@ -42,6 +43,7 @@ dotpi_system_get_bootfs_path() (
   echo "$local_path"
 )
 
+# usage: sudo dotpi system_set_hostname <new_hostname>
 dotpi_system_set_hostname() (
   if [ -z "$DOTPI_ROOT" ] ; then
     echo "DOTPI_ROOT undefined" >&2
@@ -156,6 +158,9 @@ SHELL=/bin/bash
 EOF
 
 )
+
+# Usage: sudo dotpi system_update
+# equivalent of apt-get update and apt-get dist-upgrade
 
 dotpi_system_update() {
   _dotpi_command="$(basename -- "${FUNCNAME[0]:-"$0"}")"

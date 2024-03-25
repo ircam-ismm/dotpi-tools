@@ -6,7 +6,8 @@ _dotpi_audio_bluetooth_controller='hci0'
 if (( "${BASH_VERSINFO:-0}" < 5 )) ; then
   return 0;
 fi
-
+# connect an audio bluetooth device, corresponding to dotpi_audio_bluetooth_mac,
+# using bluetoothctl,
 dotpi_audio_bluetooth_destination_connect() (
   destination_mac="$dotpi_audio_bluetooth_mac"
 
@@ -142,6 +143,7 @@ _dotpi_audio_bluetooth_destination_start_ue() (
 
 )
 
+# turn audio device on, and set volume
 dotpi_audio_bluetooth_destination_start() (
   model_normalised="$(dotpi_audio_device_model_normalise "$dotpi_audio_device")"
 
@@ -194,6 +196,7 @@ _dotpi_audio_bluetooth_destination_stop_ue() (
   done <&${btctl_process[0]}
 )
 
+# turn off audio device
 dotpi_audio_bluetooth_destination_stop() (
   model_normalised="$(dotpi_audio_device_model_normalise "$dotpi_audio_device")"
 
@@ -211,6 +214,7 @@ dotpi_audio_bluetooth_destination_stop() (
     esac
 )
 
+# set and save volume
 dotpi_audio_bluetooth_destination_volume_set() (
   destination_volume="$1"
   destination_device="dev_${dotpi_audio_bluetooth_mac//:/_}"
@@ -249,6 +253,7 @@ dotpi_audio_bluetooth_destination_volume_set() (
 
 )
 
+# set volume to default
 dotpi_audio_bluetooth_destination_volume_init() (
   if [[ -z "$dotpi_audio_volume" ]] ; then
     dotpi_echo_warning "dotpi_audio_volume not set, keeping default volume"

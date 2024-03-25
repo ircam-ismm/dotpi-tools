@@ -70,6 +70,7 @@ _dotpi_connection_get_options() {
 
 }
 
+# write key value pair to an .nmconnection file
 dotpi_connection_write() (
   # sub-shell to keep everything local (functions and variables)
 
@@ -110,6 +111,7 @@ dotpi_connection_write() (
   return $?
 )
 
+# read a value corresponding to a key in an .nmconnection file
 dotpi_connection_read() (
   # sub-shell to keep everything local (functions and variables)
 
@@ -153,6 +155,7 @@ dotpi_connection_read() (
   return $?
 )
 
+# delete a key in an .nmconnection file
 dotpi_connection_delete() (
   # sub-shell to keep everything local (functions and variables)
 
