@@ -9,6 +9,6 @@ while true ; do
             sudo systemctl restart "$service"
         }
     fi
-    sleep 10
+    sleep 60
 done
 
