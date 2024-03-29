@@ -11,3 +11,4 @@ done
 
 # continue on error
 dotpi_source_if_available "${DOTPI_ROOT}/share/dotpi-manager/dotpi-manager.bash" || true
+dotpi_source_if_available "${DOTPI_ROOT}/share/dotpi-led/dotpi-led.bash" || true
