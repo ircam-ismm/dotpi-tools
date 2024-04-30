@@ -98,21 +98,29 @@ sudo dotpi service_install "${DOTPI_ROOT}/share/jackd/jackd.service"
 
 ############## dotpi-manager
 
-if [[ "$dotpi_manager_install" == "yes" ]]; then
+if [[ "$dotpi_manager_install" == "yes" ]]; then (
+  destination="${DOTPI_ROOT}/share/dotpi-manager"
+  sudo mkdir -p -- "$destination" || {
+    dotpi echo_error "dotpi-manager: could not create directory: ${destination}"
+    return 1
+  }
+  cd -- "$destination" || {
+    dotpi echo_error "dotpi-manager: could not change to runtime: ${destination}"
+    return 1
+  }
 
-  dotpi echo_info "Install dotpi manager"
-  destination_path="${DOTPI_ROOT}/share/dotpi-manager/runtime"
-  sudo mkdir -p "$destination_path"
-  sudo chown "$FIRSTUSER" -R "$destination_path"
-  git clone --depth=1 https://github.com/ircam-ismm/dotpi-manager.git "$destination_path"
-  (
-    cd -- "$destination_path" || {
-      dotpi_echo_error "could not change directory to runtime: ${destination_path}"
-      exit 1
-    }
-    npm install --omit=dev --loglevel verbose
-  )
-  sudo dotpi service_install --user "${DOTPI_ROOT}/share/dotpi-manager/dotpi-manager.service"
-fi
+  destination_runtime="${destination}/runtime"
+  sudo rm -rf -- "$destination_runtime"
+  sudo git clone --depth=1 https://github.com/ircam-ismm/dotpi-manager.git "$destination_runtime" || {
+    dotpi echo_error "dotpi-manager: could not clone repository"
+    return 1
+  }
+  # bootstrap-install
+  sudo bash -c "\
+    source '${DOTPI_ROOT}/share/dotpi_init.bash' && \
+    source runtime/dotpi/dotpi-manager.bash && \
+    dotpi_manager_update\
+  "
+) fi
 
-dotpi_echo_info "System prepared"
+dotpi echo_info "System prepared"
