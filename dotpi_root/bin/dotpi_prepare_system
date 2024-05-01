@@ -119,7 +119,34 @@ if [[ "$dotpi_manager_install" == "yes" ]]; then (
   sudo bash -c "\
     source '${DOTPI_ROOT}/share/dotpi_init.bash' && \
     source runtime/dotpi/dotpi-manager.bash && \
-    dotpi_manager_update\
+    dotpi_manager_update \
+  "
+) fi
+
+############## dotpi-led
+
+if [[ "$dotpi_led_install" == "yes" ]]; then (
+  destination="${DOTPI_ROOT}/share/dotpi-led"
+  sudo mkdir -p -- "$destination" || {
+    dotpi echo_error "dotpi-led: could not create directory: ${destination}"
+    return 1
+  }
+  cd -- "$destination" || {
+    dotpi echo_error "dotpi-led: could not change to runtime: ${destination}"
+    return 1
+  }
+
+  destination_runtime="${destination}/runtime"
+  sudo rm -rf -- "$destination_runtime"
+  sudo git clone --depth=1 https://github.com/ismm/dotpi-led.git "$destination_runtime" || {
+    dotpi echo_error "dotpi-led: could not clone repository"
+    return 1
+  }
+  # bootstrap-install
+  sudo bash -c "\
+    source '${DOTPI_ROOT}/share/dotpi_init.bash' && \
+    source runtime/dotpi/dotpi-led.bash && \
+    dotpi_led_update \
   "
 ) fi
 

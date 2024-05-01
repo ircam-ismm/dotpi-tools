@@ -33,6 +33,10 @@ dotpi_prepare_system_automatic='yes'
 # install dotpi-manager service
 dotpi_manager_install='yes'
 
+# install dotpi-led service
+dotpi_led_install='no'
+dotpi_led_strip_configuration='default'
+
 # Let the user choose (lite or not)
 dotpi_apt_uninstall=()
 
