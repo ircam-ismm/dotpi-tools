@@ -138,7 +138,7 @@ if [[ "$dotpi_led_install" == "yes" ]]; then (
 
   destination_runtime="${destination}/runtime"
   sudo rm -rf -- "$destination_runtime"
-  sudo git clone --depth=1 https://github.com/ismm/dotpi-led.git "$destination_runtime" || {
+  sudo git clone --depth=1 https://github.com/ircam-ismm/dotpi-led.git "$destination_runtime" || {
     dotpi echo_error "dotpi-led: could not clone repository"
     return 1
   }
