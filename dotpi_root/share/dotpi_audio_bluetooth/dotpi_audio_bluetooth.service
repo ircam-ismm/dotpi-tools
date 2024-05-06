@@ -1,6 +1,7 @@
 [Unit]
 Description=dotpi bluetooth audio daemon
-Requires=bluetooth.service bluealsa.service
+Requires=bluetooth.target
+After=bluetooth.target
 
 # TODO: stop on system stop
 
@@ -20,4 +21,3 @@ StartLimitBurst=0
 
 [Install]
 WantedBy=multi-user.target
-
