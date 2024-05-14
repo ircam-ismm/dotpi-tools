@@ -24,7 +24,10 @@ destination_descriptor="${dotpi_audio_bluetooth_mac//:/_}"
 # sudo dotpi audio_bluetooth_destination_stop
 
 dotpi echo_info "Starting audio bluetooth destination"
-sudo dotpi audio_bluetooth_destination_start
+while ! sudo dotpi audio_bluetooth_destination_start ; do
+    sleep 10
+    dotpi_echo_warning "Starting audio bluetooth destination again."
+done
 
 dotpi echo_info "Starting bluetoothctl monitor process"
 coproc btctl_process { bluetoothctl; }
@@ -43,7 +46,11 @@ while IFS= read -r output ; do
 
         sleep 2
 
-        sudo dotpi audio_bluetooth_destination_start
+        while ! sudo dotpi audio_bluetooth_destination_start ; do
+            sleep 10
+            dotpi_echo_warning "Starting audio bluetooth destination again."
+        done
+
     fi
 
     # if [[ "$status" == "init" ]] \

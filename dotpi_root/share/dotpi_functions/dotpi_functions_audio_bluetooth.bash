@@ -123,12 +123,41 @@ _dotpi_audio_bluetooth_destination_start_ue() (
   # test if already here
   echo 'transport.list' >&${btctl_process[1]}
 
-  gatttool \
+  timeout_duration=30
+  timeout "$timeout_duration" gatttool \
     --adapter "$_dotpi_audio_bluetooth_controller" \
     --device "${destination_mac}" \
     --char-write-req \
     --handle 0x0003 \
-    --value "${trusted_mac//:/}01"
+    --value "${trusted_mac//:/}01" || {
+      timeout_status="$?"
+      case "$timeout_status" in
+        '124')
+          timeout_message="time out"
+          ;;
+
+        '125')
+          timeout_message="failed"
+          ;;
+        '126')
+          timeout_message="cannot be invoked"
+          ;;
+        '127')
+          timeout_message="not found"
+          ;;
+        '137')
+          timeout_message="killed"
+          ;;
+        *)
+          timeout_message="exit status: ${timeout_status}"
+          ;;
+      esac
+      dotpi_echo_error "Unable to start ${dotpi_audio_device}: ${timeout_message}"
+      
+      return_value="$?"
+      kill ${btctl_process_PID}
+      return "$return_value"
+  }
 
   while IFS= read -r output ; do
     echo "$output" >&2
@@ -176,12 +205,41 @@ _dotpi_audio_bluetooth_destination_stop_ue() (
 
   # will trigger a connection, even if destination if off, for write request (BLE)
   # hence the [CHG] ... Connected: no
-  gatttool \
+  timeout_duration=30
+  timeout "$timeout_duration" gatttool \
     --adapter "$_dotpi_audio_bluetooth_controller" \
     --device "${destination_mac}" \
     --char-write-req \
     --handle 0x0003 \
-    --value "${trusted_mac//:/}02"
+    --value "${trusted_mac//:/}02" || {
+      timeout_status="$?"
+      case "$timeout_status" in
+        '124')
+          timeout_message="time out"
+          ;;
+
+        '125')
+          timeout_message="failed"
+          ;;
+        '126')
+          timeout_message="cannot be invoked"
+          ;;
+        '127')
+          timeout_message="not found"
+          ;;
+        '137')
+          timeout_message="killed"
+          ;;
+        *)
+          timeout_message="exit status: ${timeout_status}"
+          ;;
+      esac
+      dotpi_echo_error "Unable to stop ${dotpi_audio_device}: ${timeout_message}"
+
+      return_value="$?"
+      kill ${btctl_process_PID}
+      return "$return_value"
+  }
 
   while IFS= read -r output ; do
     echo "$output" >&2
