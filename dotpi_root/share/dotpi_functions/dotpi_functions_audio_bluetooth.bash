@@ -124,7 +124,9 @@ _dotpi_audio_bluetooth_destination_start_ue() (
   echo 'transport.list' >&${btctl_process[1]}
 
   timeout_duration=30
-  timeout "$timeout_duration" gatttool \
+  kill_timeout=10
+  kill_signal='KILL'
+  timeout --kill-after="$kill_timeout" --signal="$kill_signal" "$timeout_duration" gatttool \
     --adapter "$_dotpi_audio_bluetooth_controller" \
     --device "${destination_mac}" \
     --char-write-req \
@@ -153,23 +155,25 @@ _dotpi_audio_bluetooth_destination_start_ue() (
           ;;
       esac
       dotpi_echo_error "Unable to start ${dotpi_audio_device}: ${timeout_message}"
-      
-      return_value="$?"
+
       kill ${btctl_process_PID}
-      return "$return_value"
+      return "$timeout_status"
   }
 
-  while IFS= read -r output ; do
+  while IFS= read -t "$timeout_duration" -r output ; do
     echo "$output" >&2
 
     # Connected and transport volume available
     if [[ "$output" =~ [CHG].*Transport.*/org/bluez/.*dev_"${destination_descriptor}".*Volume ]] \
          || [[ "$output" =~ ^Transport.*/org/bluez/.*dev_"${destination_descriptor}" ]] ; then
       kill ${btctl_process_PID}
-      break
+      dotpi_echo_info "Destination started"
+      return 0
     fi
   done <&${btctl_process[0]}
 
+  dotpi_echo_error "Unable to start ${dotpi_audio_device}, despite no error"
+  return 99
 )
 
 # turn audio device on, and set volume
@@ -179,7 +183,11 @@ dotpi_audio_bluetooth_destination_start() (
   case "$model_normalised" in
 
     'ue boom 2'|'ue boom 3'|'ue megaboom 2'|'ue megaboom 3')
-      _dotpi_audio_bluetooth_destination_start_ue
+      _dotpi_audio_bluetooth_destination_start_ue || {
+        status="$?"
+        dotpi_echo_error "Unable to start ${dotpi_audio_device}"
+        return "$status"
+      }
       ;;
 
     *)
@@ -189,7 +197,11 @@ dotpi_audio_bluetooth_destination_start() (
 
   esac
 
-  dotpi_audio_bluetooth_destination_volume_init
+  dotpi_audio_bluetooth_destination_volume_init || {
+    status="$?"
+    dotpi_echo_error "Unable to set volume for ${dotpi_audio_device}"
+    return "$status"
+  }
 )
 
 
@@ -206,7 +218,9 @@ _dotpi_audio_bluetooth_destination_stop_ue() (
   # will trigger a connection, even if destination if off, for write request (BLE)
   # hence the [CHG] ... Connected: no
   timeout_duration=30
-  timeout "$timeout_duration" gatttool \
+  kill_timeout=10
+  kill_signal='KILL'
+  timeout --kill-after="$kill_timeout" --signal="$kill_signal" "$timeout_duration" gatttool \
     --adapter "$_dotpi_audio_bluetooth_controller" \
     --device "${destination_mac}" \
     --char-write-req \
@@ -236,12 +250,11 @@ _dotpi_audio_bluetooth_destination_stop_ue() (
       esac
       dotpi_echo_error "Unable to stop ${dotpi_audio_device}: ${timeout_message}"
 
-      return_value="$?"
       kill ${btctl_process_PID}
-      return "$return_value"
+      return "$timeout_status"
   }
 
-  while IFS= read -r output ; do
+  while IFS= read -t "$timeout_duration" -r output ; do
     echo "$output" >&2
 
     # destination disconnected
@@ -249,9 +262,14 @@ _dotpi_audio_bluetooth_destination_stop_ue() (
          || [[ "$output" =~ [CHG].*Device.*"$destination_mac".*Connected:.*no ]] ; then
 
       kill ${btctl_process_PID}
-      break
+
+      dotpi_echo_info "Destination stopped"
+      return 0
     fi
   done <&${btctl_process[0]}
+
+  dotpi_echo_error "Unable to stop ${dotpi_audio_device}, despite no error"
+  return 99
 )
 
 # turn off audio device
@@ -261,7 +279,11 @@ dotpi_audio_bluetooth_destination_stop() (
   case "$model_normalised" in
 
     'ue boom 2'|'ue boom 3'|'ue megaboom 2'|'ue megaboom 3')
-      _dotpi_audio_bluetooth_destination_stop_ue
+      _dotpi_audio_bluetooth_destination_stop_ue || {
+        status="$?"
+        dotpi_echo_error "Unable to stop ${dotpi_audio_device}"
+        return "$status"
+      }
       ;;
 
     *)
