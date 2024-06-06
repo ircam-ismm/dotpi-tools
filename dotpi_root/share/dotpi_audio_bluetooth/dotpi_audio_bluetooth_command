@@ -30,8 +30,13 @@ dotpi echo_info "Starting audio bluetooth destination"
 while ! dotpi audio_bluetooth_destination_start ; do
     sleep 10
 
-    dotpi echo_warning "Resetting bluetooth device."
-    hciconfig hci0 reset
+    # dotpi echo_warning "Resetting bluetooth device."
+    hciconfig hci0 reset || {
+      dotpi echo_error "Failed to reset bluetooth device."
+      dotpi echo_warning "Rebooting system."
+      sudo reboot
+    }
+    sleep 10
 
     dotpi echo_warning "Stopping audio bluetooth destination."
     dotpi audio_bluetooth_destination_stop
@@ -56,8 +61,14 @@ while IFS= read -r output ; do
         while ! dotpi audio_bluetooth_destination_start ; do
             sleep 10
 
-            dotpi echo_warning "Resetting bluetooth device."
-            hciconfig hci0 reset
+            # dotpi echo_warning "Resetting bluetooth device."
+            hciconfig hci0 reset || {
+              dotpi echo_error "Failed to reset bluetooth device."
+              dotpi echo_warning "Rebooting system."
+              sudo reboot
+            }
+
+            sleep 10
 
             dotpi echo_warning "Stopping audio bluetooth destination."
             dotpi audio_bluetooth_destination_stop
