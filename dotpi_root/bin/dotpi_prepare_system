@@ -85,16 +85,20 @@ sudo loginctl enable-linger "$FIRSTUSER"
 
 # restart when hostname is not resolved by mDNS
 sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_monitor.service"
+systemctl --user enable --now wireplumber.service
 
-############## jackd2
 
-dotpi echo_info "Install Jackd service"
+############## pipewire (and jackd compatibility)
+# over-ride calls to jackd
+# copy with prefix 0- to ensure it is loaded before default aarch64-linux-gnu.conf
+for f in /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf ; do
+  source_basename="$(basename "$f")"
+  destination_basename="0-${source_basename}"
+  sudo cp "$f" "/etc/ld.so.conf.d/${destination_basename}"
+done
+sudo ldconfig
 
-sudo dpkg-reconfigure -f noninteractive -p high jackd2
-
-dotpi echo_warning "You should close all active session windows for jackd high priority"
-
-sudo dotpi service_install "${DOTPI_ROOT}/share/jackd/jackd.service"
+systemctl --user enable --now wireplumber.service
 
 ############## dotpi-manager
 
