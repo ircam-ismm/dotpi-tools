@@ -85,8 +85,6 @@ sudo loginctl enable-linger "$FIRSTUSER"
 
 # restart when hostname is not resolved by mDNS
 sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_monitor.service"
-systemctl --user enable --now wireplumber.service
-
 
 ############## pipewire (and jackd compatibility)
 # over-ride calls to jackd
@@ -97,6 +95,14 @@ for f in /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf ; do
   sudo cp "$f" "/etc/ld.so.conf.d/${destination_basename}"
 done
 sudo ldconfig
+
+# ower-rides
+source_path="${DOTPI_ROOT}/share/wireplumber"
+destination_path='/usr/share/wireplumber'
+if [ -r "$source_path" ] ; then
+   sudo mkdir -p "$destination_path"
+   tar c -C "$source_path" '.' | sudo tar x -C "$destination_path"
+fi
 
 systemctl --user enable --now wireplumber.service
 
