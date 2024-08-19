@@ -30,16 +30,19 @@ dotpi echo_info "Starting audio bluetooth destination"
 while ! dotpi audio_bluetooth_destination_start ; do
     sleep 10
 
-    # dotpi echo_warning "Resetting bluetooth device."
-    hciconfig hci0 reset || {
-      dotpi echo_error "Failed to reset bluetooth device."
-      dotpi echo_warning "Rebooting system."
-      sudo reboot
-    }
-    sleep 10
+    # # dotpi echo_warning "Resetting bluetooth device."
+    # sudo hciconfig hci0 reset || {
+    #   dotpi echo_error "Failed to reset bluetooth device."
+    #   dotpi echo_warning "Rebooting system."
+    #   sudo reboot
+    # }
 
-    dotpi echo_warning "Stopping audio bluetooth destination."
-    dotpi audio_bluetooth_destination_stop
+    # sleep 30
+
+    # dotpi echo_warning "Stopping audio bluetooth destination."
+    # dotpi audio_bluetooth_destination_stop
+
+    # sleep 10
 
     dotpi echo_warning "Starting audio bluetooth destination again."
 done
@@ -61,17 +64,19 @@ while IFS= read -r output ; do
         while ! dotpi audio_bluetooth_destination_start ; do
             sleep 10
 
-            # dotpi echo_warning "Resetting bluetooth device."
-            hciconfig hci0 reset || {
-              dotpi echo_error "Failed to reset bluetooth device."
-              dotpi echo_warning "Rebooting system."
-              sudo reboot
-            }
+            # # dotpi echo_warning "Resetting bluetooth device."
+            # sudo hciconfig hci0 reset || {
+            #   dotpi echo_error "Failed to reset bluetooth device."
+            #   dotpi echo_warning "Rebooting system."
+            #   sudo reboot
+            # }
 
-            sleep 10
+            # sleep 30
 
-            dotpi echo_warning "Stopping audio bluetooth destination."
-            dotpi audio_bluetooth_destination_stop
+            # dotpi echo_warning "Stopping audio bluetooth destination."
+            # dotpi audio_bluetooth_destination_stop
+
+            # sleep 10
 
             dotpi echo_warning "Starting audio bluetooth destination again."
         done
@@ -94,7 +99,7 @@ while IFS= read -r output ; do
     #     status='init'
     #     dotpi echo_warning "status: $status"
 
-    #     sudo dotpi audio_bluetooth_destination_start
+    #     dotpi audio_bluetooth_destination_start
     # fi
 
 done <&${btctl_process[0]}
