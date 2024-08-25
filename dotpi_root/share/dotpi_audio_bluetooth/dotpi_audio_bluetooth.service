@@ -1,7 +1,7 @@
 [Unit]
 Description=dotpi bluetooth audio daemon
 Requires=bluetooth.target
-After=bluetooth.target
+After=bluetooth.target pipewire.service
 
 # TODO: stop on system stop
 
@@ -14,7 +14,7 @@ ExecStart=/opt/dotpi/share/dotpi_audio_bluetooth/dotpi_audio_bluetooth_command
 Restart=always
 
 # wait before restarting
-RestartSec=1s
+RestartSec=5s
 
 # Do not stop to try restarting service
 StartLimitBurst=0

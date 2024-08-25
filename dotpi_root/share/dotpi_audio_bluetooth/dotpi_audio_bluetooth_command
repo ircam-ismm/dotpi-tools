@@ -34,6 +34,12 @@ start_restart_reboot() (
       dotpi echo_warning "Starting audio bluetooth destination again."
   done
 
+  local_file="$(dotpi_readlink_follow "$0")"
+  local_path="$(dirname -- "$local_file")"
+  FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
+  # execute in a proper user session for pipewire to work
+  sudo machinectl shell "${FIRSTUSER}@" "${local_path}/dotpi_audio_pipewire_relink"
+
 )
 
 source /opt/dotpi/share/dotpi_init.bash
