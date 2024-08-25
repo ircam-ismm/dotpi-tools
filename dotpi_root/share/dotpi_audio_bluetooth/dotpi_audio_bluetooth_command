@@ -1,7 +1,40 @@
 #!/bin/bash
 
-local_file="$(dotpi readlink_follow "$0")"
-local_path="$(dirname -- "$local_file")"
+start_restart_reboot() (
+
+  (( trial_count = 0 ))
+  while ! dotpi audio_bluetooth_destination_start ; do
+      (( ++trial_count ))
+      dotpi echo_info "Try to start audio bluetooth: attempt ${trial_count}."
+
+      if (( trial_count >=12 )) ; then
+        dotpi echo_error "Failed to start audio bluetooth destination."
+        dotpi echo_warning "Rebooting system."
+        sudo reboot
+      fi
+
+      if (( trial_count == 8 )) ; then
+
+        sudo hciconfig hci0 reset || {
+          dotpi echo_error "Failed to reset bluetooth device."
+          dotpi echo_warning "Rebooting system."
+          sudo reboot
+        }
+
+        sleep 20
+      fi
+
+      if (( trial_count == 4  || trial_count == 8)) ; then
+        sleep 10
+        dotpi echo_warning "Stopping audio bluetooth destination."
+        dotpi audio_bluetooth_destination_stop
+      fi
+
+      sleep 10
+      dotpi echo_warning "Starting audio bluetooth destination again."
+  done
+
+)
 
 source /opt/dotpi/share/dotpi_init.bash
 
@@ -27,25 +60,8 @@ dotpi echo_info "Starting bluetoothctl monitor process"
 coproc btctl_process { bluetoothctl; }
 
 dotpi echo_info "Starting audio bluetooth destination"
-while ! dotpi audio_bluetooth_destination_start ; do
-    sleep 10
 
-    # # dotpi echo_warning "Resetting bluetooth device."
-    # sudo hciconfig hci0 reset || {
-    #   dotpi echo_error "Failed to reset bluetooth device."
-    #   dotpi echo_warning "Rebooting system."
-    #   sudo reboot
-    # }
-
-    # sleep 30
-
-    # dotpi echo_warning "Stopping audio bluetooth destination."
-    # dotpi audio_bluetooth_destination_stop
-
-    # sleep 10
-
-    dotpi echo_warning "Starting audio bluetooth destination again."
-done
+start_restart_reboot
 
 status='init'
 dotpi echo_warning "status: $status"
@@ -61,25 +77,7 @@ while IFS= read -r output ; do
 
         sleep 2
 
-        while ! dotpi audio_bluetooth_destination_start ; do
-            sleep 10
-
-            # # dotpi echo_warning "Resetting bluetooth device."
-            # sudo hciconfig hci0 reset || {
-            #   dotpi echo_error "Failed to reset bluetooth device."
-            #   dotpi echo_warning "Rebooting system."
-            #   sudo reboot
-            # }
-
-            # sleep 30
-
-            # dotpi echo_warning "Stopping audio bluetooth destination."
-            # dotpi audio_bluetooth_destination_stop
-
-            # sleep 10
-
-            dotpi echo_warning "Starting audio bluetooth destination again."
-        done
+        start_restart_reboot
 
     fi
 
