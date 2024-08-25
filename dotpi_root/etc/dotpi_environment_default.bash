@@ -41,6 +41,8 @@ dotpi_led_strip_configuration='default'
 dotpi_apt_uninstall=()
 
 dotpi_apt_install=(
+  'systemd-container' # machinectl
+
   'ca-certificates'
   'curl'
   'g++'
