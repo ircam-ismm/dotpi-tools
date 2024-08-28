@@ -8,6 +8,7 @@ const exec = util.promisify(require('node:child_process').exec);
 
 let pipewireData = null;
 async function pipewireRelink() {
+
   try {
     const { stdout, stderr } = await exec('pw-dump');
     // console.log('pw-dump stdout:', stdout);
@@ -19,7 +20,7 @@ async function pipewireRelink() {
 
   } catch (error) {
     console.error('Error with pw-dump:', error.message, error);
-    return;
+    process.exit(1);
   }
   const playbackNodes = pipewireData.filter( (e) => {
     return e.type === "PipeWire:Interface:Node"
@@ -31,7 +32,8 @@ async function pipewireRelink() {
 
   if (playbackNodes.length === 0) {
     console.warn('pipewireRelink: no playback node');
-    return;
+    // no error
+    process.exit(0);
   }
   // console.log('playbackNodes:', playbackNodes);
 
@@ -68,7 +70,8 @@ async function pipewireRelink() {
 
   if (outputNodes.length === 0) {
     console.warn('pipewireRelink: no output node');
-    return;
+    // no error
+    process.exit(0);
   }
   else if (outputNodes.length > 1) {
     console.warn('pipewireRelink: multiple output nodes');
@@ -116,6 +119,8 @@ async function pipewireRelink() {
       }
     }
   }
+
+  process.exit(0);
 
 }
 

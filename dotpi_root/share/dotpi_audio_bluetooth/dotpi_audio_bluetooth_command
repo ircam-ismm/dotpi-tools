@@ -38,7 +38,15 @@ start_restart_reboot() (
   local_path="$(dirname -- "$local_file")"
   FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
   # execute in a proper user session for pipewire to work
-  sudo machinectl shell "${FIRSTUSER}@" "${local_path}/dotpi_audio_pipewire_relink"
+  sudo machinectl shell "${FIRSTUSER}@" /bin/bash -c "(
+    trial_count = 0
+    while (( trial_count < 10 )) ; do
+      '${local_path}/dotpi_audio_pipewire_relink' && exit 0
+      sleep 3
+      (( ++trial_count ))
+    done
+    sudo reboot
+  )"
 
 )
 
