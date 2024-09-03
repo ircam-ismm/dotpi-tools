@@ -7,13 +7,25 @@ start_restart_reboot() (
       (( ++trial_count ))
       dotpi echo_info "Try to start audio bluetooth: attempt ${trial_count}."
 
-      if (( trial_count >=12 )) ; then
+      hci_up="$(hciconfig hci0 | grep 'UP' | wc -l)"
+      if (( $? != 0 ))  || (( hci_up == 0 )) ; then
+        dotpi echo_error "Bluetooth device is down."
+        dotpi echo_warning "Try to reset bluetooth device."
+        sudo hciconfig hci0 reset || {
+          dotpi echo_error "Failed to reset bluetooth device."
+          dotpi echo_warning "Rebooting system."
+          sudo reboot
+        }
+        sleep 20
+      fi
+
+      if (( trial_count >=9 )) ; then
         dotpi echo_error "Failed to start audio bluetooth destination."
         dotpi echo_warning "Rebooting system."
         sudo reboot
       fi
 
-      if (( trial_count == 8 )) ; then
+      if (( trial_count == 6 )) ; then
 
         sudo hciconfig hci0 reset || {
           dotpi echo_error "Failed to reset bluetooth device."
@@ -24,7 +36,7 @@ start_restart_reboot() (
         sleep 20
       fi
 
-      if (( trial_count == 4  || trial_count == 8)) ; then
+      if (( trial_count == 3  || trial_count == 6)) ; then
         sleep 10
         dotpi echo_warning "Stopping audio bluetooth destination."
         dotpi audio_bluetooth_destination_stop
@@ -39,7 +51,7 @@ start_restart_reboot() (
   FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
   # execute in a proper user session for pipewire to work
   sudo machinectl shell "${FIRSTUSER}@" /bin/bash -c "(
-    trial_count = 0
+    (( trial_count = 0 ))
     while (( trial_count < 10 )) ; do
       '${local_path}/dotpi_audio_pipewire_relink' && exit 0
       sleep 3
