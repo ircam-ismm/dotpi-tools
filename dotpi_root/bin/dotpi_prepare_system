@@ -160,4 +160,9 @@ if [[ "$dotpi_led_install" == "yes" ]]; then (
   "
 ) fi
 
-dotpi echo_info "System prepared"
+############## finalisation
+
+dotpi echo_info "System prepared. Rebooting..."
+
+sudo reboot
+
