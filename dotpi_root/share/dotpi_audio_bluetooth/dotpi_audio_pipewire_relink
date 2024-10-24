@@ -1,0 +1,132 @@
+#!/usr/bin/node
+
+// @TODO: use a proper pipewire lua script that automatically runs
+// whenever the default audio output is restored
+
+const util = require('node:util');
+const exec = util.promisify(require('node:child_process').exec);
+
+let pipewireData = null;
+async function pipewireRelink() {
+
+  try {
+    const { stdout, stderr } = await exec('pw-dump');
+    // console.log('pw-dump stdout:', stdout);
+    if(stderr) {
+      console.warn('pw-dump stderr:', stderr);
+    }
+
+    pipewireData = JSON.parse(stdout);
+
+  } catch (error) {
+    console.error('Error with pw-dump:', error.message, error);
+    process.exit(1);
+  }
+  const playbackNodes = pipewireData.filter( (e) => {
+    return e.type === "PipeWire:Interface:Node"
+      && e.info
+      && e.info.props
+      && typeof e.info.props['client.id'] !== 'undefined'
+      && e.info.props['media.type'] === 'Audio'
+  });
+
+  if (playbackNodes.length === 0) {
+    console.warn('pipewireRelink: no playback node');
+    // no error
+    process.exit(0);
+  }
+  // console.log('playbackNodes:', playbackNodes);
+
+  // @TODO: associate ports
+  // out_0 -> FL
+  // out_1 -> FR
+
+  // const playbackPorts = [];
+  // playbackNodes.forEach( (n) => {
+  //   const ports = pipewireData.filter( (e) => {
+  //     return e.type === "PipeWire:Interface:Port"
+  //       && e.info
+  //       && e.info.props
+  //       && e.info.props['node.id'] === n.id
+  //   });
+
+  //   playbackPorts.push(...ports);
+  // });
+
+
+  // if (playbackPorts.length === 0) {
+  //   console.error('pipewireRelink: no playback port');
+  //   return;
+  // }
+  // console.log('playbackPorts:', playbackPorts);
+
+  const outputNodes = pipewireData.filter( (e) => {
+    return e.type === "PipeWire:Interface:Node"
+      && e.info
+      // && e.info['max-input-ports'] > 1
+      && e.info.props
+      && e.info.props['media.class'] === 'Audio/Sink';
+  });
+
+  if (outputNodes.length === 0) {
+    console.warn('pipewireRelink: no output node');
+    // no error
+    process.exit(0);
+  }
+  else if (outputNodes.length > 1) {
+    console.warn('pipewireRelink: multiple output nodes');
+  }
+  // console.log('outputNodes:', outputNodes);
+
+  // const outputPorts = [];
+  // outputNodes.forEach( (n) => {
+  //   const ports = pipewireData.filter( (e) => {
+  //     return e.type === "PipeWire:Interface:Port"
+  //       && e.info
+  //       && e.info.props
+  //       && e.info.props['node.id'] === n.id
+  //       && typeof e.info.props['port.name'] === 'string'
+  //       && e.info.props['port.name'].startsWith('playback')
+  //   });
+
+  //   outputPorts.push(...ports);
+  // });
+
+
+  // if (outputPorts.length === 0) {
+  //   console.error('pipewireRelink: no playback port');
+  //   return;
+  // }
+  // console.log('outputPorts:', outputPorts);
+
+
+  for(let p = 0; p < playbackNodes.length; ++p) {
+    for(let o = 0; o < outputNodes.length; ++o) {
+      playbackIndex = playbackNodes[p].id;
+      outputIndex = outputNodes[o].id;
+      const commandString = `pw-link ${playbackIndex} ${outputIndex}`;
+      try {
+        console.log(commandString);
+        const {stdout, stderr} = await exec(commandString);
+        // console.log('pw-link stdout:', stdout);
+        if(stderr) {
+          console.warn('pw-link stderr:', stderr);
+        }
+      } catch(error) {
+        // error when linking nodes instead of ports: ignore
+        // console.error( `Error with ${commandString}:`, error.message, error);
+        continue;
+      }
+    }
+  }
+
+  process.exit(0);
+
+}
+
+pipewireRelink();
+
+
+
+
+

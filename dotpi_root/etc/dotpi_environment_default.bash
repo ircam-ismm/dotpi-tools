@@ -41,6 +41,8 @@ dotpi_led_strip_configuration='default'
 dotpi_apt_uninstall=()
 
 dotpi_apt_install=(
+  'systemd-container' # machinectl
+
   'ca-certificates'
   'curl'
   'g++'
@@ -48,8 +50,10 @@ dotpi_apt_install=(
   'git'
   'gnupg'
   'make'
-  'moreutils' # ts for time-stamp
-  'jackd2'
+
+  'pipewire'
+  'pipewire-audio'
+  'pipewire-jack'
 )
 
 dotpi_node_version='lts'
