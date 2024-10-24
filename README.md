@@ -320,7 +320,11 @@ Please do report them.
 
 ## Todo
 
-- [ ] option not to install dotpi-manager
+- [x] option not to install dotpi-manager
+
+- [ ] allow to use configuration files from project
+  - [ ] jack
+  - [ ] dotpi-led
 
 - [ ] dotpi-manager: dependency to jackd should be soft
   - [ ] allow client to run without audio
@@ -333,5 +337,5 @@ Please do report them.
     - [ ] jackd configuration
   - [ ] make pair of ssh keys
   - [ ] wifi/network configuration
-  
+
 - [ ] share dotpi_manager_update w/ install
