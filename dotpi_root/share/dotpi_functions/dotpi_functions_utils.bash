@@ -2,14 +2,7 @@
 
 dotpi_apt_get() {
   # fully automated, with default choices (yes to any questions)
-  # DEBIAN_FRONTEND=noninteractive
-  # -y
-
-  # quiet output
-  # -q
-
   # keep installation explicit, do not install recommended
-  # -no-install-recommends
 
   # wait for other apt-get processes (first or daily updates)
   # -1 is unlimited
@@ -21,11 +14,13 @@ dotpi_apt_get() {
 
   DEBIAN_FRONTEND=noninteractive \
                  apt-get \
-                 -y \
-                 -q \
-                 --no-install-recommends \
+                 -o APT::Get::Assume-Yes=true \
+                 -o APT::Install-Recommends=false \
+                 -o APT::Install-Suggests=false \
                  -o DPkg::Lock::Timeout=-1 \
                  -o Acquire::Retries=-1 \
+                 -o Acquire::Check-Valid-Until=false \
+                 -o Acquire::Check-Date=false \
                  "${@}"
 }
 
