@@ -50,6 +50,8 @@ dotpi_apt_install=(
   'git'
   'gnupg'
   'make'
+  'cmake'
+  'scons'
 
   'pipewire'
   'pipewire-audio'
