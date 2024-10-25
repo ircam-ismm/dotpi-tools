@@ -132,6 +132,29 @@ dotpi_audio_device_select() (
 
     ######## Specific devices
 
+    # Raspberry
+    # Cf. https://www.raspberrypi.com/documentation/accessories/audio.html#configuration
+
+    'raspberry pi dac pro')
+      dtoverlay=rpi-dacpro
+      _dotpi_audio_device_select_raspberry_pi
+      ;;
+
+    'raspberry pi dac+')
+      dtoverlay=rpi-dacplus
+      _dotpi_audio_device_select_raspberry_pi
+      ;;
+
+    'raspberry pi digiamp+')
+      dtoverlay=rpi-digiampplus
+      _dotpi_audio_device_select_raspberry_pi
+      ;;
+
+    'raspberry pi codec zero')
+      dtoverlay=rpi-codeczero
+      _dotpi_audio_device_select_raspberry_pi
+      ;;
+
     # HiFiBerry
     # Cf. https://www.hifiberry.com/docs/software/configuring-linux-3-18-x/
 
@@ -244,18 +267,36 @@ fi
 )
 
 _dotpi_audio_device_disable_all() (
-  dotpi_echo_info "Disabling all audio devices"
+  exception_family="$1"
 
-  _dotpi_audio_device_disable_headphones
-  _dotpi_audio_device_disable_hdmi
-  _dotpi_audio_device_disable_hifiberry
+  if [[ "$exception_family" = "" ]] ; then
+    dotpi_echo_info "Disabling all audio devices"
+  else
+    dotpi_echo_info "Disabling all audio devices except ${exception_family}"
+  fi
+
+  if [[ ! "$exception_family" = "headphones" ]] ; then
+    _dotpi_audio_device_disable_headphones
+  fi
+
+  if [[ ! "$exception_family" = "hdmi" ]] ; then
+    _dotpi_audio_device_disable_hdmi
+  fi
+
+  if [[ ! "$exception_family" = "raspberry_pi" ]] ; then
+    _dotpi_audio_device_disable_raspberry_pi
+  fi
+
+  if [[ ! "$exception_family" = "hifiberry" ]] ; then
+    _dotpi_audio_device_disable_hifiberry
+  fi
+
 )
 
 _dotpi_audio_device_select_headphones() (
   dotpi_echo_info "Installing Headphones (default) audio device"
 
-  _dotpi_audio_device_disable_hdmi
-  _dotpi_audio_device_disable_hifiberry
+  _dotpi_audio_device_disable_all headphones
 
   # un-comment  dtparam=audio as it must be set first
   # (setting at the end the the file fails)
@@ -266,19 +307,32 @@ _dotpi_audio_device_select_headphones() (
 )
 
 _dotpi_audio_device_select_bluetooth() (
-  _dotpi_audio_device_disable_headphones
-  _dotpi_audio_device_disable_hdmi
-  _dotpi_audio_device_disable_hifiberry
+  _dotpi_audio_device_disable_all bluetooth
 
   _dotpi_audio_device_jackd_set_configuration "bluetooth"
 )
 
+_dotpi_audio_device_select_raspberry_pi() (
+  dotpi_echo_info "Configuring Raspberry Pi audio device '${model}'"
+
+  _dotpi_audio_device_disable_all raspberry_pi
+
+  mkdir -p "$(dirname -- "$config_file")"
+  cat >> "$config_file" << EOF
+
+# dotpi: overlay for audio device '${model}'
+dtoverlay=${dtoverlay}
+
+EOF
+
+  _dotpi_audio_device_jackd_set_configuration "hifiberry"
+)
+
+
 _dotpi_audio_device_select_hifiberry() (
   dotpi_echo_info "Configuring HiFiBerry audio device '${model}'"
 
-  _dotpi_audio_device_disable_headphones
-  _dotpi_audio_device_disable_hdmi
-  _dotpi_audio_device_disable_hifiberry
+  _dotpi_audio_device_disable_all hifiberry
 
   mkdir -p "$(dirname -- "$config_file")"
   cat >> "$config_file" << EOF
@@ -292,11 +346,13 @@ EOF
 )
 
 _dotpi_audio_device_disable_headphones() (
+  dotpi_echo_info "Disabling headphones"
   # disable internal audio device
   dotpi_configuration_comment --file "$config_file" --key 'dtparam=audio'
 )
 
 _dotpi_audio_device_disable_hdmi() (
+  dotpi_echo_info "Disabling HDMI audio"
   # disable HDMI audio
 
   # new systems
@@ -308,7 +364,17 @@ _dotpi_audio_device_disable_hdmi() (
   perl -pe "s/${pattern}/"'${1}${2},audio=off/' -i -- "$config_file"
 )
 
+_dotpi_audio_device_disable_raspberry_pi() (
+  dotpi_echo_info "Disabling Raspberry Pi audio"
+
+  # disable hifiberry
+  pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=rpi-")"
+  perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i -- "$config_file"
+)
+
 _dotpi_audio_device_disable_hifiberry() (
+  dotpi_echo_info "Disabling HiFiBerry audio"
+
   # disable hifiberry
   pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=hifiberry-")"
   perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i -- "$config_file"
