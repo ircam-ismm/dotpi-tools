@@ -9,3 +9,5 @@ tmp/
 
 projects/
 !projects/example-*
+
+node_modules
