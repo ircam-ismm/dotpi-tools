@@ -9,7 +9,7 @@
   ],
   "type": "module",
   "bin": {
-    "dotpi-tools": "dotpi-tools.js",
+    "dotpi-tools": "dotpi-tools.js"
   },
   "homepage": "https://github.com/ircam-ismm/dotpi-install",
   "scripts": {
