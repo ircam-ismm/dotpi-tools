@@ -1,0 +1,25 @@
+[connection]
+id=${d.wifiId}
+type=wifi
+# do not use external AP by default
+autoconnect=true
+interface-name=wlan0
+
+[wifi]
+mode=ap
+ssid=${d.wifiSsid}
+# disable power management
+powersave=2
+
+[wifi-security]
+key-mgmt=wpa-psk
+psk=${d.wifiPsk}
+
+[ipv4]
+method=shared
+
+[ipv6]
+addr-gen-mode=default
+method=link-local
+
+[proxy]

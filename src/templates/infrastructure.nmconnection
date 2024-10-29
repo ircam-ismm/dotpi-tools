@@ -1,0 +1,29 @@
+[connection]
+id=${d.wifiId}
+type=wifi
+interface-name=wlan0
+autoconnect-priority=${d.wifiPriority}
+# always retry to connect
+autoconnect-retries=0
+# always retry to authenticate
+auth-retries=0
+
+[wifi]
+mode=infrastructure
+ssid=${d.wifiSsid}
+# disable power management
+powersave=2
+# band=a
+
+[wifi-security]
+key-mgmt=wpa-psk
+psk=${d.wifiPsk}
+
+[ipv4]
+method=auto
+
+[ipv6]
+addr-gen-mode=default
+method=link-local
+
+[proxy]
