@@ -103,14 +103,14 @@ mkdir -p -- "$tmp_path"
 
 # self log
 log_file="${tmp_path}/${_dotpi_command}_$(date +"%Y%m%d-%H%M%S").log"
-dotpi_echo_info "Log of this command is here: ${log_file}"
+dotpi_echo_info "Log file: ${log_file}"
 exec &> >(dotpi_log "$log_file")
 
 file_system_mirror="${tmp_path}/file-system"
 rm -rf "$file_system_mirror"
 mkdir -p -- "$file_system_mirror"
 
-echo "# file-system mirror: ${file_system_mirror}"
+dotpi_echo_info "Filesystem mirror: ${file_system_mirror}"
 
 tar_options=()
 while read pattern ; do
@@ -231,7 +231,7 @@ if (( $? != 0 )) ; then
   dotpi_echo_error "Bad dotpi_instance_number: ${dotpi_instance_number}"
   exit 1
 fi
-dotpi_echo_info "hostname is ${dotpi_instance_hostname}"
+dotpi_echo_info "Instance hostname: ${dotpi_instance_hostname}"
 
 destination_file="${DOTPI_ROOT}/etc/dotpi_environment_instance.bash"
 dotpi_configuration_write --file "$destination_file" --key 'dotpi_instance_number' --value "$dotpi_instance_number"
@@ -288,7 +288,7 @@ fi
 # update connections in DOTPI_ROOT
 
 if ! $(wpa_passphrase test 12345678 > /dev/null 2>&1) ; then
-  dotpi_echo_warning "wpa_passphrase is needed to salt passwords."
+  dotpi_echo_warning "Network password won't be salted, 'wpa_passphrase' is needed to salt passwords."
 else
 
   for file in "${destination_path}"/*.nmconnection ; do
@@ -317,7 +317,7 @@ if [[ "$(uname)" != "Darwin" ]] ; then
   echo "############################################################"
   echo ""
   echo " This script is for MacOS (Darwin) only."
-  echo " Please adapt it for you environment and send you feedback."
+  echo " Please adapt it for your environment and send us feedback."
   echo ""
   echo "############################################################"
   echo ""
