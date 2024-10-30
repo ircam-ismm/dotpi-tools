@@ -146,7 +146,7 @@ mkdir -p -- "$destination_path"
 source_path="$project_path"
 destination_path="${file_system_mirror}/opt/dotpi/etc"
 mkdir -p -- "$destination_path"
-source_file_path="${source_path}/configuration/dotpi_project.bash"
+source_file_path="${source_path}/dotpi_project.bash"
 destination_file_path="${destination_path}/dotpi_environment_project.bash"
 if [ -r "$source_file_path" ] ; then
   cp -- "$source_file_path" "$destination_file_path"
@@ -191,7 +191,7 @@ dotpi_instance_number="$((10#${dotpi_instance_number}))"
 source_path="$project_path"
 destination_path="${file_system_mirror}/opt/dotpi/etc"
 mkdir -p -- "$destination_path"
-source_file_path="${source_path}/configuration/dotpi_instance_$(printf "%03d" "${dotpi_instance_number}").bash"
+source_file_path="${source_path}/dotpi_instance_$(printf "%03d" "${dotpi_instance_number}").bash"
 destination_file_path="${destination_path}/dotpi_environment_instance.bash"
 if [ -r "$source_file_path" ] ; then
   dotpi_echo_info "Using instance-specific coonfiguration ${source_file_path}"
@@ -222,7 +222,7 @@ fi
 
 if [ -z "$dotpi_hostname_prefix" ] ; then
   dotpi_echo_error "Bad dotpi_hostname_prefix: ${dotpi_hostname_prefix}"
-  echo "Check ${project_path}/configuration/dotpi_project.bash"
+  echo "Check ${project_path}/dotpi_project.bash"
   exit 1
 fi
 
@@ -240,7 +240,7 @@ dotpi_configuration_write --file "$destination_file" --key 'dotpi_instance_hostn
 
 ### secrets for password
 
-source_file="${project_path}/secrets/dotpi_secrets.bash"
+source_file="${project_path}/dotpi_secrets.bash"
 destination_file="${DOTPI_ROOT}/etc/dotpi_environment_project.bash"
 if ! [ -r "$source_file" ] ; then
   dotpi_echo_error "unable to read secrets file ${source_file}"
@@ -259,7 +259,7 @@ fi
 
 ### secrets for ssh public keys
 
-source_path="${project_path}/secrets/ssh"
+source_path="${project_path}/ssh"
 destination_path="${DOTPI_ROOT}/etc/ssh"
 mkdir -p -- "$destination_path"
 if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
@@ -273,7 +273,7 @@ fi
 
 ### secrets for NetworkManager connections from project
 
-source_path="${project_path}/secrets/network"
+source_path="${project_path}/network"
 destination_path="${DOTPI_ROOT}/etc/network"
 mkdir -p -- "$destination_path"
 if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
@@ -396,7 +396,7 @@ fi
 dotpi_audio_device_select --model "$dotpi_audio_device" --config "$config_file"
 
 # copy configuration files from project for over-rides
-source_path="${project_path}/configuration/jackd"
+source_path="${project_path}/jackd"
 destination_path="${DOTPI_ROOT}/share/jackd"
 mkdir -p -- "$destination_path"
 if [ -d "$source_path" ] && [ -r "$source_path" ] ; then

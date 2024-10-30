@@ -12,29 +12,19 @@ import {
   confirm,
 } from './utils.js';
 
-export async function configureHost(projectName = null) {
-
-  const test = await prompts({
-    type: 'text',
-    name: 'projectName',
-    message: 'Select the project you want to configure on your machine:',
-  }, { onCancel });
-
-  if (projectName === null) {
-    const entries = fs.readdirSync(filemap.projectsDir);
-    const projects = entries.filter(entry => {
-      return fs.statSync(path.join(filemap.projectsDir, entry)).isDirectory();
-    });
-
-    const answer = await prompts({
-      type: 'select',
-      name: 'projectName',
-      message: 'Select the project you want to configure on your machine:',
-      choices: projects.map(p => ({ title: p, value: p })),
-    }, { onCancel });
-
-    projectName = answer.projectName;
+export async function configureHost(projectPath = null) {
+  // This can be called programmaticaly
+  if (projectPath === null) {
+    if (isDotpiProject(CWD)) {
+      projectPath = CWD;
+    } else {
+      const awswers = await chooseProject(CWD);
+      projectPath = answers.projectPath;
+    }
   }
+
+  console.log(projectPath);
+  return;
 
   console.log(chalk.yellow(`
 To configure your machine for the "${projectName}" project, this script will:

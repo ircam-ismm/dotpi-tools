@@ -1,5 +1,5 @@
 {
-  "name": "dotpi-install",
+  "name": "@dotpi/tools",
   "version": "1.0.0",
   "description": "Set of install script for confugurin dotpi on Raspberry Pi",
   "author": "Jean-Philippe Lambert",
@@ -9,7 +9,7 @@
   ],
   "type": "module",
   "bin": {
-    "dotpi-tools": "dotpi-tools.js"
+    "dotpi-tools": "./dotpi-tools.js"
   },
   "homepage": "https://github.com/ircam-ismm/dotpi-install",
   "scripts": {

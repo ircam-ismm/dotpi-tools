@@ -14,7 +14,7 @@ dotpi_hostname_prefix='dotpi'
 
 dotpi_user='pi'
 
-# no default password: set `dotpi_password` in <project>/secrets/dotpi_secrets.bash
+# no default password: set `dotpi_password` in <project>/dotpi_secrets.bash
 dotpi_password=
 
 # no default key

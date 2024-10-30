@@ -9,7 +9,7 @@ import chalk from 'chalk';
 import {
   PATH_DOTPI_TMP_BASH,
   PATH_DOTPI_PREPARE_SD_CARD_BASH,
-  PATH_PROJECTS_DIRECTORY,
+  CWD,
 } from './constants.js';
 import {
   title,
@@ -26,8 +26,8 @@ export default async function installRpi(mocks = null) {
   }
 
   // get list of projects
-  const projects = fs.readdirSync(PATH_PROJECTS_DIRECTORY)
-    .filter(f => fs.statSync(path.join(PATH_PROJECTS_DIRECTORY, f)).isDirectory());
+  const projects = fs.readdirSync(CWD)
+    .filter(f => fs.statSync(path.join(CWD, f)).isDirectory());
 
   const { projectName } = await prompts({
     type: 'select',
@@ -37,7 +37,7 @@ export default async function installRpi(mocks = null) {
   }, { onCancel });
 
   // find last instance number as stored by the shell script
-  const projectPath = path.join(PATH_PROJECTS_DIRECTORY, projectName);
+  const projectPath = path.join(CWD, projectName);
   const dotpiTmpFile = path.join(projectPath, PATH_DOTPI_TMP_BASH);
   const nextInstanceNumber = readBashVariable('dotpi_instance_number', dotpiTmpFile) || 1;
 

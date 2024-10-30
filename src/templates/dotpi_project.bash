@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Wizard version - @todo confirm naming
-dotpi_install_tools_version='${d.version}'
+# @dotpi/tools version
+dotpi_tools_version='${d.version}'
 
 # Project name
 dotpi_project_name='${d.projectName}'

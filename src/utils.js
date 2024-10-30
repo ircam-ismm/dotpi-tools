@@ -8,19 +8,20 @@ import chalk from 'chalk';
 import compile from 'template-literal';
 
 import {
+  LIB_ROOT,
+  CWD,
   PATH_DOTPI_INIT_BASH,
+  PATH_DOTPI_FILE,
   PATH_TEMPLATE_DIRECTORY,
 } from './constants.js';
 
 export const packageVersion = () => {
-  const pkg = JSON.parse(fs.readFileSync('package.json'));
+  const pkg = JSON.parse(fs.readFileSync(path.join(LIB_ROOT, 'package.json')));
   return pkg.version;
 }
 
-//
-
 export function greetings() {
-  const pkg = JSON.parse(fs.readFileSync('package.json'));
+  const pkg = JSON.parse(fs.readFileSync(path.join(LIB_ROOT, 'package.json')));
   const homepage = pkg.homepage;
 
   console.log(chalk.grey(`[dotpi#v${packageVersion()}]`));
@@ -58,6 +59,16 @@ export function renderTemplate(templatePath, data = {}) {
   const render = compile(template);
 
   return render(data);
+}
+
+export function isDotpiProject(pathname = CWD) {
+  const dotpiFile = path.join(pathname, PATH_DOTPI_FILE);
+  fs.statSync(pathname).isDirectory() && fs.existsSync(dotpiFile)
+}
+
+export function listDotpiProjects(pathname = CWD) {
+  return fs.readdirSync(pathname)
+    .filter(filename => isDotpiProject(path.join(pathname, filename)))
 }
 
 // -------------------------------------------------------
@@ -111,4 +122,16 @@ export async function confirm(mocks = null) {
   }
 
   return proceed;
+}
+export async function chooseProject(basePathname, mocks = null) {
+  const projects = listDotpiProjects(basePathname);
+
+  const { projectPath } = await prompts({
+    type: 'select',
+    name: 'projectPath',
+    message: 'Select a dotpi project',
+    choices: projects.map(value => ({ title: path.basename(value), value })),
+  });
+
+  return projectPath;
 }

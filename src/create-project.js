@@ -16,8 +16,6 @@ import {
   packageVersion,
 } from './utils.js';
 import {
-  // where the project lives
-  PATH_PROJECTS_DIRECTORY,
   // path of the files inside the final project
   PATH_DOTPI_PROJECT_BASH,
   PATH_DOTPI_SECRETS_BASH,
@@ -25,12 +23,15 @@ import {
   PATH_NETWORK_DIRECTORY,
   PATH_GITIGNORE,
   PATH_README,
+  PATH_DOTPI_FILE,
   // utilities
   DOTPI_SSH_KEYS_PREFIX,
   PROJECT_NAME_REGEXP,
   WIFI_ID_REGEXP,
   // this must be put in gitignore
   PATH_DOTPI_TMP_DIRECTORY,
+  // where the command is executed
+  CWD,
 } from './constants.js';
 
 export async function prepareProject(data = {}, mocks = null) {
@@ -46,7 +47,7 @@ export async function prepareProject(data = {}, mocks = null) {
       name: 'projectName',
       message: 'Name of your dotpi project:',
       validate: value => {
-        const projectPath = path.join(PATH_PROJECTS_DIRECTORY, value);
+        const projectPath = path.join(CWD, value);
 
         if (!PROJECT_NAME_REGEXP.test(value)) {
           return 'Please provide a valid project name. A valid project name must contain only lower case letters, digits, - and _';
@@ -304,6 +305,7 @@ export async function configureWiFi(data, mocks = null) {
         min: -2147483648, // int32
         max: 2147483647,
         round: 0,
+        initial: 0,
       }, { onCancel });
 
       connectionConfig = renderTemplate('infrastructure.nmconnection', {
@@ -346,6 +348,8 @@ export async function configureWiFi(data, mocks = null) {
 export async function injectUtilityFiles(data) {
   const { projectName } = data;
 
+  data.files[PATH_DOTPI_FILE] = JSON.stringify({ dotpiToolsVersion: packageVersion() }, null, 2);
+
   data.files[PATH_GITIGNORE] = renderTemplate('.gitignore', {
     PATH_DOTPI_SECRETS_BASH,
     PATH_SSH_DIRECTORY,
@@ -365,7 +369,7 @@ export async function persistProject(data, mocks = null) {
   title('Save dotpi project');
 
   const { projectName } = data;
-  const projectPath = path.join(PATH_PROJECTS_DIRECTORY, projectName)
+  const projectPath = path.join(CWD, projectName)
 
   console.log(chalk.yellow(`> Your project will be created in "${projectPath}"`));
   if (!await confirm(mocks)) {
