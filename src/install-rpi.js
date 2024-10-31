@@ -97,6 +97,8 @@ export default async function installRpi(mocks = null) {
   }
 
   console.log('');
+  console.log(chalk.yellow(`> You can now put SD card in Raspberry Pi and power on`));
+  console.log('');
 
   const { monitorInstall } = await prompts({
     type: 'toggle',

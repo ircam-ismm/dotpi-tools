@@ -1,8 +1,10 @@
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 export const LIB_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const CWD = process.cwd();
+export const HOME = os.homedir();
 
 // shell scripts that we need to execute
 export const PATH_DOTPI_INIT_BASH = path.join(LIB_ROOT, 'dotpi_root/share/dotpi_init.bash');

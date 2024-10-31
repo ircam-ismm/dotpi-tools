@@ -10,7 +10,7 @@ import configureHost from './src/configure-host.js';
 program
   .option('--create-project')
   .option('--install-rpi')
-  // .option('--configure-host')
+  .option('--configure-host')
   // .option('--launch-manager');
 
 program.parse();
@@ -29,5 +29,7 @@ if (options.createProject) {
   console.log(chalk.yellow('> launchManager is not implemented yet'));
 } else {
   // @todo prompt
+  console.log(chalk.yellow('> Invalid option:'));
+  console.log(options);
 }
 

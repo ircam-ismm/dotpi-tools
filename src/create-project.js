@@ -14,6 +14,7 @@ import {
   confirm,
   onCancel,
   packageVersion,
+  isPrivateSshKey,
 } from './utils.js';
 import {
   // path of the files inside the final project
@@ -33,6 +34,7 @@ import {
   // where the command is executed
   CWD,
 } from './constants.js';
+import configureHost from './configure-host.js';
 
 export async function prepareProject(data = {}, mocks = null) {
   title(`Prepare dotpi project`);
@@ -200,19 +202,9 @@ export async function configureSSH(data, mocks = null) {
         name: 'originalPrivateKeyPath',
         message: 'Path to the private key:',
         validate: pathname => {
-          pathname = pathname.trim();
-
-          if (fs.existsSync(pathname) && fs.statSync(pathname).isFile()) {
-            const content = fs.readFileSync(pathname).toString();
-
-            if (content.startsWith(`-----BEGIN OPENSSH PRIVATE KEY-----`)) {
-              return true;
-            } else {
-              return `Given file is not a valid SHH private key`;
-            }
-          } else {
-            return `Given path is not a valid file`;
-          }
+          return isPrivateSshKey(pathname.trim())
+            ? true
+            : `Given file is not a valid SHH private key`;
         },
         format: val => val.trim(),
       }, { onCancel });
@@ -369,7 +361,7 @@ export async function persistProject(data, mocks = null) {
   title('Save dotpi project');
 
   const { projectName } = data;
-  const projectPath = path.join(CWD, projectName)
+  const projectPath = path.join(CWD, projectName);
 
   console.log(chalk.yellow(`> Your project will be created in "${projectPath}"`));
   if (!await confirm(mocks)) {
@@ -401,4 +393,27 @@ export default async function createProject() {
   await configureWiFi(data);
   await injectUtilityFiles(data);
   await persistProject(data);
+
+  const { configure } = await prompts({
+    type: 'toggle',
+    name: 'configure',
+    message: 'Do you want to configure your local machine for this project?',
+    initial: true,
+    active: 'yes',
+    inactive: 'no'
+  }, { onCancel });
+
+  const { projectName } = data;
+
+  if (configure) {
+    const projectPath = path.join(CWD, projectName);
+    await configureHost(projectPath);
+  }
+
+  console.log(`\
+> The dotpi project "${projectName}" is ready to be installed on some Raspberry Pi
+>
+> Next Step: plug-in a SD Card with a Raspberry Pi OS (Lite) installed and run:
+> ${chalk.yellow('dotpi-tools --install-rpi')}
+  `);
 }

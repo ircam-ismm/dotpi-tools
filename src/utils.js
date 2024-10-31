@@ -10,6 +10,7 @@ import compile from 'template-literal';
 import {
   LIB_ROOT,
   CWD,
+  HOME,
   PATH_DOTPI_INIT_BASH,
   PATH_DOTPI_FILE,
   PATH_TEMPLATE_DIRECTORY,
@@ -61,14 +62,29 @@ export function renderTemplate(templatePath, data = {}) {
   return render(data);
 }
 
+const homeRE = new RegExp(`^${HOME}`);
+export function formatPath(pathname) {
+  return pathname.replace(homeRE, '~');
+}
+
 export function isDotpiProject(pathname = CWD) {
   const dotpiFile = path.join(pathname, PATH_DOTPI_FILE);
-  fs.statSync(pathname).isDirectory() && fs.existsSync(dotpiFile)
+  return fs.statSync(pathname).isDirectory() && fs.existsSync(dotpiFile)
 }
 
 export function listDotpiProjects(pathname = CWD) {
   return fs.readdirSync(pathname)
-    .filter(filename => isDotpiProject(path.join(pathname, filename)))
+    .map(filename => path.join(pathname, filename))
+    .filter(filename => isDotpiProject(filename))
+}
+
+export function isPrivateSshKey(pathname) {
+  if (fs.existsSync(pathname) && fs.statSync(pathname).isFile()) {
+    const content = fs.readFileSync(pathname).toString();
+    return content.startsWith(`-----BEGIN OPENSSH PRIVATE KEY-----`);
+  } else {
+    return false;
+  }
 }
 
 // -------------------------------------------------------
@@ -126,12 +142,19 @@ export async function confirm(mocks = null) {
 export async function chooseProject(basePathname, mocks = null) {
   const projects = listDotpiProjects(basePathname);
 
+  if (projects.length === 0) {
+    console.log(chalk.yellow(`> No dotpi project found in ${basePathname}`))
+    console.log('');
+    console.log('Aborting...');
+    process.exit(0);
+  }
+
   const { projectPath } = await prompts({
     type: 'select',
     name: 'projectPath',
     message: 'Select a dotpi project',
     choices: projects.map(value => ({ title: path.basename(value), value })),
-  });
+  }, { onCancel });
 
   return projectPath;
 }
