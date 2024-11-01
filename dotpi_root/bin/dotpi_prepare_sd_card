@@ -194,7 +194,7 @@ mkdir -p -- "$destination_path"
 source_file_path="${source_path}/configuration/dotpi_instance_$(printf "%03d" "${dotpi_instance_number}").bash"
 destination_file_path="${destination_path}/dotpi_environment_instance.bash"
 if [ -r "$source_file_path" ] ; then
-  dotpi_echo_info "Using instance-specific coonfiguration ${source_file_path}"
+  dotpi_echo_info "Using instance-specific configuration ${source_file_path}"
   cp -- "$source_file_path" "$destination_file_path"
 fi
 
