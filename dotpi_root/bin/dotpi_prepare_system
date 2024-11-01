@@ -2,38 +2,68 @@
 
 set +e
 
+error_exit() {
+  error_code="${1:-255}"
+  error_context="${2:-dotpi_prepare_system}"
+  exit_code="${3:-255}"
+  exit_message="${4:-System is NOT READY. Please flash SD card again.}"
+
+  dotpi echo_error "dotpi_prepare_system: ${error_context}: error ${error_code}"
+  dotpi echo_error "${exit_message}"
+
+  exit "$exit_code"
+}
+
 ############### bootstrap
+ error_exit_code_init=1
 
 # This script MUST be executed by `pi` user
 FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
 if [[ $(whoami) != "${FIRSTUSER}" ]] ; then
-   dotpi echo_error "This script MUST be executed by pi user (or first user)"
-   exit 1
+   error_exit 255 "This script MUST be executed by pi user (or first user)" $error_exit_code_init
 fi
 
 DOTPI_ROOT="${DOTPI_ROOT:-/opt/dotpi}"
-source "${DOTPI_ROOT}/share/dotpi_init.bash"
+source "${DOTPI_ROOT}/share/dotpi_init.bash" || {
+  error_exit $? "source dotpi_init.bash" $error_exit_code_init
+}
 
 ############### system packages via apt
+ error_exit_code_package=2
 
 # in case dpkg was interrupted
-sudo dpkg --configure -a
+sudo dpkg --configure -a || {
+  error_exit $? dpkg $error_exit_code_package
+}
 
 dotpi echo_info "Uninstall apt packages: ${dotpi_apt_uninstall[@]}"
-sudo dotpi apt_get purge "${dotpi_apt_uninstall[@]}"
+sudo dotpi apt_get purge "${dotpi_apt_uninstall[@]}" || {
+  error_exit $? 'apt_get purge' $error_exit_code_package
+}
 
-sudo dotpi apt_get clean
-sudo dotpi apt_get autoremove -y
+sudo dotpi apt_get clean  || {
+  error_exit $? 'apt_get clean' $error_exit_code_package
+}
+sudo dotpi apt_get autoremove -y || {
+  error_exit $? 'apt_get autoremove' $error_exit_code_package
+}
 
 dotpi echo_info "Update and dist-upgrade"
-sudo dotpi apt_get update
-sudo dotpi apt_get dist-upgrade
+sudo dotpi apt_get update || {
+  error_exit $? 'apt_get update' $error_exit_code_package
+}
+sudo dotpi apt_get dist-upgrade || {
+  error_exit $? 'apt_get dist-update' $error_exit_code_package
+}
 
 dotpi echo_info "Install apt packages: ${dotpi_apt_install[@]}"
-sudo dotpi apt_get install "${dotpi_apt_install[@]}"
+sudo dotpi apt_get install "${dotpi_apt_install[@]}" || {
+  error_exit $? 'apt_get install' $error_exit_code_package
+}
 
 
 ############### node.js
+ error_exit_code_node=3
 
 dotpi echo_info "Install Node.js"
 
@@ -46,12 +76,31 @@ fi
 
 # install n for sudo usage
 N_PREFIX="${DOTPI_ROOT}/share/n"
-sudo mkdir -p "$N_PREFIX"
-curl -L https://bit.ly/n-install -o /tmp/n-install
-sudo N_PREFIX="${DOTPI_ROOT}/share/n" bash /tmp/n-install -y -a "$node_arch" "$dotpi_node_version"
-if [[ $? ]] ; then
-   rm /tmp/n-install
-   sudo bash -c "cat >> '/root/.bashrc' << EOF
+sudo rm -rf -- "$N_PREFIX" || {
+  error_exit $? "rm ${N_PREFIX}" $error_exit_code_node
+}
+
+
+sudo mkdir -p -- "$N_PREFIX" || {
+  error_exit $? "mkdir ${N_PREFIX}" $error_exit_code_node
+}
+
+while ! curl -L https://bit.ly/n-install -o /tmp/n-install ; do
+  dotpi echo_warning "Error while retriving n-install"
+  sleep 1
+  echo "trying again"
+done
+
+while ! sudo N_PREFIX="${DOTPI_ROOT}/share/n" bash /tmp/n-install -y -a "$node_arch" "$dotpi_node_version" ; do
+  dotpi echo_warning "Error with n-install"
+  sleep 1
+  echo "trying again"
+  sudo rm -rf -- "$N_PREFIX"
+  sudo mkdir -p -- "$N_PREFIX"
+done
+
+rm /tmp/n-install
+sudo bash -c "cat >> '/root/.bashrc' << EOF
 
 # dotpi: force the usage of -a for correct architecture
 # (n relies on uname, which tells about the kernel, not the executables)
@@ -59,9 +108,9 @@ if [[ $? ]] ; then
 alias n='n -a ${node_arch}'
 
 EOF
-"
-
-fi
+" || {
+  error_exit $? "n alias in /root/.bashrc" $error_exit_code_node
+}
 
 source="${N_PREFIX}/bin"
 destination="/usr/bin"
@@ -73,96 +122,110 @@ executables=(
    npx
 )
 for executable in "${executables[@]}" ; do
-    sudo ln -s -f "${source}/${executable}" "${destination}/${executable}"
+    sudo ln -s -f "${source}/${executable}" "${destination}/${executable}" || {
+      error_exit $? "symlink to ${destination}/${executable}" $error_exit_code_node
+    }
 done
 
 ############## services
+ error_exit_code_services=4
 
 # allow to run user services without login
-sudo loginctl enable-linger "$FIRSTUSER"
+sudo loginctl enable-linger "$FIRSTUSER" || {
+  error_exit $? "loginctl enable-linger" $error_exit_code_services
+}
 
 ############# avahi (multicast DNS, bonjour)
 
 # restart when hostname is not resolved by mDNS
-sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_monitor.service"
+sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_monitor.service" || {
+  error_exit $? "install dotpi_avahi_monitor.service" $error_exit_code_services
+}
 
 ############## pipewire (and jackd compatibility)
+ error_exit_code_pipewire=6
+
 # over-ride calls to jackd
 # copy with prefix 0- to ensure it is loaded before default aarch64-linux-gnu.conf
 for f in /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf ; do
   source_basename="$(basename "$f")"
   destination_basename="0-${source_basename}"
-  sudo cp "$f" "/etc/ld.so.conf.d/${destination_basename}"
+  sudo cp "$f" "/etc/ld.so.conf.d/${destination_basename}" || {
+    error_exit $? "install ${f}" $error_exit_code_pipewire
+  }
 done
-sudo ldconfig
+sudo ldconfig || {
+  error_exit $? "ldconfig" $error_exit_code_pipewire
+}
 
-# ower-rides
-source_path="${DOTPI_ROOT}/share/wireplumber"
-destination_path='/usr/share/wireplumber'
-if [ -r "$source_path" ] ; then
-   sudo mkdir -p "$destination_path"
-   tar c -C "$source_path" '.' | sudo tar x -C "$destination_path"
-fi
-
-systemctl --user enable --now wireplumber.service
+systemctl --user enable --now wireplumber.service || {
+  dotpi echo_warning "error while enabling wireplumber.service now: ${?}"
+  dotpi echo_warning "wireplumber.service will be available after a reboot"
+  # do not exit
+}
 
 ############## dotpi-manager
+ error_exit_code_dotpi_manager=7
 
 if [[ "$dotpi_manager_install" == "yes" ]]; then (
   destination="${DOTPI_ROOT}/share/dotpi-manager"
   sudo mkdir -p -- "$destination" || {
-    dotpi echo_error "dotpi-manager: could not create directory: ${destination}"
-    return 1
+    error_exit $? "dotpi-manager: mkdir ${destination}" $error_exit_code_dotpi_manager
   }
   cd -- "$destination" || {
-    dotpi echo_error "dotpi-manager: could not change to runtime: ${destination}"
-    return 1
+    error_exit $? "dotpi-manager: cd ${destination}" $error_exit_code_dotpi_manager
   }
 
   destination_runtime="${destination}/runtime"
-  sudo rm -rf -- "$destination_runtime"
+  sudo rm -rf -- "$destination_runtime" || {
+    error_exit $? "dotpi-manager: rm ${destination_runtime}" $error_exit_code_dotpi_manager
+  }
   sudo git clone --depth=1 https://github.com/ircam-ismm/dotpi-manager.git "$destination_runtime" || {
-    dotpi echo_error "dotpi-manager: could not clone repository"
-    return 1
+    error_exit $? "dotpi-manager: git clone" $error_exit_code_dotpi_manager
   }
   # bootstrap-install
   sudo bash -c "\
     source '${DOTPI_ROOT}/share/dotpi_init.bash' && \
     source runtime/dotpi/dotpi-manager.bash && \
     dotpi_manager_update \
-  "
+  " || {
+    error_exit $? "dotpi_manager_update" $error_exit_code_dotpi_manager
+  }
 ) fi
 
 ############## dotpi-led
+ error_exit_code_dotpi_led=8
 
 if [[ "$dotpi_led_install" == "yes" ]]; then (
   destination="${DOTPI_ROOT}/share/dotpi-led"
   sudo mkdir -p -- "$destination" || {
-    dotpi echo_error "dotpi-led: could not create directory: ${destination}"
-    return 1
+    error_exit $? "dotpi-led: mkdir ${destination}" $error_exit_code_dotpi_led
   }
   cd -- "$destination" || {
-    dotpi echo_error "dotpi-led: could not change to runtime: ${destination}"
-    return 1
+    error_exit $? "dotpi-led: cd ${destination}" $error_exit_code_dotpi_led
   }
 
   destination_runtime="${destination}/runtime"
-  sudo rm -rf -- "$destination_runtime"
+  sudo rm -rf -- "$destination_runtime" || {
+    error_exit $? "dotpi-led: rm ${destination_runtime}" $error_exit_code_dotpi_led
+  }
   sudo git clone --depth=1 https://github.com/ircam-ismm/dotpi-led.git "$destination_runtime" || {
-    dotpi echo_error "dotpi-led: could not clone repository"
-    return 1
+    error_exit $? "dotpi-led: git clone" $error_exit_code_dotpi_led
   }
   # bootstrap-install
   sudo bash -c "\
     source '${DOTPI_ROOT}/share/dotpi_init.bash' && \
     source runtime/dotpi/dotpi-led.bash && \
     dotpi_led_update \
-  "
+  " || {
+    error_exit $? "dotpi-led: dotpi_led_update" $error_exit_code_dotpi_led
+  }
 ) fi
 
 ############## finalisation
 
-dotpi echo_info "System prepared. Rebooting..."
+dotpi echo_info "System prepared."
+dotpi echo_info "Rebooting..."
 
 sudo reboot
 
