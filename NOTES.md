@@ -15,6 +15,7 @@
 
 ### Features
 
+- [ ] parse path of ssh key (~/.ssh/ ${HOME}/.ssh)
 - [ ] check platform for all commands and warn if not macOS
 - [ ] test projects created with `createProject`
   + review `configureSSH` keys to handle other platforms when generating keys
