@@ -26,5 +26,5 @@ dotpi_keymap='${d.keyMap}'
 
 # If you want to have some packages to be automatically installed
 # or removed by default, you can list them in the arrays above
-dotpi_apt_install=()
-dotpi_apt_uninstall=()
+dotpi_apt_install+=()
+dotpi_apt_uninstall+=()

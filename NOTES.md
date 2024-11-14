@@ -2,6 +2,10 @@
 
 ## TODOS
 
+### Fix
+
+- [ ] `--install-rpi` do not work when inside a project
+
 ### General
 
 - [ ] Documentation when each of the following step is clean
@@ -11,21 +15,21 @@
 
 ### Features
 
+- [ ] check platform for all commands and warn if not macOS
 - [ ] test projects created with `createProject`
   + review `configureSSH` keys to handle other platforms when generating keys
-- [ ] implement and test `prepareRpi`
+- [ ] remove `/jackd` stuff in `dotpi_prepare_sd_card`
+- [x] implement and test `prepareRpi`
   - just wrap `dotpi_prepare_system`, see SSH feedback by default
-- [ ] first pass on re-organizing files and folder (only on js side)
+- [x] first pass on re-organizing files and folder (only on js side)
   + [x] move all file templates into their own file for easier maintenance
 - [x] check we have a MVP w/ JIP and converge to final structure
   + [x] see what it means to have `projects` living in it own user-defined location
-- [ ] implement and test `configureHost` script
+- [x] implement and test `configureHost` script
   + for adding SSH keys, just point to gihub doc if not on MacOS for now
     Linux should be rather straightforward,
-- [ ] check platform for all commands and warn if not macOS
 - [x] rename to `@dotpi/tools` rather than `@dotpi/install`
 - [x] make it work using `npx`
-- [ ] remove `/jackd` stuff in `dotpi_prepare_sd_card`
 
 ## Questions
 
