@@ -6,6 +6,7 @@
 # force 32bit executable
 # (and kernel for Raspberry Pi v3, not v4)
 # 32 for 32bit system, 64 for 64bit system
+# only applies if the system is in 32 bits
 dotpi_word_size='32'
 
 # dot *not* change this
@@ -13,7 +14,7 @@ dotpi_hostname_prefix='dotpi'
 
 dotpi_user='pi'
 
-# no default password: set `dotpi_password` in <project>/secrets/dotpi_secrets.bash
+# no default password: set `dotpi_password` in <project>/dotpi_secrets.bash
 dotpi_password=
 
 # no default key

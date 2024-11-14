@@ -1,19 +1,19 @@
 [connection]
-id=wifi-access-point
+id=${d.wifiId}
 type=wifi
-# do not use AP by default
-autoconnect=false
+# do not use external AP by default
+autoconnect=true
 interface-name=wlan0
 
 [wifi]
+mode=ap
+ssid=${d.wifiSsid}
 # disable power management
 powersave=2
-mode=ap
-ssid=DOTPI-AP
 
 [wifi-security]
 key-mgmt=wpa-psk
-psk=apPassword
+psk=${d.wifiPsk}
 
 [ipv4]
 method=shared
