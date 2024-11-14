@@ -38,10 +38,14 @@ dotpi_manager_install='yes'
 dotpi_led_install='no'
 dotpi_led_strip_configuration='default'
 
-# Let the user choose (lite or not)
+# system default
+dotpi_apt_uninstall_default=()
+
+# user-defined, use +=(package1 package2) to add packages to list
 dotpi_apt_uninstall=()
 
-dotpi_apt_install=(
+# dotpi requirements
+dotpi_apt_install_default=(
   'systemd-container' # machinectl
 
   'ca-certificates'
@@ -58,5 +62,8 @@ dotpi_apt_install=(
   'pipewire-audio'
   'pipewire-jack'
 )
+
+# user-defined, use +=(package1 package2) to add packages to list
+dotpi_apt_install=()
 
 dotpi_node_version='lts'

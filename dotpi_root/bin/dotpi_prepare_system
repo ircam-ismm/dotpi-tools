@@ -36,8 +36,8 @@ sudo dpkg --configure -a || {
   error_exit $? dpkg $error_exit_code_package
 }
 
-dotpi echo_info "Uninstall apt packages: ${dotpi_apt_uninstall[@]}"
-sudo dotpi apt_get purge "${dotpi_apt_uninstall[@]}" || {
+dotpi echo_info "Uninstall apt packages: ${dotpi_apt_uninstall_default[@]} ${dotpi_apt_uninstall[@]}"
+sudo dotpi apt_get purge "${dotpi_apt_uninstall_default[@]}" "${dotpi_apt_uninstall[@]}" || {
   error_exit $? 'apt_get purge' $error_exit_code_package
 }
 
@@ -56,8 +56,8 @@ sudo dotpi apt_get dist-upgrade || {
   error_exit $? 'apt_get dist-update' $error_exit_code_package
 }
 
-dotpi echo_info "Install apt packages: ${dotpi_apt_install[@]}"
-sudo dotpi apt_get install "${dotpi_apt_install[@]}" || {
+dotpi echo_info "Install apt packages: ${dotpi_apt_install_default[@]} ${dotpi_apt_install[@]}"
+sudo dotpi apt_get install "${dotpi_apt_install_default[@]}" "${dotpi_apt_install[@]}" || {
   error_exit $? 'apt_get install' $error_exit_code_package
 }
 
