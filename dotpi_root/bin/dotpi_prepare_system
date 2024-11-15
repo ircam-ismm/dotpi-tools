@@ -53,7 +53,7 @@ sudo dotpi apt_get update || {
   error_exit $? 'apt_get update' $error_exit_code_package
 }
 sudo dotpi apt_get dist-upgrade || {
-  error_exit $? 'apt_get dist-update' $error_exit_code_package
+  error_exit $? 'apt_get dist-upgrade' $error_exit_code_package
 }
 
 dotpi echo_info "Install apt packages: ${dotpi_apt_install_default[@]} ${dotpi_apt_install[@]}"
