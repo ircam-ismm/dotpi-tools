@@ -11,10 +11,12 @@ import {
   renderTemplate,
   readBashArray,
   readBashVariable,
+  processPath,
   confirm,
   onCancel,
   packageVersion,
   isPrivateSshKey,
+  isDotpiProject,
 } from './utils.js';
 import {
   // path of the files inside the final project
@@ -68,7 +70,6 @@ export async function prepareProject(data = {}, mocks = null) {
   ], { onCancel });
 
   data.projectName = projectName;
-  data.files = {};
   data.files[PATH_DOTPI_SECRETS_BASH] = renderTemplate('dotpi_secrets.bash', { password });
 
   return data;
@@ -201,12 +202,12 @@ export async function configureSSH(data, mocks = null) {
         type: 'text',
         name: 'originalPrivateKeyPath',
         message: 'Path to the private key:',
-        validate: pathname => {
-          return isPrivateSshKey(pathname.trim())
+        validate: val => {
+          return isPrivateSshKey(processPath(val))
             ? true
             : `Given file is not a valid SHH private key`;
         },
-        format: val => val.trim(),
+        format: val => processPath(val),
       }, { onCancel });
 
       const privateKey = fs.readFileSync(originalPrivateKeyPath).toString();
@@ -386,7 +387,18 @@ export async function persistProject(data, mocks = null) {
 
 // Wrap it all
 export default async function createProject() {
-  const data = {};
+  if (isDotpiProject()) {
+    console.log('');
+    console.log(chalk.yellow(`> Cannot create a dotpi project in this directory, it already contains a dotpi project`));
+    console.log('Aborting...');
+    process.exit(0);
+  }
+
+  const data = {
+    projectName: null,
+    files: {},
+  };
+
   await prepareProject(data);
   await configureProject(data);
   await configureSSH(data);

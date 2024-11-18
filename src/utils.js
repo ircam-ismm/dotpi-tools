@@ -87,6 +87,16 @@ export function isPrivateSshKey(pathname) {
   }
 }
 
+/**
+ * Allow using ~ or $HOME into given pathname
+ * @param {*} pathname
+ * @returns
+ */
+export function processPath(pathname) {
+  const buffer = execSync(`echo ${pathname}`);
+  return buffer.toString().trim();
+}
+
 // -------------------------------------------------------
 // Bash utils
 // -------------------------------------------------------
@@ -143,7 +153,7 @@ export async function chooseProject(basePathname, mocks = null) {
   const projects = listDotpiProjects(basePathname);
 
   if (projects.length === 0) {
-    console.log(chalk.yellow(`> No dotpi project found in ${basePathname}`))
+    console.log(chalk.yellow(`> No dotpi project found in ${basePathname}`));
     console.log('');
     console.log('Aborting...');
     process.exit(0);
