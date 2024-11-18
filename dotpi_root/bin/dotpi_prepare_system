@@ -15,7 +15,7 @@ error_exit() {
 }
 
 ############### bootstrap
- error_exit_code_init=1
+error_exit_code_init=1
 
 # This script MUST be executed by `pi` user
 FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
@@ -28,8 +28,14 @@ source "${DOTPI_ROOT}/share/dotpi_init.bash" || {
   error_exit $? "source dotpi_init.bash" $error_exit_code_init
 }
 
+# set wifi country code
+dotpi echo_info "raspi-config nonint do_wifi_country ${dotpi_wifi_country_code}"
+sudo raspi-config nonint do_wifi_country "${dotpi_wifi_country_code}" || {
+  error_exit $? "set wifi country code" $error_exit_code_init
+}
+
 ############### system packages via apt
- error_exit_code_package=2
+error_exit_code_package=2
 
 # in case dpkg was interrupted
 sudo dpkg --configure -a || {
@@ -63,7 +69,7 @@ sudo dotpi apt_get install "${dotpi_apt_install_default[@]}" "${dotpi_apt_instal
 
 
 ############### node.js
- error_exit_code_node=3
+error_exit_code_node=3
 
 dotpi echo_info "Install Node.js"
 
@@ -128,7 +134,7 @@ for executable in "${executables[@]}" ; do
 done
 
 ############## services
- error_exit_code_services=4
+error_exit_code_services=4
 
 # allow to run user services without login
 sudo loginctl enable-linger "$FIRSTUSER" || {
@@ -143,7 +149,7 @@ sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_
 }
 
 ############## pipewire (and jackd compatibility)
- error_exit_code_pipewire=6
+error_exit_code_pipewire=6
 
 # over-ride calls to jackd
 # copy with prefix 0- to ensure it is loaded before default aarch64-linux-gnu.conf
@@ -165,7 +171,7 @@ systemctl --user enable --now wireplumber.service || {
 }
 
 ############## dotpi-manager
- error_exit_code_dotpi_manager=7
+error_exit_code_dotpi_manager=7
 
 if [[ "$dotpi_manager_install" == "yes" ]]; then (
   destination="${DOTPI_ROOT}/share/dotpi-manager"
@@ -194,7 +200,7 @@ if [[ "$dotpi_manager_install" == "yes" ]]; then (
 ) fi
 
 ############## dotpi-led
- error_exit_code_dotpi_led=8
+error_exit_code_dotpi_led=8
 
 if [[ "$dotpi_led_install" == "yes" ]]; then (
   destination="${DOTPI_ROOT}/share/dotpi-led"

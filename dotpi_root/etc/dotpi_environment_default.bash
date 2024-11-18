@@ -23,7 +23,7 @@ dotpi_ssh_authorized_keys=()
 dotpi_ssh_allow_password_authentication='yes'
 
 dotpi_timezone='Europe/Paris'
-
+dotpi_wifi_country_code='FR'
 dotpi_keymap='fr'
 
 dotpi_audio_device='default'

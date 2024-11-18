@@ -14,6 +14,8 @@ file_name="${local_path}/imager_firstrun.sh"
 if [ -x "$file_name" ] ; then
    # do not source to avoid exit
    "$file_name"
+else
+   dotpi echo_warning "Imager first run not found: ${file_name}"
 fi
 
 # install dotpi wrapper

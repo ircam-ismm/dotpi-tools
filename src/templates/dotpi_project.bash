@@ -22,6 +22,7 @@ dotpi_led_strip_configuration='${d.dotPiLedConfigFile}'` : ``}
 
 # Misc
 dotpi_timezone='${d.timeZone}'
+dotpi_wifi_country_code='${d.wifiCountryCode}'
 dotpi_keymap='${d.keyMap}'
 
 # If you want to have some packages to be automatically installed
