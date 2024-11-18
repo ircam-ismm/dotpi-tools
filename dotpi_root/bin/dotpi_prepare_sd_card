@@ -423,11 +423,10 @@ echo "# set-up first run"
 source_file_path="${bootfs_path}/firstrun.sh"
 if [ -f "$source_file_path" ] ; then
   # back-up imager firstrun.sh
-
   destination_filename='imager_firstrun.sh'
-
   # keep a copy on bootfs
   destination_path="${bootfs_path}/dotpi"
+
   mkdir -p -- "$destination_path"
 
   if [ -r "${destination_path}/${destination_filename}" ] ; then
@@ -439,7 +438,9 @@ if [ -f "$source_file_path" ] ; then
      mkdir -p -- "$destination_path"
      cp -- "$source_file_path" "${destination_path}/${destination_filename}"
   fi
-
+else
+  dotpi_echo_error "firstrun.sh not found"
+  exit 1
 fi
 
 # configure cmdline.txt for firstun script, if not already here

@@ -114,7 +114,7 @@ export default async function installRpi(mocks = null) {
   // - ok, congrats your raspberry is up and running
   await new Promise(resolve => {
     console.log('');
-    console.log(chalk.yellow('> Waiting for the Pi to connect, this might take a while'));
+    console.log(chalk.yellow('> Waiting for the Pi to connect (this might take a few minutes)'));
     console.log('');
 
     const script = spawn(result, { shell: '/bin/bash' });

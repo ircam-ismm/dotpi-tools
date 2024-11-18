@@ -111,6 +111,13 @@ export async function configureProject(data, mocks = null) {
     },
     {
       type: 'text',
+      name: 'wifiCountryCode',
+      message: 'WiFi country code:',
+      initial: 'FR',
+      format: val => val.trim(),
+    },
+    {
+      type: 'text',
       name: 'keyMap',
       message: 'Key map:',
       initial: 'fr',
