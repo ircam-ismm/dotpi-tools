@@ -312,23 +312,36 @@ fi
 
 bootfs_name="bootfs"
 
-if [[ "$(uname)" != "Darwin" ]] ; then
+if [[ "$(uname)" =~ "Darwin" ]] ; then
   echo ""
-  echo "############################################################"
+  echo "MacOS host detected"
   echo ""
-  echo " This script is for MacOS (Darwin) only."
-  echo " Please adapt it for your environment and send us feedback."
+
+  # try to mount if unmounted (but not ejected)
+  if type -P diskutil ; then
+    diskutil mount "$bootfs_name"
+  fi
+
+  # avoid spotlight errors
+  bootfs_path="$(find /Volumes -name "$bootfs_name" 2> /dev/null)"
+elif [[ "$(uname)" =~ "Linux" ]] ; then
   echo ""
-  echo "############################################################"
+  echo "Linux system detected"
   echo ""
+
+  # try to mount if unmounted (but not ejected)
+  if type -P udisksctl ; then
+    udisksctl mount --block-device "/dev/disk/by-label/${bootfs_name}" 2> /dev/null
+  fi
+
+  bootfs_path="$(lsblk --output MOUNTPOINT | grep "$bootfs_name")"
+else
+  echo ""
+  echo "Unknown system detected"
+  echo ""
+  echo
+  echo "Please adapt for your environment and send us feedback."
   exit 1
-fi
-
-bootfs_path="/Volumes/${bootfs_name}"
-
-# try to mount if unmounted (but not ejected)
-if [ -x $(which diskutil) ] ; then
-  diskutil mount "$bootfs_name"
 fi
 
 if [ ! -d "$bootfs_path" ] ; then
@@ -515,9 +528,11 @@ mkdir -p -- "$destination_path"
 # this overcomes the limitiations of the FAT32 boot volume
 tar cz "${tar_options[@]}" -C "${source_path}" '.' > "${destination_path}/file_system.tgz"
 
-# try to mount if unmounted (but not ejected)
-if [ -x $(type -P diskutil) ] ; then
+# un-mount
+if type -P diskutil 2>&1 > /dev/null ; then
   diskutil umount "$bootfs_name" || :
+elif type -P udisksctl 2>&1 > /dev/null ; then
+  udisksctl unmount -b "/dev/disk/by-label/${bootfs_name}" 2>&1 > /dev/null
 fi
 
 dotpi_echo_info "Mirror of file-system is here: ${file_system_mirror}"
