@@ -7,24 +7,25 @@ local_path="$(dirname -- "$local_file")"
 
 log_file="${1:-${local_file}-$(date +"%Y%m%d-%H%M%S").log}"
 
+# Self log
+exec &> >(dotpi log "$log_file")
+
 DOTPI_ROOT="${DOTPI_ROOT:-/opt/dotpi}"
 
 # run imager firstrun before, to allow for over-rides
 file_name="${local_path}/imager_firstrun.sh"
 if [ -x "$file_name" ] ; then
+   echo "INFO: Run imager first run: ${file_name}"
    # do not source to avoid exit
    "$file_name"
 else
-   dotpi echo_warning "Imager first run not found: ${file_name}"
+  echo "WARNING: Imager first run not found: ${file_name}"
 fi
 
 # install dotpi wrapper
 ln -s "${DOTPI_ROOT}/bin/dotpi" /usr/bin
 
 source "${DOTPI_ROOT}/share/dotpi_init.bash"
-
-# Self log
-exec &> >(dotpi log "$log_file")
 
 dotpi echo_info "Configure first user .bashrc"
 
@@ -133,10 +134,19 @@ fi
 chmod 'u=rw,go=' "${destination_path}"/*
 
 # unblock wifi in any case
+if [ -f /usr/lib/raspberrypi-sys-mods/imager_custom ] ; then
+  dotpi echo_info "Enable wifi with imager_custom"
+  /usr/lib/raspberrypi-sys-mods/imager_custom set_wlan_country "$dotpi_wifi_country_code"
+else
+  raspi-config nonint do_wifi_country "$dotpi_wifi_country_code"
+  for file in /var/lib/systemd/rfkill/*:wlan ; do
+    echo 0 > "$file"
+  done
+fi
+
+# unblock wifi in any case
+nmcli radio wifi on
 rfkill unblock wifi
-for file in /var/lib/systemd/rfkill/*:wlan ; do
-    echo 0 > $file
-done
 
 ####### limits (real-time audio)
 

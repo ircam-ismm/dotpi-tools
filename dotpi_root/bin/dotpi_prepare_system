@@ -34,6 +34,10 @@ sudo raspi-config nonint do_wifi_country "${dotpi_wifi_country_code}" || {
   error_exit $? "set wifi country code" $error_exit_code_init
 }
 
+# unblock wifi in any case
+sudo nmcli radio wifi on
+sudo rfkill unblock wifi
+
 ############### system packages via apt
 error_exit_code_package=2
 

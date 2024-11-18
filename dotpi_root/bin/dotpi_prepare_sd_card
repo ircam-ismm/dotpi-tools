@@ -452,8 +452,7 @@ if [ -f "$source_file_path" ] ; then
      cp -- "$source_file_path" "${destination_path}/${destination_filename}"
   fi
 else
-  dotpi_echo_error "firstrun.sh not found"
-  exit 1
+  dotpi_echo_warning "firstrun.sh not found"
 fi
 
 # configure cmdline.txt for firstun script, if not already here
