@@ -15,7 +15,7 @@ error_exit() {
 }
 
 ############### bootstrap
- error_exit_code_init=1
+error_exit_code_init=1
 
 # This script MUST be executed by `pi` user
 FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
@@ -63,7 +63,7 @@ sudo dotpi apt_get install "${dotpi_apt_install_default[@]}" "${dotpi_apt_instal
 
 
 ############### node.js
- error_exit_code_node=3
+error_exit_code_node=3
 
 dotpi echo_info "Install Node.js"
 

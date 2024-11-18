@@ -16,6 +16,8 @@ import {
   confirm,
   onCancel,
   readBashVariable,
+  isDotpiProject,
+  chooseProject,
 } from './utils.js'
 
 export default async function installRpi(mocks = null) {
@@ -25,19 +27,14 @@ export default async function installRpi(mocks = null) {
     prompts.inject(Object.values(mocks))
   }
 
-  // get list of projects
-  const projects = fs.readdirSync(CWD)
-    .filter(f => fs.statSync(path.join(CWD, f)).isDirectory());
+  let projectPath;
 
-  const { projectName } = await prompts({
-    type: 'select',
-    name: 'projectName',
-    message: 'Choose the project:',
-    choices: projects.map(s => ({ title: s, value: s })),
-  }, { onCancel });
+  if (isDotpiProject(CWD)) {
+    projectPath = CWD;
+  } else {
+    projectPath = await chooseProject(CWD);
+  }
 
-  // find last instance number as stored by the shell script
-  const projectPath = path.join(CWD, projectName);
   const dotpiTmpFile = path.join(projectPath, PATH_DOTPI_TMP_BASH);
   const nextInstanceNumber = readBashVariable('dotpi_instance_number', dotpiTmpFile) || 1;
 
