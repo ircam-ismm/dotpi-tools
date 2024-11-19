@@ -335,6 +335,33 @@ if [[ "$(uname)" =~ "Darwin" ]] ; then
 
   # avoid spotlight errors
   bootfs_path="$(find /Volumes -name "$bootfs_name" 2> /dev/null)"
+elif [[ "$(uname -a)" =~ "Microsoft" ]] ; then
+  echo ""
+  echo "Windows Subsystem for Linux system detected"
+  echo ""
+
+  bootfs_mount_reference=($(findmnt -lo source,target | grep "$bootfs_name"))
+  if ! [[ -n "$bootfs_mount_reference" ]] ; then
+    # not there, mount
+
+    bootfs_mount_source="${bootfs_drive_letter^^}:\\"
+    bootfs_mount_target="${tmp_path}/${bootfs_name}"
+    mkdir -p "$bootfs_mount_target"
+    mount -t drvfs "$bootfs_mount_source" "$bootfs_mount_target"  || {
+      dotpi_echo_error "Unable to mount ${bootfs_mount_source} to ${bootfs_mount_target}"
+    }
+  fi
+
+  bootfs_mount_reference=($(findmnt -lo source,target | grep "$bootfs_name"))
+  if [[ -n "$bootfs_mount_reference" ]] ; then
+    bootfs_mount_source="${bootfs_mount_reference[0]}"
+    bootfs_mount_target="${bootfs_mount_reference[1]}"
+    bootfs_path="$bootfs_mount_target"
+  else
+    bootfs_path=""
+    rmdir "$bootfs_mount_target"
+  fi
+
 elif [[ "$(uname)" =~ "Linux" ]] ; then
   echo ""
   echo "Linux system detected"
@@ -469,7 +496,7 @@ fi
 # configure cmdline.txt for firstun script, if not already here
 source_file_name='cmdline.txt'
 source_file_path="${bootfs_path}/${source_file_name}"
-destination_path="${bootfs_path}/dotpi/imager_${source_file_name}"
+destination_path="${bootfs_path}/dotpi"
 pattern='systemd.run=/boot/firstrun.sh'
 pattern_escaped="$(dotpi_configuration_escape_string "$pattern")"
 first_run_configured="$(perl -ne 'if (m/'"$pattern_escaped"'/) { print "1"; }' "$source_file_path")"
@@ -477,7 +504,7 @@ if (( first_run_configured != 1 )) ; then
   dotpi_echo_info "Configuring firstrun in ${source_file_path}"
   # keep a copy of originalc command-line
   mkdir -p -- "$destination_path"
-  cp -- "$source_file_path" "$destination_path"
+  cp -- "$source_file_path" "${destination_path}/imager_${source_file_name}"
   # append:run script and reboot on success
   arguments=(
     'systemd.run=/boot/firstrun.sh'
@@ -488,7 +515,12 @@ if (( first_run_configured != 1 )) ; then
   pattern_escaped="$(dotpi_configuration_escape_string "$pattern")"
   # do not append to a new line
   # append a space to separate from previous arguments (extra does not hurt)
-  dotpi_sed 's/$/${1} '"$pattern_escaped"'/' -i -- "$source_file_path"
+
+  # windows error: Cannot complete in-place edit of tmp/bootfs/cmdline.txt
+  source_file_path_tmp="${tmp_path}/${source_file_name}"
+  cp "$source_file_path" "$source_file_path_tmp"
+  dotpi_sed 's/$/${1} '"$pattern_escaped"'/' -i -- "$source_file_path_tmp"
+  mv "$source_file_path_tmp" "$source_file_path"
 fi
 
 # replace first run with custom, that will over-ride imager settings
@@ -542,6 +574,18 @@ tar cz "${tar_options[@]}" -C "${source_path}" '.' > "${destination_path}/file_s
 # un-mount
 if type -P diskutil 2>&1 > /dev/null ; then
   diskutil umount "$bootfs_name" || :
+elif [[ -n "$bootfs_mount_source" ]] && [[ -n "$bootfs_mount_target" ]] ; then
+  umount "$bootfs_mount_source"
+  rmdir "$bootfs_mount_target"
+
+echo ""
+echo "####################################################"
+echo ""
+echo " Please eject SD card from Windows host."
+echo ""
+echo "####################################################"
+echo ""
+
 elif type -P udisksctl 2>&1 > /dev/null ; then
   udisksctl unmount -b "/dev/disk/by-label/${bootfs_name}" 2>&1 > /dev/null
 fi
