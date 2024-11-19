@@ -17,7 +17,7 @@ dotpi_echo_warning() {
 ####### Command-line options
 
 _dotpi_usage() {
-  echo "Usage: ${_dotpi_command} --project <project_path> [--instance-number]"
+  echo "Usage: ${_dotpi_command} --project <project_path> [--instance-number <integer>] [--bootfs-drive-letter <letter>]"
 }
 
 _echo_empty_option_error() {
@@ -50,6 +50,17 @@ while true ; do
         exit 1
       else
         instance_number="$2"
+        shift
+      fi
+      ;;
+
+    -d|--bootfs-drive-letter) # Takes an option argument; ensure it has been specified.
+      if [ -z "$2" ] ; then
+        _echo_empty_option_error "$1"
+        _dotpi_usage
+        exit 1
+      else
+        bootfs_drive_letter="$2"
         shift
       fi
       ;;

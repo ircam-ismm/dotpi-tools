@@ -87,6 +87,11 @@ export function isPrivateSshKey(pathname) {
   }
 }
 
+export function isWindowsWsl() {
+  const uname = execSync('uname -a', { shell: '/bin/bash' });
+  return /Microsoft/.test(uname);
+}
+
 /**
  * Allow using ~ or $HOME into given pathname
  * @param {*} pathname

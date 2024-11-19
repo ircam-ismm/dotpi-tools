@@ -16,6 +16,7 @@ import {
   readBashVariable,
   isDotpiProject,
   chooseProject,
+  isWindowsWsl,
 } from './utils.js'
 
 export default async function installRpi(mocks = null) {
@@ -53,17 +54,31 @@ export default async function installRpi(mocks = null) {
   console.log(chalk.yellow('> Preparing SD Card'));
   console.log('');
 
-  // if linux in window (i.e. WSL)
-  // check `uname -a` contains 'Microsoft'
-  // ask the letter of the bootfs sdcard
-  // pass as argument to `dotpi_prepare_sd_card` : --bootfs-path "${bootfsPath}"
+  // If linux in window (i.e. WSL), we weed the drive letter to mount it
+  let bootfsDriveLetter = null;
+
+  if (isWindowsWsl()) {
+    const result = await prompts({
+      type: 'text',
+      name: 'bootfsDriveLetter',
+      message: 'Enter the drive letter of the "bootfs" SD card:',
+      initial: 'E',
+      validate: val => /[A-Za-z]{1}/.test(val),
+    }, { onCancel });
+
+    bootfsDriveLetter = result.bootfsDriveLetter;
+  }
 
   const result = await new Promise(resolve => {
-    // we can now execute the shell script
-    const script = spawn(`${PATH_DOTPI_PREPARE_SD_CARD_BASH} --project "${projectPath}" --instance-number ${instanceNumber}`, {
-      shell: '/bin/bash',
-    });
+    let cmd = `${PATH_DOTPI_PREPARE_SD_CARD_BASH} --project "${projectPath}" --instance-number ${instanceNumber}`;
 
+    if (bootfsDriveLetter !== null) {
+      cmd += ` --bootfs-drive-letter "${bootfsDriveLetter}"`;
+    }
+
+    console.log(cmd);
+    // we can now execute the shell script
+    const script = spawn(cmd, { shell: '/bin/bash' });
     script.stdout.on('data', data => process.stdout.write(data.toString()));
     script.stderr.on('data', data => process.stderr.write(data.toString()));
 
