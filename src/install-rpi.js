@@ -44,16 +44,6 @@ export default async function installRpi(mocks = null) {
     initial: nextInstanceNumber,
   }, { onCancel });
 
-  console.log('');
-
-  if (!await confirm(mocks)) {
-    return;
-  }
-
-  console.log('');
-  console.log(chalk.yellow('> Preparing SD Card'));
-  console.log('');
-
   // If linux in window (i.e. WSL), we weed the drive letter to mount it
   let bootfsDriveLetter = null;
 
@@ -64,10 +54,21 @@ export default async function installRpi(mocks = null) {
       message: 'Enter the drive letter of the "bootfs" SD card:',
       initial: 'E',
       validate: val => /[A-Za-z]{1}/.test(val),
+      format: val => val.toUpperCase(),
     }, { onCancel });
 
     bootfsDriveLetter = result.bootfsDriveLetter;
   }
+
+  console.log('');
+
+  if (!await confirm(mocks)) {
+    return;
+  }
+
+  console.log('');
+  console.log(chalk.yellow('> Preparing SD Card'));
+  console.log('');
 
   const result = await new Promise(resolve => {
     let cmd = `${PATH_DOTPI_PREPARE_SD_CARD_BASH} --project "${projectPath}" --instance-number ${instanceNumber}`;
