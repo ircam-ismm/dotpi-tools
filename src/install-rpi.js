@@ -1,6 +1,5 @@
 import path from 'node:path';
-import { spawn } from 'node:child_process';
-import { EOL } from 'node:os';
+import { spawn, execSync } from 'node:child_process';
 
 import prompts from 'prompts';
 import chalk from 'chalk';
@@ -60,35 +59,20 @@ export default async function installRpi(mocks = null) {
       shell: '/bin/bash',
     });
 
-    let lastLog = null;
-
-    script.stdout.on('data', (data) => {
-      data = data.toString();
-      lastLog = data;
-      process.stdout.write(data);
-    });
-
-    script.stderr.on('data', (data) => {
-      process.stderr.write(data.toString());
-    });
+    script.stdout.on('data', data => process.stdout.write(data.toString()));
+    script.stderr.on('data', data => process.stderr.write(data.toString()));
 
     script.on('close', (code) => {
       if (code !== 0) {
         console.log(chalk.yellow(`> Process exited with code ${code}`));
-        return resolve(null);
+        return resolve(false);
       }
 
-      // process last line to get ssh monitor command
-      const lines = lastLog.split(EOL).filter(l => l.trim() !== '');
-      const lastLine = lines[lines.length - 1];
-      const cmd = `ssh ${lastLine.split('ssh ')[1]}`;
-      // console.log('-----------');
-      // console.log(cmd);
-      resolve(cmd);
+      resolve(true)
     });
   });
 
-  if (result === null) {
+  if (!result) {
     return;
   }
 
@@ -113,24 +97,40 @@ export default async function installRpi(mocks = null) {
   // - error, ask to restart from scratch
   // - ok, congrats your raspberry is up and running
   await new Promise(resolve => {
+    const DOTPI_ETC = path.normalize('tmp/file-system/opt/dotpi/etc');
+    const hostname = readBashVariable(
+      'dotpi_instance_hostname',
+      path.join(projectPath, DOTPI_ETC, 'dotpi_environment_instance.bash')
+    );
+
     console.log('');
-    console.log(chalk.yellow('> Waiting for the Pi to connect (this might take a few minutes)'));
+    console.log(chalk.cyan('> Waiting for the Pi to connect (this might take a few minutes)'));
+    console.log(chalk.cyan(`> hostname: ${hostname}.local`));
     console.log('');
 
-    const script = spawn(result, { shell: '/bin/bash' });
+    // wait for the device to be online before launching ssh command (required for Linux)
+    let errored = true;
 
-    script.stdout.on('data', (data) => {
-      // if (data mathces 'INFO: System prepared') {
-      //   script.kill();
-      // }
+    while (errored) {
+      try {
+        execSync(`ping -c 1 ${hostname}.local &> /dev/null`, { shell: '/bin/bash' });
+        errored = false;
+      } catch (err) {
+        process.stdout.write('.');
+      }
+    }
 
-      process.stdout.write(data.toString());
-    });
+    console.log('');
+    console.log(chalk.cyan('> Pi connected, reading log file:'));
+    console.log('');
 
-    script.stderr.on('data', (data) => {
-      process.stderr.write(data.toString());
-    });
+    const script = spawn(
+      `ssh pi@${hostname}.local 'tail -f /opt/dotpi/var/log/dotpi_prepare_system_*.log'`,
+      { shell: '/bin/bash' }
+    );
 
+    script.stdout.on('data', data => process.stdout.write(data.toString()));
+    script.stderr.on('data', data => process.stderr.write(data.toString()));
     script.on('close', (code) => {
       if (code !== 0) {
         console.log(chalk.yellow(`> Process exited with code ${code}`));
