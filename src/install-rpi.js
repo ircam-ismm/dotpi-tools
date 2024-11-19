@@ -53,7 +53,11 @@ export default async function installRpi(mocks = null) {
       name: 'bootfsDriveLetter',
       message: 'Enter the drive letter of the "bootfs" SD card:',
       initial: 'E',
-      validate: val => /[A-Za-z]{1}/.test(val),
+      validate: val => {
+        return val.length === 1 && /[A-Za-z]/.test(val)
+          ? true
+          : 'Invalid drive letter'
+      },
       format: val => val.toUpperCase(),
     }, { onCancel });
 
