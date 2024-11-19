@@ -29,6 +29,9 @@ source "${DOTPI_ROOT}/share/dotpi_init.bash" || {
 }
 
 # set wifi country code
+#
+# This is also done earlier by `dotpi_firstrun` but doing this
+# only in one place fail for some unknown reason
 dotpi echo_info "raspi-config nonint do_wifi_country ${dotpi_wifi_country_code}"
 sudo raspi-config nonint do_wifi_country "${dotpi_wifi_country_code}" || {
   error_exit $? "set wifi country code" $error_exit_code_init

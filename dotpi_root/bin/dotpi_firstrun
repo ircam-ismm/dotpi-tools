@@ -134,6 +134,9 @@ fi
 chmod 'u=rw,go=' "${destination_path}"/*
 
 # unblock wifi in any case
+#
+# This is also done later by `dotpi_prepare_system` but doing this
+# only in one place fail for some unknown reason
 if [ -f /usr/lib/raspberrypi-sys-mods/imager_custom ] ; then
   dotpi echo_info "Enable wifi with imager_custom"
   /usr/lib/raspberrypi-sys-mods/imager_custom set_wlan_country "$dotpi_wifi_country_code"
@@ -144,7 +147,6 @@ else
   done
 fi
 
-# unblock wifi in any case
 nmcli radio wifi on
 rfkill unblock wifi
 

@@ -53,6 +53,11 @@ export default async function installRpi(mocks = null) {
   console.log(chalk.yellow('> Preparing SD Card'));
   console.log('');
 
+  // if linux in window (i.e. WSL)
+  // check `uname -a` contains 'Microsoft'
+  // ask the letter of the bootfs sdcard
+  // pass as argument to `dotpi_prepare_sd_card` : --bootfs-path "${bootfsPath}"
+
   const result = await new Promise(resolve => {
     // we can now execute the shell script
     const script = spawn(`${PATH_DOTPI_PREPARE_SD_CARD_BASH} --project "${projectPath}" --instance-number ${instanceNumber}`, {
@@ -113,13 +118,14 @@ export default async function installRpi(mocks = null) {
 
     while (errored) {
       try {
-        execSync(`ping -c 1 ${hostname}.local &> /dev/null`, { shell: '/bin/bash' });
+        execSync(`ping -c 1 -t 10 ${hostname}.local &> /dev/null`, { shell: '/bin/bash' });
         errored = false;
       } catch (err) {
         process.stdout.write('.');
       }
     }
 
+    console.log('');
     console.log('');
     console.log(chalk.cyan('> Pi connected, reading log file:'));
     console.log('');
