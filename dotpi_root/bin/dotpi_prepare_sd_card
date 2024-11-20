@@ -329,7 +329,7 @@ if [[ "$(uname)" =~ "Darwin" ]] ; then
   echo ""
 
   # try to mount if unmounted (but not ejected)
-  if type -P diskutil ; then
+  if type -P diskutil &> /dev/null ; then
     diskutil mount "$bootfs_name"
   fi
 
@@ -368,11 +368,11 @@ elif [[ "$(uname)" =~ "Linux" ]] ; then
   echo ""
 
   # try to mount if unmounted (but not ejected)
-  if type -P udisksctl ; then
-    udisksctl mount --block-device "/dev/disk/by-label/${bootfs_name}" 2> /dev/null
+  if type -P udisksctl &> /dev/null ; then
+    udisksctl mount --block-device "/dev/disk/by-label/${bootfs_name}"
   fi
 
-  bootfs_path="$(lsblk --output MOUNTPOINT | grep "$bootfs_name")"
+  bootfs_path="$(lsblk --output MOUNTPOINT | grep "/${bootfs_name}")"
 else
   echo ""
   echo "Unknown system detected"
@@ -572,9 +572,13 @@ mkdir -p -- "$destination_path"
 tar cz "${tar_options[@]}" -C "${source_path}" '.' > "${destination_path}/file_system.tgz"
 
 # un-mount
-if type -P diskutil 2>&1 > /dev/null ; then
+if type -P diskutil &> /dev/null ; then
+  # MacOS
+
   diskutil umount "$bootfs_name" || :
 elif [[ -n "$bootfs_mount_source" ]] && [[ -n "$bootfs_mount_target" ]] ; then
+  # WSL
+
   umount "$bootfs_mount_source"
   rmdir "$bootfs_mount_target"
 
@@ -586,8 +590,10 @@ echo ""
 echo "####################################################"
 echo ""
 
-elif type -P udisksctl 2>&1 > /dev/null ; then
-  udisksctl unmount -b "/dev/disk/by-label/${bootfs_name}" 2>&1 > /dev/null
+elif type -P udisksctl &> /dev/null ; then
+  # Linux
+
+  udisksctl unmount -b "/dev/disk/by-label/${bootfs_name}"
 fi
 
 dotpi_echo_info "Mirror of file-system is here: ${file_system_mirror}"
