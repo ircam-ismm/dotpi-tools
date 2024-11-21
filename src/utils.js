@@ -23,24 +23,23 @@ export const packageVersion = () => {
 
 export function greetings() {
   const pkg = JSON.parse(fs.readFileSync(path.join(LIB_ROOT, 'package.json')));
-  const homepage = pkg.homepage;
 
-  console.log(chalk.grey(`[dotpi#v${packageVersion()}]`));
+  console.log(chalk.grey(`[${pkg.name}#v${pkg.version}]`));
   console.log('');
-  console.log(chalk.yellow(`> welcome to dotpi`));
+  console.log(chalk.yellow(`> welcome to ${pkg.name}`));
   // @todo - update
   console.log('');
-  console.log(`- homepage: ${chalk.cyan(`${homepage}`)}`);
-  console.log(`- issues: ${chalk.cyan(`${homepage}/issues`)}`);
+  console.log(`- documentation: ${chalk.cyan(`${pkg.homepage}`)}`);
+  console.log(`- issues: ${chalk.cyan(`${pkg.bugs.url}`)}`);
 
-  if (platform() !== 'darwin') {
-    console.log(chalk.yellow(`
-* WARNING: these tools have only been tested on Mac so far, you may encounter issues
-* on other platform, and in particular on windows.
-*
-* Any PR welcome! ${homepage}
-*   `))
-  }
+//   if (platform() !== 'darwin') {
+//     console.log(chalk.yellow(`
+// * WARNING: these tools have only been tested on Mac so far, you may encounter issues
+// * on other platform, and in particular on windows.
+// *
+// * Any PR welcome! ${homepage}
+// *   `))
+//   }
 }
 
 export function title(str) {

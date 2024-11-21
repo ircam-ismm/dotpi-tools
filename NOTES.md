@@ -5,6 +5,7 @@
 ### Fix
 
 - [x] `--install-rpi` do not work when inside a project
+- [x] modify message to eject SD card when on Windows
 
 ### General
 

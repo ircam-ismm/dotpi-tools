@@ -101,8 +101,12 @@ export default async function installRpi(mocks = null) {
     return;
   }
 
+  let sdCardMsg = isWindowsWsl()
+    ? `> You can now eject the SD card, put it in the Raspberry Pi and power it on`
+    : `> You can now put the SD card in the Raspberry Pi and power it on`;
+
   console.log('');
-  console.log(chalk.yellow(`> You can now put the SD card in the Raspberry Pi and power it on`));
+  console.log(chalk.yellow(sdCardMsg));
   console.log('');
 
   const { monitorInstall } = await prompts({

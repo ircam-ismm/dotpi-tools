@@ -1,7 +1,7 @@
 {
   "name": "@dotpi/tools",
   "version": "1.0.0",
-  "description": "Set of install script for confugurin dotpi on Raspberry Pi",
+  "description": "Set of scripts for managing dotpi fleets of Raspberry Pi",
   "author": "Jean-Philippe Lambert",
   "contributors": [
     "Jean-Philippe Lambert",
@@ -11,7 +11,17 @@
   "bin": {
     "dotpi-tools": "./dotpi-tools.js"
   },
-  "homepage": "https://github.com/ircam-ismm/dotpi-install",
+  "homepage": "https://ircam-ismm.github.io/dotpi/",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ircam-ismm/dotpi-tools"
+  },
+  "bugs": {
+    "url": "https://github.com/ircam-ismm/dotpi-tools/issues"
+  },
   "scripts": {
     "test": "node --test"
   },
