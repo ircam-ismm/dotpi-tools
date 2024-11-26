@@ -25,10 +25,10 @@ dotpi_audio_device_supported=(
   'raspberry pi dac+'
   'raspberry pi digiamp+'
   'raspberry pi codec zero'
-  'iqaudio pi dac pro'
-  'iqaudio pi dac+'
-  'iqaudio pi digiamp+'
-  'iqaudio pi codec zero'
+  'iqaudio dac pro'
+  'iqaudio dac+'
+  'iqaudio digiamp+'
+  'iqaudio codec zero'
   'bluetooth'
   'ue boom 2'
   'ue boom 3'
@@ -171,22 +171,22 @@ dotpi_audio_device_select() (
     # Raspberry
     # Cf. https://www.raspberrypi.com/documentation/accessories/audio.html#configuration
 
-    'raspberry pi dac pro'|'iqaudio pi dac pro')
+    'raspberry pi dac pro'|'iqaudio dac pro')
       dtoverlay=rpi-dacpro
       _dotpi_audio_device_select_raspberry_pi
       ;;
 
-    'raspberry pi dac+'|'iqaudio pi dac+')
-      dtoverlay=rpi-dacplus
+    'raspberry pi dac+'|'iqaudio dac+')
+      dtoverlay='rpi-dacplus,auto_mute_amp'
       _dotpi_audio_device_select_raspberry_pi
       ;;
 
-    'raspberry pi digiamp+'|'iqaudio pi digiamp+')
-      dtoverlay=rpi-digiampplus
+    'raspberry pi digiamp+'|'iqaudio digiamp+')
+      dtoverlay='rpi-digiampplus,auto_mute_amp'
       _dotpi_audio_device_select_raspberry_pi
       ;;
 
-    'raspberry pi codec zero'|'iqaudio pi codec zero')
+    'raspberry pi codec zero'|'iqaudio codec zero')
       dtoverlay=rpi-codeczero
       _dotpi_audio_device_select_raspberry_pi
       ;;
@@ -436,6 +436,64 @@ _dotpi_audio_device_volume_set_alsa() (
   dotpi_configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
                             --key dotpi_audio_volume \
                             --value "$volume"
+)
+
+dotpi_audio_device_init() (
+
+  if [[ -z "$dotpi_audio_device" ]] ; then
+    dotpi_echo_warning "dotpi_audio_device not set, keeping default audio device"
+    return 0
+  fi
+
+  model_normalised="$(dotpi_audio_device_model_normalise "$dotpi_audio_device")"
+
+  # hardware
+    case "$model_normalised" in
+      'raspberry pi codec zero'|'iqaudio codec zero')
+
+      usr_repository="raspberrypi/Pi-Codec"
+      usr_directory="${DOTPI_ROOT}/usr/${usr_repository}"
+
+      # clone once to be able to init offline
+      if ! [[ -d "${usr_directory}" ]] ; then
+        mkdir -p "${usr_directory}"
+        git clone "https://github.com/${usr_repository}.git" "${usr_directory}" || {
+          dotpi_echo_error "Unable to clone repository ${usr_repository}"
+          return 1
+        }
+      fi
+
+      alsactl restore -f "${usr_directory}/Codec_Zero_StereoMIC_record_and_HP_playback.state"
+      ;;
+
+    esac
+
+  # alsa
+  case "$model_normalised" in
+
+    'headphones')
+
+      amixer -D sysdefault sset -- 'PCM' 'on'
+      amixer -D sysdefault sset -- 'PCM' '0dB'
+      alsactl store
+    ;;
+
+    'raspberry pi dac pro'|'iqaudio dac pro' \
+    | 'raspberry pi dac+'|'iqaudio dac+' \
+    | 'raspberry pi digiamp+'|'iqaudio digiamp+' \
+    | 'raspberry pi codec zero'|'iqaudio codec zero')
+
+      amixer -D sysdefault sset -- 'Headphone' 'on'
+      amixer -D sysdefault sset -- 'Headphone' '0dB'
+
+      amixer -D sysdefault sset -- 'Lineout' 'on'
+      amixer -D sysdefault sset -- 'Lineout' '0dB'
+
+      alsactl store
+    ;;
+
+  esac
+
 )
 
 # set and store volume for the current audio device
