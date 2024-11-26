@@ -20,12 +20,20 @@ dotpi_audio_device_supported=(
   'hifiberry digi+ pro'
   'hifiberry amp+'
   'hifiberry amp3'
+  'hifiberry dac for raspberry pi 1'
+  'raspberry pi dac pro'
+  'raspberry pi dac+'
+  'raspberry pi digiamp+'
+  'raspberry pi codec zero'
+  'iqaudio pi dac pro'
+  'iqaudio pi dac+'
+  'iqaudio pi digiamp+'
+  'iqaudio pi codec zero'
   'bluetooth'
   'ue boom 2'
   'ue boom 3'
   'ue megaboom 2'
   'ue megaboom 3'
-  'hifiberry dac for raspberry pi 1'
 )
 
 _dotpi_audio_device_get_options() {
@@ -163,22 +171,22 @@ dotpi_audio_device_select() (
     # Raspberry
     # Cf. https://www.raspberrypi.com/documentation/accessories/audio.html#configuration
 
-    'raspberry pi dac pro')
+    'raspberry pi dac pro'|'iqaudio pi dac pro')
       dtoverlay=rpi-dacpro
       _dotpi_audio_device_select_raspberry_pi
       ;;
 
-    'raspberry pi dac+')
+    'raspberry pi dac+'|'iqaudio pi dac+')
       dtoverlay=rpi-dacplus
       _dotpi_audio_device_select_raspberry_pi
       ;;
 
-    'raspberry pi digiamp+')
+    'raspberry pi digiamp+'|'iqaudio pi digiamp+')
       dtoverlay=rpi-digiampplus
       _dotpi_audio_device_select_raspberry_pi
       ;;
 
-    'raspberry pi codec zero')
+    'raspberry pi codec zero'|'iqaudio pi codec zero')
       dtoverlay=rpi-codeczero
       _dotpi_audio_device_select_raspberry_pi
       ;;
