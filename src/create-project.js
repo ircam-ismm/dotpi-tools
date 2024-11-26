@@ -262,7 +262,7 @@ export async function configureWiFi(data, mocks = null) {
         const configPath = path.join(PATH_NETWORK_DIRECTORY, value);
 
         if (!WIFI_ID_REGEXP.test(value)) {
-          return 'Please provide a valid WiFi configuration id. A valid configuration id must contain only lower case letters, digits, - and _';
+          return 'Invalid WiFi configuration id: use only lower case letters, digits, - and _';
         } else if (fs.existsSync(configPath)) {
           return `A WiFi configuration named "${value}" already exists`;
         }
