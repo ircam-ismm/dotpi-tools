@@ -350,7 +350,7 @@ export async function injectUtilityFiles(data) {
 
   data.files[PATH_DOTPI_FILE] = JSON.stringify({ dotpiToolsVersion: packageVersion() }, null, 2);
 
-  data.files[PATH_GITIGNORE] = renderTemplate('.gitignore', {
+  data.files[PATH_GITIGNORE] = renderTemplate('gitignore', {
     PATH_DOTPI_SECRETS_BASH,
     PATH_SSH_DIRECTORY,
     PATH_NETWORK_DIRECTORY,
