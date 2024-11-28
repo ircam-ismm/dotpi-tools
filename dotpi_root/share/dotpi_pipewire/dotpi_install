@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# drop sudo privileges
+if [[ "$USER" == "root" ]]; then
+  if [[ -n "$SUDO_USER" ]] ; then
+    user="$SUDO_USER"
+  else
+    FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
+    user="${FIRSTUSER:-pi}"
+  fi
+  sudo -u "${user}" "$0" "$@"
+fi
+
 local_file="$(dotpi readlink_follow "$0")"
 local_path="$(dirname -- "$local_file")"
 
