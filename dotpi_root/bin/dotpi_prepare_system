@@ -183,7 +183,7 @@ systemctl --user enable --now wireplumber.service || {
   # do not exit
 }
 
-${DOTPI_ROOT}/share/dotpi_pipewire/dotpi_install || {
+"${DOTPI_ROOT}/share/dotpi_pipewire/dotpi_install" || {
   dotpi echo_error "error while installing dotpi_pipewire: ${?}"
   # do not exit
 }
