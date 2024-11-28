@@ -13,6 +13,9 @@ _local_path="$(cd -- "$(dirname -- "${_local_file}")" && pwd)"
 DOTPI_ROOT="$(cd -- "${_local_path}/.." && pwd)"
 export DOTPI_ROOT
 
+export PATH="${PATH}:${DOTPI_ROOT}/usr/bin"
+export PATH="${PATH}:${DOTPI_ROOT}/bin"
+
 source "${DOTPI_ROOT}/share/dotpi_functions.bash"
 
 source "${DOTPI_ROOT}/share/dotpi_environment.bash"
