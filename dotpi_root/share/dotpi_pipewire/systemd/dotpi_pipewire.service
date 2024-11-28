@@ -1,0 +1,22 @@
+[Unit]
+Description=dotpi pipewire audio daemon
+Requires=pipewire.service
+After=pipewire.service
+
+# TODO: stop on system stop
+
+[Service]
+Type=exec
+
+ExecStart=/opt/dotpi/share/dotpi_pipewire/systemd/dotpi_pipewire_command
+
+Restart=always
+
+# wait before restarting
+RestartSec=10s
+
+# Do not stop to try restarting service
+StartLimitBurst=0
+
+[Install]
+WantedBy=pipewire.service

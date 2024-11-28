@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [[ "$USER" == "root" ]] ; then
+   dotpi echo_error "This script MUST NOT be executed by root (or via sudo)"
+   exit 1
+fi
+
+local_file="$(dotpi readlink_follow "$0")"
+local_path="$(dirname -- "$local_file")"
+
+(( trial_count_max = 10 ))
+while true ; do
+    if systemctl --user is-active "pipewire" > /dev/null 2>&1 ; then
+        (
+            (( trial_count = 0 ))
+            while (( trial_count < trial_count_max )) ; do
+                "${local_path}/../bin/dotpi_pipewire_relink" && exit 0
+                sleep 3
+                (( ++trial_count ))
+            done
+            dotpi echo_error "Failed to relink pipewire outputs ${trial_count_max} times."
+            dotpi echo_warning "Rebooting system."
+            sudo reboot
+        )
+    fi
+    sleep 10
+done
+
+

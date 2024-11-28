@@ -1,0 +1,13 @@
+#!/bin/bash
+
+local_file="$(dotpi readlink_follow "$0")"
+local_path="$(dirname -- "$local_file")"
+
+sudo dotpi service_install --user "${local_path}/systemd/dotpi_pipewire.service"
+
+source_path="${local_path}/bin"
+destination_path="${DOTPI_ROOT}/usr/bin"
+sudo mkdir -p -- "$destination_path"
+for executable in "${source_path}/"* ; do
+    sudo ln -s -f -- "$executable" "${destination_path}/$(basename -- "$executable")"
+done
