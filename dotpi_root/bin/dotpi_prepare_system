@@ -155,7 +155,7 @@ sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_
   error_exit $? "install dotpi_avahi_monitor.service" $error_exit_code_services
 }
 
-############## pipewire (and jackd compatibility)
+############## audio
 error_exit_code_audio=6
 
 # set alsa default output volume and unmute
@@ -164,11 +164,11 @@ sudo dotpi audio_device_init || {
     $error_exit_code_audio
   }
 
-# over-ride calls to jackd
-# copy with prefix 0- to ensure it is loaded before default aarch64-linux-gnu.conf
+# over-ride calls to jack, to use pipewire instead
+# copy with prefix 000- to ensure it is loaded before default aarch64-linux-gnu.conf
 for f in /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf ; do
   source_basename="$(basename "$f")"
-  destination_basename="0-${source_basename}"
+  destination_basename="000-${source_basename}"
   sudo cp "$f" "/etc/ld.so.conf.d/${destination_basename}" || {
     error_exit $? "install ${f}" $error_exit_code_audio
   }

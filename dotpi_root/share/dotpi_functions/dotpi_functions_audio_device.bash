@@ -284,24 +284,6 @@ dotpi_audio_device_select() (
                             --value \""${model_value}"\"
 )
 
-_dotpi_audio_device_jackd_set_configuration() (
-  model="$1"
-  (cd "${DOTPI_ROOT}/share/jackd" && ln -s -f "dotpi_jackd_${model}.bash" 'dotpi_jackd.bash') || {
-    dotpi_echo_error "Unable to change jackd configuration to ${model}"
-    return 1
-  }
-
-  # we can change audio device in a temporary file-system, too
-  if dotpi_system_is_raspberry_pi ; then
-    dotpi_echo_warning "Restart jackd service"
-    service='jackd'
-    systemctl is-active "$service" > /dev/null 2>&1 \
-      && systemctl restart "$service" || {
-        dotpi_echo_warning "systemctl unable to restart service ${service}"
-      }
-fi
-)
-
 _dotpi_audio_device_disable_all() (
   exception_family="$1"
 
@@ -338,14 +320,10 @@ _dotpi_audio_device_select_headphones() (
   # (setting at the end the the file fails)
   pattern="$(dotpi_configuration_get_pattern --prefix "# dtparam=audio")"
   perl -pe "s/${pattern}/"'dtparam=audio=on/' -i -- "$config_file"
-
-  _dotpi_audio_device_jackd_set_configuration "headphones"
 )
 
 _dotpi_audio_device_select_bluetooth() (
   _dotpi_audio_device_disable_all bluetooth
-
-  _dotpi_audio_device_jackd_set_configuration "bluetooth"
 )
 
 _dotpi_audio_device_select_raspberry_pi() (
@@ -360,8 +338,6 @@ _dotpi_audio_device_select_raspberry_pi() (
 dtoverlay=${dtoverlay}
 
 EOF
-
-  _dotpi_audio_device_jackd_set_configuration "hifiberry"
 )
 
 
@@ -377,8 +353,6 @@ _dotpi_audio_device_select_hifiberry() (
 dtoverlay=${dtoverlay}
 
 EOF
-
-  _dotpi_audio_device_jackd_set_configuration "hifiberry"
 )
 
 _dotpi_audio_device_disable_headphones() (

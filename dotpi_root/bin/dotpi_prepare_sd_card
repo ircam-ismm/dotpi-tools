@@ -443,22 +443,8 @@ fi
 
 ######### audio device
 
-# set model before, as it will select jackd configuration
+# set model first, to use it for audio configuration
 dotpi_audio_device_select --model "$dotpi_audio_device" --config "$config_file"
-
-# copy configuration files from project for over-rides
-source_path="${project_path}/jackd"
-destination_path="${DOTPI_ROOT}/share/jackd"
-mkdir -p -- "$destination_path"
-if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
-  (set -o pipefail ; \
-   cd -- "$source_path" && tar c "${tar_options[@]}" '.' \
-       | tar x -C "$destination_path") || {
-    dotpi_echo_error "Unable to install files from ${source_path}"
-    exit 1
-  }
-fi
-
 
 # back-up imager config
 
@@ -613,4 +599,3 @@ dotpi_echo_info "You can monitor the preparation of the system with the followin
 dotpi_echo_info "(You will have to wait until the network is ready.)"
 dotpi_echo_info ''
 dotpi_echo_info "ssh ${dotpi_user}@${dotpi_instance_hostname}.local 'tail -f /opt/dotpi/var/log/dotpi_prepare_system_*.log'"
-
