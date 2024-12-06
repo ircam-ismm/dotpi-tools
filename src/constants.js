@@ -27,4 +27,3 @@ export const PATH_DOTPI_TMP_BASH = path.join(PATH_DOTPI_TMP_DIRECTORY, 'dotpi_tm
 // misc
 export const DOTPI_SSH_KEYS_PREFIX = 'id_rsa';
 export const PROJECT_NAME_REGEXP = /^[a-z0-9\-_]+$/;
-export const WIFI_ID_REGEXP = PROJECT_NAME_REGEXP;

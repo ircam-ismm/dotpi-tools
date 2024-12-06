@@ -30,7 +30,6 @@ import {
   // utilities
   DOTPI_SSH_KEYS_PREFIX,
   PROJECT_NAME_REGEXP,
-  WIFI_ID_REGEXP,
   // this must be put in gitignore
   PATH_DOTPI_TMP_DIRECTORY,
   // where the command is executed
@@ -253,23 +252,9 @@ export async function configureWiFi(data, mocks = null) {
   // https://people.freedesktop.org/~lkundrak/nm-dbus-api/nm-settings.html
   // @note - let's consider we always use wpa-psk for now
 
+  const computedValues = {};
   const answers = await prompts([
     {
-      type: 'text',
-      name: 'wifiId',
-      message: 'Id of the WiFi connection:',
-      validate: value => {
-        const configPath = path.join(PATH_NETWORK_DIRECTORY, value);
-
-        if (!WIFI_ID_REGEXP.test(value)) {
-          return 'Invalid WiFi configuration id: use only lower case letters, digits, - and _';
-        } else if (fs.existsSync(configPath)) {
-          return `A WiFi configuration named "${value}" already exists`;
-        }
-
-        return true;
-      },
-    }, {
       type: 'select',
       name: 'wifiMode',
       message: 'Select WiFi mode:',
@@ -282,15 +267,43 @@ export async function configureWiFi(data, mocks = null) {
     {
       type: 'text',
       name: 'wifiSsid',
-      message: 'Wifi SSID:',
+      message: 'Wifi name (SSID):',
+      validate: value => {
+        if(new Blob([value]).size > 32) {
+          return `'${value}' is too long (more than 32 bytes)`;
+        }
+
+        const wifiId = value.toLowerCase().replace(/[^a-z0-9\-_]/g, '_');
+        const configPath = path.join(PATH_NETWORK_DIRECTORY, value);
+
+        // @TODO: file is created later, this test is bypassed
+        if (fs.existsSync(configPath)) {
+          return `A WiFi configuration named "${value}" already exists`;
+        }
+
+        Object.assign(computedValues, { wifiId });
+        return true;
+      },
     },
     {
       type: 'text',
       name: 'wifiPsk',
       message: 'Wifi password:',
-      validate: value => value.length < 8 ? 'A valid password must have at least 8 characters' : true,
+      validate: value => {
+        if (new Blob([value]).size < 8) {
+          return `'${value}' is too short (less than 8 bytes)`;
+        }
+
+        if (new Blob([value]).size > 63) {
+          return `'${value}' is too long (more than 63 bytes)`;
+        }
+
+        return true;
+      },
     },
   ], { onCancel });
+
+  Object.assign(answers, computedValues);
 
   const { wifiId, wifiMode } = answers;
   const connectionPath = path.join(PATH_NETWORK_DIRECTORY, `${wifiId}.nmconnection`);
@@ -346,7 +359,7 @@ export async function configureWiFi(data, mocks = null) {
 
 
 export async function injectUtilityFiles(data) {
-  const { projectName } = data;
+  const { projectName } = data;
 
   data.files[PATH_DOTPI_FILE] = JSON.stringify({ dotpiToolsVersion: packageVersion() }, null, 2);
 
