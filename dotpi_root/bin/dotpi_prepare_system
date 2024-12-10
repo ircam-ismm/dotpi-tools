@@ -177,6 +177,27 @@ sudo ldconfig || {
   error_exit $? "ldconfig" $error_exit_code_audio
 }
 
+# settings over-rides
+source_path="${DOTPI_ROOT}/share/wireplumber"
+destination_path='/usr/share/wireplumber'
+if [ -r "$source_path" ] ; then
+   sudo mkdir -p "$destination_path"
+   tar c -C "$source_path" '.' | sudo tar x -C "$destination_path"
+   exit_code=$?
+   pipe_status="${PIPESTATUS[0]}"
+   if (( exit_code || pipe_status )) ; then
+      if (( exit_code )) ; then
+         dotpi echo_error "Error code: $exit_code"
+      fi
+
+      if (( pipe_status )) ; then
+         dotpi echo_error "Pipe status: $pipe_status"
+      fi
+
+      error_exit "$((exit_code ? exit_code : pipe_status))"  "Error while copying ${source_path} to ${destination_path}" $error_exit_code_audio
+   fi
+fi
+
 systemctl --user enable --now wireplumber.service || {
   dotpi echo_warning "error while enabling wireplumber.service now: ${?}"
   dotpi echo_warning "wireplumber.service will be available after a reboot"
