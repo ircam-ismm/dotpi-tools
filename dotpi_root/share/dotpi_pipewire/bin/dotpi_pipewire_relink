@@ -31,7 +31,7 @@ async function pipewireRelink() {
   });
 
   if (playbackNodes.length === 0) {
-    console.warn('pipewireRelink: no playback node');
+    // console.warn('pipewireRelink: no playback node');
     // no error
     process.exit(0);
   }
