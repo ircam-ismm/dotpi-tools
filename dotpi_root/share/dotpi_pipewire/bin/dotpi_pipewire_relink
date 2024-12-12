@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/env node
 
 // @TODO: use a proper pipewire lua script that automatically runs
 // whenever the default audio output is restored
