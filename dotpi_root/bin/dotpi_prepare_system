@@ -99,7 +99,7 @@ sudo mkdir -p -- "$N_PREFIX" || {
 }
 
 while ! curl -L https://bit.ly/n-install -o /tmp/n-install ; do
-  dotpi echo_warning "Error while retriving n-install"
+  dotpi echo_warning "Error while retrieving n-install"
   sleep 1
   echo "trying again"
 done
