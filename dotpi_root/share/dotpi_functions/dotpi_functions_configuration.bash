@@ -93,8 +93,8 @@ _dotpi_configuration_get_options() {
 }
 
 dotpi_configuration_escape_string() (
-  # escape / \ $
-  echo "$(echo "$1" | perl -pe 's#([/\\\$])#\\${1}#g')"
+  # escape all for regexp
+  echo -n "$1" | perl -ne 'print quotemeta($_)'
 )
 
 dotpi_configuration_get_pattern() (

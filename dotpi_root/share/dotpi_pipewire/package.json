@@ -1,0 +1,9 @@
+{
+  "name": "@dotpi/pipewire",
+  "description": "Monitor Pipewire to dynamically relink playback nodes to output nodes",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "postinstall": "dotpi_install"
+  }
+}

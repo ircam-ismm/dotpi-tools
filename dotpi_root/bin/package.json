@@ -1,0 +1,6 @@
+{
+  "name": "@dotpi/bin",
+  "description": "dotpi bin configuration for node.js",
+  "version": "1.0.0",
+  "type": "module"
+}

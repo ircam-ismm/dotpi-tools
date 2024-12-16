@@ -1,0 +1,6 @@
+{
+  "name": "@dotpi/audio_bluetooth",
+  "description": "Monitor audio bluetooth keep it powered on and to dynamically relink playback nodes to output nodes",
+  "version": "1.0.0",
+  "type": "module"
+}
