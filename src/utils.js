@@ -89,7 +89,7 @@ export function isPrivateSshKey(pathname) {
 export function isWindowsWsl() {
   const buffer = execSync('uname -a', { shell: '/bin/bash' });
   const unameString = buffer.toString();
-  return /Microsoft/.test(unameString);
+  return /[Mm]icrosoft/.test(unameString);
 }
 
 /**

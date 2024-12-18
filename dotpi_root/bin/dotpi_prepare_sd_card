@@ -335,7 +335,7 @@ if [[ "$(uname)" =~ "Darwin" ]] ; then
 
   # avoid spotlight errors
   bootfs_path="$(find /Volumes -name "$bootfs_name" 2> /dev/null)"
-elif [[ "$(uname -a)" =~ "Microsoft" ]] ; then
+elif [[ "$(uname -a)" =~ [Mm]icrosoft ]] ; then
   echo ""
   echo "Windows Subsystem for Linux system detected"
   echo ""
