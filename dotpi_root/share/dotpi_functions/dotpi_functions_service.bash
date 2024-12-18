@@ -44,8 +44,10 @@ dotpi_service_install() (
   ln -s -f "$(dotpi readlink_follow "${service_file}")" "${service_destination}"
 
   if (( user_service )); then
+    regular_user_name="$(dotpi_regular_user_get_name)"
+
     # drop sudo, with a proper session, including XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS
-    command_prefix=(systemctl --machine="${SUDO_USER}@")
+    command_prefix=(systemctl --machine="${regular_user_name}@")
   else
     command_prefix=(systemctl)
   fi
@@ -99,8 +101,10 @@ dotpi_service_uninstall() (
   rm -f "${service_destination}/${service_name}"
 
   if (( user_service )); then
+    regular_user_name="$(dotpi_regular_user_get_name)"
+
     # drop sudo, with a proper session, including XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS
-    command_prefix=(systemctl --machine="${SUDO_USER}@")
+    command_prefix=(systemctl --machine="${regular_user_name}@")
   else
     command_prefix=(systemctl)
   fi
