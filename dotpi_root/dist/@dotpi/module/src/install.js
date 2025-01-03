@@ -49,6 +49,7 @@ export async function install(modules) {
         cwd,
         env: { FORCE_COLOR: 'true' }, // do not remove colors
         verbose: 'full', // print stdout and stderr
+        // minimal install in the modules directory
       })`
         npm --prefix ${cwd}
           install --no-fund
@@ -66,10 +67,14 @@ export async function install(modules) {
         cwd,
         env: { FORCE_COLOR: 'true' }, // do not remove colors
         verbose: 'full', // print stdout and stderr
+        // complete install within the module itself
+        // be sure to install links for relative dependencies also
+        // run postinstall script
       })`
         npm --prefix ${cwd}
           install --no-fund
           --omit dev
+          --install-links
         `;
 
     } catch (error) {
