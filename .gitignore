@@ -6,6 +6,8 @@ secrets/
 
 # temporary files
 tmp/
+**/*.BAD
+**/*.bak
 
 projects/
 !projects/example-*
