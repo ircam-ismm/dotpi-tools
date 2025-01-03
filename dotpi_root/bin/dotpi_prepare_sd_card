@@ -275,7 +275,7 @@ destination_path="${DOTPI_ROOT}/etc/ssh"
 mkdir -p -- "$destination_path"
 if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
   (set -o pipefail ; \
-   cd -- "$source_path" && tar c "${tar_options[@]}" *.pub \
+   cd -- "$source_path" && tar c "${tar_options[@]}" -- *.pub \
        | tar x -C "$destination_path") || {
     dotpi_echo_error "No public key found in ${source_path}"
     exit 1
@@ -289,7 +289,7 @@ destination_path="${DOTPI_ROOT}/etc/network"
 mkdir -p -- "$destination_path"
 if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
   (set -o pipefail ; \
-   cd -- "$source_path" && tar c "${tar_options[@]}" *.nmconnection \
+   cd -- "$source_path" && tar c "${tar_options[@]}" -- *.nmconnection \
        | tar x -C "$destination_path") || {
     dotpi_echo_error "No network connection found in ${source_path}"
     exit 1
