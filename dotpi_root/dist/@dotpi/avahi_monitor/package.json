@@ -1,0 +1,10 @@
+{
+  "name": "@dotpi/avahi_monitor",
+  "version": "1.0.0",
+  "description": "A tool to monitor and restart Avahi service",
+  "scripts": {
+    "postinstall": "./dotpi_install",
+    "preuninstall": "./dotpi_uninstall"
+  },
+  "license": "BSD-3-clause"
+}

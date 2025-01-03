@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ "$USER" != "root" ]]; then
+  dotpi echo_error "This command must be run as root"
+  exit 1
+fi
+
+local_file="$(dotpi readlink_follow "$0")"
+local_path="$(dirname -- "$local_file")"
+
+service_name="dotpi_avahi_monitor.service"
+service_file="${local_path}/${service_name}"
+
+dotpi echo_info "Install ${service_file}"
+dotpi service_install "${service_file}"

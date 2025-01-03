@@ -49,7 +49,7 @@ sudo dpkg --configure -a || {
   error_exit $? dpkg $error_exit_code_package
 }
 
-dotpi echo_info "Uninstall apt packages: ${dotpi_apt_uninstall_default[@]} ${dotpi_apt_uninstall[@]}"
+dotpi echo_info "Uninstall apt packages:" "${dotpi_apt_uninstall_default[@]}" "${dotpi_apt_uninstall[@]}"
 sudo dotpi apt_get purge "${dotpi_apt_uninstall_default[@]}" "${dotpi_apt_uninstall[@]}" || {
   error_exit $? 'apt_get purge' $error_exit_code_package
 }
@@ -140,23 +140,53 @@ for executable in "${executables[@]}" ; do
     }
 done
 
-############## services
+############## services and modules
 error_exit_code_services=4
 
-# allow to run user services without login
+dotpi echo_info "Enable linger to run user services without login"
+
 sudo loginctl enable-linger "$FIRSTUSER" || {
   error_exit $? "loginctl enable-linger" $error_exit_code_services
 }
 
-############# avahi (multicast DNS, bonjour)
+############# dotpi module manager
 
-# restart when hostname is not resolved by mDNS
-sudo dotpi service_install "${DOTPI_ROOT}/share/dotpi_avahi_monitor/dotpi_avahi_monitor.service" || {
-  error_exit $? "install dotpi_avahi_monitor.service" $error_exit_code_services
+# bootstrap-install
+module_name="@dotpi/module"
+source_path="${DOTPI_ROOT}/dist/${module_name}"
+destination_prefix="${DOTPI_ROOT}/lib"
+destination_path="${destination_prefix}/node_modules/${module_name}"
+{
+  dotpi echo_info "Install dotpi module tool"
+  # no dependencies, yet
+  sudo npm install --no-fund \
+    --prefix "$destination_prefix" \
+    --install-strategy nested \
+    --omit dev \
+    --save \
+    --ignore-scripts \
+    -- \
+    "$source_path" || {
+    error_exit $? "dotpi_module: error when installing '${module_name}'" $error_exit_code_services
+  }
+
+  (
+    echo "# Installing '${module_name}' dependencies"
+    # install dependencies, and run postinstall
+    sudo npm install --no-fund \
+    --prefix "$destination_path" \
+    --omit dev || {
+      error_exit $? "dotpi_module: error when installing '${module_name}' dependencies'" $error_exit_code_services
+    }
+  )
+} || {
+  error_exit $? "${module_name}" $error_exit_code_services
 }
 
 ############## audio
 error_exit_code_audio=6
+
+dotpi echo_info "Configure audio"
 
 # set alsa default output volume and unmute
 sudo dotpi audio_device_init || {
@@ -213,6 +243,8 @@ systemctl --user enable --now wireplumber.service || {
 error_exit_code_dotpi_manager=7
 
 if [[ "$dotpi_manager_install" == "yes" ]]; then (
+  dotpi echo_info "Install dotpi-manager"
+
   destination="${DOTPI_ROOT}/share/dotpi-manager"
   sudo mkdir -p -- "$destination" || {
     error_exit $? "dotpi-manager: mkdir ${destination}" $error_exit_code_dotpi_manager
@@ -242,6 +274,8 @@ if [[ "$dotpi_manager_install" == "yes" ]]; then (
 error_exit_code_dotpi_led=8
 
 if [[ "$dotpi_led_install" == "yes" ]]; then (
+  dotpi echo_info "Install dotpi-led"
+
   destination="${DOTPI_ROOT}/share/dotpi-led"
   sudo mkdir -p -- "$destination" || {
     error_exit $? "dotpi-led: mkdir ${destination}" $error_exit_code_dotpi_led
@@ -266,6 +300,15 @@ if [[ "$dotpi_led_install" == "yes" ]]; then (
     error_exit $? "dotpi-led: dotpi_led_update" $error_exit_code_dotpi_led
   }
 ) fi
+
+############## dotpi modules
+error_exit_code_dotpi_modules=10
+
+dotpi echo_info "Uninstall dotpi modules packages:" "${dotpi_module_uninstall_default[@]}" "${dotpi_module_uninstall[@]}"
+sudo dotpi module uninstall "${dotpi_module_uninstall_default[@]}" "${dotpi_module_uninstall[@]}"
+
+dotpi echo_info "Uninstall dotpi modules packages:" "${dotpi_module_install_default[@]}" "${dotpi_module_install[@]}"
+sudo dotpi module install "${dotpi_module_install_default[@]}" "${dotpi_module_install[@]}"
 
 ############## finalisation
 
