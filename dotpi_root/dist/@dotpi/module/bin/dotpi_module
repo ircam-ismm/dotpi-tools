@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+import { program } from 'commander';
+
+import * as echo from '@dotpi/javascript/echo.js';
+import { install } from '../src/install.js';
+import { uninstall } from '../src/uninstall.js';
+
+program
+  .command('install <modules...>')
+  .description('install list of modules separated by space')
+  .action((modules) => install(modules));
+;
+
+program
+  .command('uninstall <modules...>')
+  .description('uninstall list of modules separated by space')
+  .action((modules) => uninstall(modules));
+;
+
+program.parse();
+

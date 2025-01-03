@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import { fileURLToPath } from 'node:url'
+
+import { symlink } from '@dotpi/javascript/filesystem.js';
+import * as echo from '@dotpi/javascript/echo.js';
+import { dotpiRootGet } from '@dotpi/javascript/system.js';
+
+if (process.getuid() !== 0) {
+  console.error('This script must be run as root');
+  process.exit(1);
+}
+
+// __filename and __dirname are undefined in module type
+const localFileName = fileURLToPath(import.meta.url);
+const localPath = path.dirname(localFileName);
+
+let dotpiRoot;
+try {
+  dotpiRoot = await dotpiRootGet();
+  const destinationPath = path.join(dotpiRoot, 'bin');
+  const sourcePath = path.join(localPath, 'bin');
+  const sourceBaseNames = await fs.readdir(sourcePath);
+
+  // forEach does not wait: parallel execution
+  sourceBaseNames.forEach(async (sourceBaseName) => {
+    const sourceFile = path.join(sourcePath, sourceBaseName);
+    const destinationFile = path.join(destinationPath, sourceBaseName);
+
+    echo.info(`Install ${destinationFile} -> ${sourceFile}`);
+    await symlink(sourceFile, destinationFile);
+  });
+
+} catch (error) {
+  echo.error(`Error with '${localFileName}'`, error.message);
+  throw error;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "dotpi_root_installed_packages",
+  "description": "Packages installed in ${DOTPI_ROOT}/lib",
+  "dependencies": {
+  }
+}

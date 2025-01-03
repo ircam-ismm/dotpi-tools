@@ -1,0 +1,11 @@
+{
+  "name": "@dotpi/javascript",
+  "version": "1.0.0",
+  "description": "dotpi javascript utilities",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "chalk": "^5.4.0",
+    "execa": "^9.5.2"
+  }
+}

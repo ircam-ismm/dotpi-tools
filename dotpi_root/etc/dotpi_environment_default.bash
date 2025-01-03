@@ -66,4 +66,19 @@ dotpi_apt_install_default=(
 # user-defined, use +=(package1 package2) to add packages to list
 dotpi_apt_install=()
 
+# system default
+dotpi_module_uninstall_default=()
+
+# user-defined, use +=(package1 package2) to add packages to list
+dotpi_module_uninstall=()
+
+# system default
+dotpi_module_install_default=(
+  '@dotpi/module'
+  '@dotpi/avahi_monitor'
+)
+
+# user-defined, use +=(package1 package2) to add packages to list
+dotpi_module_install=()
+
 dotpi_node_version='lts'
