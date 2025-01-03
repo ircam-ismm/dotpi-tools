@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if ! dotpi_system_is_raspberry_pi &> /dev/null ; then
+  echo "INFO: System is not a Raspberry Pi with dotpi: no uninstallation"
+  # no error
+  exit 0
+fi
+
 if [[ "$USER" != "root" ]]; then
   dotpi echo_error "This command must be run as root"
   exit 1

@@ -2,10 +2,19 @@
 
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath } from 'node:url';
 
 import * as echo from '@dotpi/javascript/echo.js';
-import { dotpiRootGet } from '@dotpi/javascript/system.js';
+import {
+  dotpiRootGet,
+  isRaspberryPi,
+} from '@dotpi/javascript/system.js';
+
+if (! await isRaspberryPi() ) {
+  echo.info('System is not a Raspberry Pi with dotpi: no uninstallation');
+  // no error
+  process.exit(0);
+}
 
 if (process.getuid() !== 0) {
   console.error('This script must be run as root');
@@ -33,5 +42,9 @@ try {
 
 } catch (error) {
   echo.error(`Error with '${localFileName}'`, error.message);
-  throw error;
+  let exitCode = 1;
+  if (error && error.cause) {
+    exitCode = error.cause.code;
+  }
+  process.exit(exitCode);
 }
