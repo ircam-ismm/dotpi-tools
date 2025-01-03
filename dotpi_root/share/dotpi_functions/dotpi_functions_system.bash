@@ -1,5 +1,16 @@
 #!/bin/bash
 
+dotpi_root_get() (
+  dotpi_root="${DOTPI_ROOT}"
+
+  if [[ -z "$dotpi_root" ]] ; then
+      local_file="$(dotpi_readlink_follow "${BASH_SOURCE[0]}")"
+      dotpi_root="$(dirname -- "$(dirname -- "$local_file")")"
+  fi
+
+  echo "$dotpi_root"
+)
+
 # echo 'raspberry' or 'other'
 dotpi_system_is_raspberry_pi() (
   model='other'
