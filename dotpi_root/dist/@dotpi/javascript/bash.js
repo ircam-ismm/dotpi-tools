@@ -6,8 +6,8 @@ import { regularUserIdGet } from './user.js';
 export async function readVariable({
   filename = '/dev/null', // to get variable from environment
   variable,
+  uid = regularUserIdGet(),
  } = {}) {
-  const uid = regularUserIdGet();
 
   try {
 

@@ -13,7 +13,7 @@ export async function dotpiRootGet() {
     ({ stdout: dotpiRoot} = await $({id, shell })`echo $DOTPI_ROOT`);
 
     if (!dotpiRoot) {
-      dotpiRoot=dotpiRootDefault;
+      dotpiRoot = dotpiRootDefault;
     }
   }
 
