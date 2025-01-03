@@ -4,8 +4,8 @@
 
     "@dotpi/avahi_monitor": "file:///opt/dotpi/dist/@dotpi/avahi_monitor",
 
-    "@dotpi/manager": "git+https://github.com/ircam-ismm/dotpi-manager.git#feat-dotpi-module",
+    "@dotpi/manager": "git+https://github.com/ircam-ismm/dotpi-manager#feat-dotpi-module",
 
-    "_doc_see": "https://docs.npmjs.com/cli/configuring-npm/package-json?v=true#dependencies"
+    "_doc_see": "https://docs.npmjs.com/cli/v10/configuring-npm/package-json#dependencies"
   }
 }

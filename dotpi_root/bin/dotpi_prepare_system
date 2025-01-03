@@ -243,37 +243,6 @@ systemctl --user enable --now wireplumber.service || {
   # do not exit
 }
 
-############## dotpi-manager
-error_exit_code_dotpi_manager=7
-
-if [[ "$dotpi_manager_install" == "yes" ]]; then (
-  dotpi echo_info "Install dotpi-manager"
-
-  destination="${DOTPI_ROOT}/share/dotpi-manager"
-  sudo mkdir -p -- "$destination" || {
-    error_exit $? "dotpi-manager: mkdir ${destination}" $error_exit_code_dotpi_manager
-  }
-  cd -- "$destination" || {
-    error_exit $? "dotpi-manager: cd ${destination}" $error_exit_code_dotpi_manager
-  }
-
-  destination_runtime="${destination}/runtime"
-  sudo rm -rf -- "$destination_runtime" || {
-    error_exit $? "dotpi-manager: rm ${destination_runtime}" $error_exit_code_dotpi_manager
-  }
-  sudo git clone --depth=1 https://github.com/ircam-ismm/dotpi-manager.git "$destination_runtime" || {
-    error_exit $? "dotpi-manager: git clone" $error_exit_code_dotpi_manager
-  }
-  # bootstrap-install
-  sudo bash -c "\
-    source '${DOTPI_ROOT}/share/dotpi_init.bash' && \
-    source runtime/dotpi/dotpi-manager.bash && \
-    dotpi_manager_update \
-  " || {
-    error_exit $? "dotpi_manager_update" $error_exit_code_dotpi_manager
-  }
-) fi
-
 ############## dotpi-led
 error_exit_code_dotpi_led=8
 
