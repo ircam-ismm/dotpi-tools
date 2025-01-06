@@ -2,10 +2,41 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { $ } from 'execa';
+import { globby } from 'globby';
 
 import * as echo from '@dotpi/javascript/echo.js';
 import { configurationGet } from './configuration.js';
-import { skip } from 'node:test';
+
+async function uninstallScriptRun(module) {
+  try {
+
+    const cwd = module;
+    const output = await $({
+      cwd,
+    })`npm --prefix ${cwd}
+           run --json
+        `;
+    const uninstallScript = JSON.parse(output.stdout).preuninstall;
+
+    if (uninstallScript) {
+      // npm does not automatically run preuninstall script
+      echo.info(`Running uninstall script for ${module}`);
+      await $({
+        cwd,
+        env: { FORCE_COLOR: 'true' }, // do not remove colors
+        verbose: 'full', // print stdout and stderr
+      })`npm --prefix ${cwd}
+             run preuninstall
+          `;
+    }
+    console.log(output.all);
+
+    return output;
+  } catch (error) {
+    echo.error(`Failed to run uninstall script for ${module}: ${error.message}`);
+    throw error;
+  }
+}
 
 export async function uninstall(modules) {
   if (process.getuid() !== 0) {
@@ -19,7 +50,7 @@ export async function uninstall(modules) {
     ({
       modulesPath: dotpiModulesDestination,
       modulesConfiguration: dotpiModulesConfiguration,
-     } = await configurationGet() );
+    } = await configurationGet());
   } catch (error) {
     process.exit(1);
   }
@@ -39,7 +70,7 @@ export async function uninstall(modules) {
       let output;
       let cwd;
 
-      echo.info(`Getting '${moduleToUninstall}' definition`);
+      console.log(`Getting '${moduleToUninstall}' definition`);
       output = await $`npm view --json -- ${moduleToUninstall}`;
       const moduleDefinition = JSON.parse(output.stdout);
       const { name: moduleName } = moduleDefinition;
@@ -54,24 +85,22 @@ export async function uninstall(modules) {
       // throw error if module is not installed, caught to continue with next module
       await fs.access(cwd);
 
-      output = await $({
-        cwd,
-      })`npm --prefix ${cwd}
-           run --json
-        `;
-      const uninstallScript = JSON.parse(output.stdout).preuninstall;
+      // First, uninstall dependencies manually,
+      // as npm doest not execute {pre,post}uninstall scripts since version 7
 
-      if (uninstallScript) {
-        // npm does not automatically run preuninstall script
-        echo.info(`Running uninstall script for ${moduleToUninstall}`);
-        await $({
-          cwd,
-          env: { FORCE_COLOR: 'true' }, // do not remove colors
-          verbose: 'full', // print stdout and stderr
-        })`npm --prefix ${cwd}
-             run preuninstall
-          `;
+      const dependencies = await globby(
+        // globby needs a posix path
+        `${path.posix.resolve(cwd)}/**/node_modules/*`
+      );
+      for(const dependency of dependencies) {
+        try {
+          await uninstallScriptRun(dependency);
+        } catch (error) {
+          // continue with other dependencies
+        }
       }
+
+      output = await uninstallScriptRun(cwd);
 
       echo.info(`Uninstalling ${moduleToUninstall}`);
       cwd = dotpiModulesDestination;

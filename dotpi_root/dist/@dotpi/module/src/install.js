@@ -38,7 +38,7 @@ export async function install(modules) {
       let output;
       let cwd;
 
-      echo.info(`Getting '${moduleToInstall}' definition`);
+      console.log(`Getting '${moduleToInstall}' definition`);
       output = await $`npm view --json -- ${moduleToInstall}`;
       const moduleDefinition = JSON.parse(output.stdout);
       const { name: moduleName } = moduleDefinition;
