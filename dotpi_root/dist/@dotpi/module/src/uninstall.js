@@ -51,7 +51,7 @@ export async function uninstall(modules) {
 
       cwd = path.join(dotpiModulesDestination, 'node_modules', moduleName);
 
-      // throw error if module is not installed, catched to continue with next module
+      // throw error if module is not installed, caught to continue with next module
       await fs.access(cwd);
 
       output = await $({
