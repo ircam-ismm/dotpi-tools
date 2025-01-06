@@ -330,7 +330,11 @@ if [[ "$(uname)" =~ "Darwin" ]] ; then
 
   # try to mount if unmounted (but not ejected)
   if type -P diskutil &> /dev/null ; then
-    diskutil mount "$bootfs_name"
+    diskutil mount "$bootfs_name" || {
+      exitCode=$?
+      dotpi_echo_error "Error with SD card: Unable to mount ${bootfs_name}"
+      exit $exitCode
+    }
   fi
 
   # avoid spotlight errors
@@ -348,7 +352,9 @@ elif [[ "$(uname -a)" =~ [Mm]icrosoft ]] ; then
     bootfs_mount_target="${tmp_path}/${bootfs_name}"
     mkdir -p "$bootfs_mount_target"
     mount -t drvfs "$bootfs_mount_source" "$bootfs_mount_target"  || {
-      dotpi_echo_error "Unable to mount ${bootfs_mount_source} to ${bootfs_mount_target}"
+      exitCode=$?
+      dotpi_echo_error "Error with SD card: Unable to mount ${bootfs_mount_source} to ${bootfs_mount_target}"
+      exit $exitCode
     }
   fi
 
@@ -369,7 +375,11 @@ elif [[ "$(uname)" =~ "Linux" ]] ; then
 
   # try to mount if unmounted (but not ejected)
   if type -P udisksctl &> /dev/null ; then
-    udisksctl mount --block-device "/dev/disk/by-label/${bootfs_name}"
+    udisksctl mount --block-device "/dev/disk/by-label/${bootfs_name}"|| {
+      exitCode=$?
+      dotpi_echo_error "Error with SD card: Unable to mount ${bootfs_name}"
+      exit $exitCode
+    }
   fi
 
   bootfs_path="$(lsblk --output MOUNTPOINT | grep "/${bootfs_name}")"
