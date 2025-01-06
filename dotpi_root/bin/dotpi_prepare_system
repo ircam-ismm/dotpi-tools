@@ -49,8 +49,13 @@ sudo dpkg --configure -a || {
   error_exit $? dpkg $error_exit_code_package
 }
 
-dotpi echo_info "Uninstall apt packages:" "${dotpi_apt_uninstall_default[@]}" "${dotpi_apt_uninstall[@]}"
-sudo dotpi apt_get purge "${dotpi_apt_uninstall_default[@]}" "${dotpi_apt_uninstall[@]}" || {
+declare -A apt_uninstall_packages
+for package in "${dotpi_apt_uninstall_default[@]}" "${dotpi_apt_uninstall[@]}" ; do
+  apt_uninstall_packages["$package"]=1
+done
+
+dotpi echo_info "Uninstall apt packages:" "${!apt_uninstall_packages[@]}"
+sudo dotpi apt_get purge "${!apt_uninstall_package[@]}" || {
   error_exit $? 'apt_get purge' $error_exit_code_package
 }
 
@@ -69,8 +74,16 @@ sudo dotpi apt_get dist-upgrade || {
   error_exit $? 'apt_get dist-upgrade' $error_exit_code_package
 }
 
-dotpi echo_info "Install apt packages: ${dotpi_apt_install_default[@]} ${dotpi_apt_install[@]}"
-sudo dotpi apt_get install "${dotpi_apt_install_default[@]}" "${dotpi_apt_install[@]}" || {
+declare -A apt_install_packages
+for package in "${dotpi_apt_install_default[@]}" "${dotpi_apt_install[@]}" ; do
+  # install only packages not required to be uninstalled
+  if [[ "${apt_uninstall_packages["$package"]}" == '' ]] ; then
+    apt_install_packages["$package"]=1
+  fi
+done
+
+dotpi echo_info "Install apt packages:" "${!apt_install_packages[@]}"
+sudo dotpi apt_get install "${!apt_install_packages[@]}" || {
   error_exit $? 'apt_get install' $error_exit_code_package
 }
 
