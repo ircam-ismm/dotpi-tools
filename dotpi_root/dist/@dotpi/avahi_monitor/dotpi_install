@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if ! dotpi_system_is_raspberry_pi &> /dev/null ; then
+if ! dotpi system_is_raspberry_pi &> /dev/null ; then
   echo "INFO: System is not a Raspberry Pi with dotpi: no installation"
   # no error
   exit 0
