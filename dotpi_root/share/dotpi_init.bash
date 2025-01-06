@@ -24,4 +24,4 @@ source "${DOTPI_ROOT}/share/dotpi_environment.bash"
 while IFS= read -r -d '' source_file ; do
   # continue on error
   source "$source_file" || true
-done < <( find "${DOTPI_ROOT}/etc/init.d" -name '*.bash' -type f -print0 )
+done < <( find "${DOTPI_ROOT}/etc/dotpi_init.d" -name '*.bash' -type f -print0 )
