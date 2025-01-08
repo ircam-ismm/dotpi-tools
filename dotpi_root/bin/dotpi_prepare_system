@@ -290,11 +290,25 @@ if [[ "$dotpi_led_install" == "yes" ]]; then (
 ############## dotpi modules
 error_exit_code_dotpi_modules=10
 
-dotpi echo_info "Uninstall dotpi modules packages:" "${dotpi_module_uninstall_default[@]}" "${dotpi_module_uninstall[@]}"
-sudo dotpi module uninstall "${dotpi_module_uninstall_default[@]}" "${dotpi_module_uninstall[@]}"
 
-dotpi echo_info "Uninstall dotpi modules packages:" "${dotpi_module_install_default[@]}" "${dotpi_module_install[@]}"
-sudo dotpi module install "${dotpi_module_install_default[@]}" "${dotpi_module_install[@]}"
+declare -A dotpi_module_uninstall_modules
+for module in "${dotpi_module_uninstall_default[@]}" "${dotpi_module_uninstall[@]}" ; do
+  dotpi_module_uninstall_modules["$module"]=1
+done
+
+dotpi echo_info "Uninstall dotpi modules packages:" "${!dotpi_module_uninstall_modules[@]}"
+sudo dotpi module uninstall "${!dotpi_module_uninstall_modules[@]}"
+
+declare -A dotpi_module_install_modules
+for module in "${dotpi_module_install_default[@]}" "${dotpi_module_install[@]}" ; do
+  # install only modules not required to be uninstalled
+  if [[ "${dotpi_module_uninstall_modules["$module"]}" == '' ]] ; then
+    dotpi_module_install_modules["$module"]=1
+  fi
+done
+
+dotpi echo_info "Install dotpi modules packages:" "${!dotpi_module_install_modules[@]}"
+sudo dotpi module install "${!dotpi_module_install_modules[@]}"
 
 ############## finalisation
 
