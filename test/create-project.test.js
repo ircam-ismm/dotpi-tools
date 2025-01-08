@@ -22,7 +22,6 @@ const configureProjectMocks = {
   keyMap: 'fr',
   installDotpiManager: true,
   installDotpiLed: false,
-  dotpiLedConfigFile: undefined,
 };
 
 const sshMocks = {

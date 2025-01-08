@@ -138,13 +138,6 @@ export async function configureProject(data, mocks = null) {
       active: 'yes',
       inactive: 'no'
     },
-    {
-      type: prev => prev === true ? 'text' : false,
-      name: 'dotpiLedConfigFile',
-      message: 'Choose the dotpi-led configuration file:',
-      initial: './configuration/default.json',
-      format: val => val.trim(),
-    },
   ], { onCancel });
 
   data.files[PATH_DOTPI_PROJECT_BASH] = renderTemplate('dotpi_project.bash', {
