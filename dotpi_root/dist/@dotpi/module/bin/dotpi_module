@@ -6,13 +6,13 @@ import { install } from '../src/install.js';
 import { uninstall } from '../src/uninstall.js';
 
 program
-  .command('install <modules...>')
+  .command('install [<modules...>]')
   .description('install list of modules separated by space')
   .action((modules) => install(modules));
 ;
 
 program
-  .command('uninstall <modules...>')
+  .command('uninstall [<modules...>]')
   .description('uninstall list of modules separated by space')
   .action((modules) => uninstall(modules));
 ;
