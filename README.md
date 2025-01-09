@@ -320,22 +320,12 @@ Please do report them.
 
 ## Todo
 
-- [x] option not to install dotpi-manager
-
 - [ ] allow to use configuration files from project
-  - [ ] jack
   - [ ] dotpi-led
 
-- [ ] dotpi-manager: dependency to jackd should be soft
+- [ ] dotpi-manager: dependency to audio should be soft
   - [ ] allow client to run without audio
   - [ ] client should continue to run if audio stops
 
-- [ ] Make a command-line interface
-  - [ ] choose between options
-    - [ ] project name
-    - [ ] audio device model
-    - [ ] jackd configuration
-  - [ ] make pair of ssh keys
-  - [ ] wifi/network configuration
-
-- [ ] share dotpi_manager_update w/ install
+- [ ] @dotpi/audio module
+  - [ ] generate

@@ -33,13 +33,53 @@
 - [x] rename to `@dotpi/tools` rather than `@dotpi/install`
 - [x] make it work using `npx`
 
+### Modules
+
+#### support apt dependencies
+
+- [ ] add `aptDependecies` to `package.json`
+- [ ] generate `<package>/DEBIAN/control` file from `package.json`
+
+```
+Package: ${package.name.replace(/@/, '').toLowerCase().replace(/[^a-z0-9.+-]/, '-')
+}
+Description: ${package.description}
+Version: ${package.version || '0.0.0'}
+Maintainer: ${package.maintainer || 'nobody <no@mail.com>'}
+Section: embedded
+Priority: optional
+Architecture: all
+Standards-Version: 11.0.0
+Depends: ${package.aptDependencies}
+```
+
+- [ ] `dotpi_install`:
+  - [ ] `sudo dotpi module install apt-packages`
+  - [ ] generate debian package and install
+
+ ```sh
+sudo dpkg-deb --root-owner-group --build <package>
+sudo chmod a+rw <package>
+sudo cp <package> /tmp
+sudo dotpi apt-get install /tmp/<package>
+```
+
+- [ ] `dotpi_uninstall`:
+  - [ ]`sudo dotpi module uninstall apt-packages`
+  - [ ] uninstall debian package
+
+```sh
+sudo apt-get uninstall <package>
+sudo dotpi apt-get autoremove
+
+```
+
 ## Questions
 
 - [ ] add a level of indirection in config files?
   + datas stored in yml or something, would help maintainance?
 - [ ] system to check for new version
   + `npm view @soundworks/core version`
-
 
 ## Final File Structure
 

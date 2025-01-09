@@ -203,6 +203,8 @@ destination_path="${destination_prefix}/node_modules/${module_name}"
 ############## audio
 error_exit_code_audio=6
 
+# @TODO: @dotpi/audio
+
 dotpi echo_info "Configure audio"
 
 # set alsa default output volume and unmute
