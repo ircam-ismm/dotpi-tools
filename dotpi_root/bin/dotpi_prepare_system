@@ -209,7 +209,7 @@ dotpi echo_info "Configure audio"
 
 # set alsa default output volume and unmute
 sudo dotpi audio_device_init || {
-    dotpi echo_warning "Error while setting default output volume and unmute for ${dotpi_audio_device} device" \
+    dotpi echo_warning "Error while setting default output volume and unmute for ${dotpi_audio_device} device"
     $error_exit_code_audio
   }
 
