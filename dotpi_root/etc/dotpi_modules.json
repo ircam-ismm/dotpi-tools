@@ -1,7 +1,5 @@
 {
   "moduleSource": {
-    "@dotpi/module": "file:///opt/dotpi/dist/@dotpi/module",
-
     "@dotpi/avahi_monitor": "file:///opt/dotpi/dist/@dotpi/avahi_monitor",
 
     "@dotpi/manager": "git+https://github.com/ircam-ismm/dotpi-manager#feat-dotpi-module",
