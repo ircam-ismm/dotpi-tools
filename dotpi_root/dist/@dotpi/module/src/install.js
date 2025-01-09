@@ -7,6 +7,9 @@ import * as echo from '@dotpi/javascript/echo.js';
 import { configurationGet } from './configuration.js';
 
 export async function install(modules = []) {
+  if (typeof modules === 'string') {
+    modules = [modules];
+  }
   if (process.getuid() !== 0) {
     echo.error('This script must be run as root');
     process.exit(1);

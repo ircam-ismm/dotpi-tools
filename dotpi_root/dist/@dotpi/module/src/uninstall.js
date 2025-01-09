@@ -39,6 +39,10 @@ async function uninstallScriptRun(module) {
 }
 
 export async function uninstall(modules = []) {
+  if (typeof modules === 'string') {
+    modules = [modules];
+  }
+
   if (process.getuid() !== 0) {
     echo.error('This script must be run as root');
     process.exit(1);
