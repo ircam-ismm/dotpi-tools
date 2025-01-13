@@ -1,19 +1,26 @@
+import fs from 'node:fs/promises';
 import{ $ } from 'execa';
 
 import { regularUserIdGet } from './user.js';
+import { readVariable } from './bash.js';
 
 const dotpiRootDefault = '/opt/dotpi';
 const shell = '/bin/bash';
 
 export async function dotpiRootGet() {
+
   let dotpiRoot = process.env.DOTPI_ROOT;
   if (!dotpiRoot) {
+    const uid = regularUserIdGet();
+    dotpiRoot = await readVariable({ uid, variable: 'DOTPI_ROOT' });
+  }
 
-    const id = regularUserIdGet();
-    ({ stdout: dotpiRoot} = await $({id, shell })`echo $DOTPI_ROOT`);
-
-    if (!dotpiRoot) {
+  if (!dotpiRoot) {
+    try {
+      await fs.access(dotpiRootDefault);
       dotpiRoot = dotpiRootDefault;
+    } catch (error) {
+      throw new Error(`DOTPI_ROOT not set and ${dotpiRootDefault} not found`);
     }
   }
 
