@@ -1,28 +1,68 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import{ $ } from 'execa';
 
 import { regularUserIdGet } from './user.js';
 
+export async function dotpiInitSourceFileGet({
+  dotpiRoot,
+} = {}) {
+  dotpiRoot ??= await dotpiRootGet();
+
+  return path.join(dotpiRoot, 'share', 'dotpi_init.bash');
+}
+
+export async function sourceAndExecute({
+  sourceFiles = [],
+  sourceFile,
+  uid, // optional to run as another user, see user/regularUserIdGet
+  command = ':', // default to no-op
+} = {}) {
+
+  try {
+    let _sourceFiles = [...sourceFiles];
+    if (typeof sourceFile === 'string') {
+      _sourceFiles.push(sourceFile);
+    }
+
+    const commandPrefix = _sourceFiles.reduce((prefix, _sourceFile) => {
+      return `${prefix}source '${_sourceFile}' && `;
+    }, '');
+
+    const commandPrefixed = `${commandPrefix} { ${command} ; }`;
+
+    const output = await $({
+      uid,
+      shell: '/bin/bash',
+      all: true,
+    })(commandPrefixed);
+
+    return output;
+
+  } catch (error) {
+    throw error;
+  }
+}
 export async function readVariable({
-  filename = '/dev/null', // to get variable from environment
-  variable,
-  uid = regularUserIdGet(),
+  sourceFiles = [],
+  sourceFile, // optional to read from environment
+  variable, // required, bash variable to read
+  uid, // optional to run as another user, see user/regularUserIdGet
  } = {}) {
 
   try {
 
-    // check if file exists
-    await fs.access(filename);
-
-    const { stdout } = await $({
+    const { stdout } = await sourceAndExecute({
+      sourceFiles,
+      sourceFile,
       uid,
-      shell: '/bin/bash',
-    })`
-    source '${filename}' && { \
-      for v in "\${${variable}[@]}" ; do \
-        printf "\$v\\0" ; \
-      done ; \
-    }`;
+      command: ` \
+        for v in "\${${variable}[@]}" ; do \
+          printf "\$v\\0" ; \
+        done \
+      `,
+    });
 
     if (stdout.length === 0) {
       // '' when no value
@@ -40,14 +80,6 @@ export async function readVariable({
     return values;
 
   } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error(`File not found: ${filename}`);
-    }
-
-    if (error.stderr) {
-      throw new Error(error.stderr);
-    }
-
     throw error;
   }
 
