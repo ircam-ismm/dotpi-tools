@@ -1,9 +1,16 @@
 import { $ } from 'execa';
 
+// raspberry pi default user (pi)
 export const firstUserID = 1000;
+
 const regularUserIdDefault = firstUserID;
 
 export function regularUserIdGet() {
+  const processUid = process.getuid();
+  if (processUid !== 0) {
+    return processUid;
+  }
+
   let regularUserId = process.env.SUDO_UID;
   if (!regularUserId) {
     regularUserId = regularUserIdDefault;
