@@ -64,3 +64,4 @@ fi
 
 
 "dotpi_${sub_command}" "${@:2}"
+exit $?
