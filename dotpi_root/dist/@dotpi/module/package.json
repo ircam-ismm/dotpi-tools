@@ -3,7 +3,10 @@
   "version": "1.3.0",
   "description": "dotpi module management",
   "type": "module",
-  "main": "bin/dotpi_module",
+  "bin": "./bin/dotpi_module",
+  "exports": {
+    "./*.js": "./src/*.js"
+  },
   "scripts": {
     "postinstall": "./dotpi_install",
     "preuninstall": "./dotpi_uninstall"

@@ -1,16 +1,18 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import * as echo from '@dotpi/javascript/echo.js';
 import { dotpiRootGet } from '@dotpi/javascript/system.js';
+import * as echo from '@dotpi/javascript/echo.js';
 
-export async function configurationGet() {
+export async function dotpiConfigurationGet({
+  dotpiRoot,
+} = {}) {
+  dotpiRoot ??= await dotpiRootGet();
 
-  let dotpiRoot;
   let modulesPath;
   let modulesConfiguration;
   try {
-    dotpiRoot = await dotpiRootGet();
+
     modulesPath = path.join(dotpiRoot, 'lib');
     modulesConfiguration = JSON.parse(
       await fs.readFile(
@@ -28,4 +30,13 @@ export async function configurationGet() {
     echo.error('Error with dotpi configuration:', error.message);
     throw error;
   }
+}
+
+export async function moduleConfigurationPathGet({
+  module,
+  dotpiRoot,
+} = {}) {
+  dotpiRoot ??= await dotpiRootGet();
+
+  return path.join(dotpiRoot, 'etc', module.name);
 }

@@ -5,7 +5,7 @@ import { $ } from 'execa';
 import { globby } from 'globby';
 
 import * as echo from '@dotpi/javascript/echo.js';
-import { configurationGet } from './configuration.js';
+import { dotpiConfigurationGet } from './configuration.js';
 
 async function uninstallScriptRun(module) {
   try {
@@ -54,7 +54,7 @@ export async function uninstall(modules = []) {
     ({
       modulesPath: dotpiModulesDestination,
       modulesConfiguration: dotpiModulesConfiguration,
-    } = await configurationGet());
+    } = await dotpiConfigurationGet());
   } catch (error) {
     process.exit(1);
   }

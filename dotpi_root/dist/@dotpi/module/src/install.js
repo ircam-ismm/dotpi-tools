@@ -4,7 +4,7 @@ import path from 'node:path';
 import { $ } from 'execa';
 
 import * as echo from '@dotpi/javascript/echo.js';
-import { configurationGet } from './configuration.js';
+import { dotpiConfigurationGet } from './configuration.js';
 
 export async function install(modules = []) {
   if (typeof modules === 'string') {
@@ -21,7 +21,7 @@ export async function install(modules = []) {
     ({
       modulesPath: dotpiModulesDestination,
       modulesConfiguration: dotpiModulesConfiguration,
-     } = await configurationGet() );
+     } = await dotpiConfigurationGet() );
   } catch (error) {
     process.exit(1);
   }
