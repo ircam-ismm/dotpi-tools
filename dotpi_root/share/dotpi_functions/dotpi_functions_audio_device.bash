@@ -36,6 +36,18 @@ dotpi_audio_device_supported=(
   'ue megaboom 3'
 )
 
+dotpi_audio_device_is_analog() {
+  audio_device="${1:-$dotpi_audio_device}"
+  case "$audio_device" in
+    'headphones')
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 _dotpi_audio_device_get_options() {
 
   _echo_empty_option_error() {
