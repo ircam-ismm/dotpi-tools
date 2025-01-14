@@ -37,7 +37,7 @@ try {
     const destinationFile = path.join(destinationPath, sourceBaseName);
 
     echo.info(`Uninstall ${destinationFile}`);
-    await fs.rm(destinationFile, { recursive: true });
+    await fs.rm(destinationFile, { recursive: true, force: true });
   });
 
 } catch (error) {
