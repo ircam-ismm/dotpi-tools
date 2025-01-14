@@ -258,37 +258,6 @@ systemctl --user enable --now wireplumber.service || {
   # do not exit
 }
 
-############## dotpi-led
-error_exit_code_dotpi_led=8
-
-if [[ "$dotpi_led_install" == "yes" ]]; then (
-  dotpi echo_info "Install dotpi-led"
-
-  destination="${DOTPI_ROOT}/share/dotpi-led"
-  sudo mkdir -p -- "$destination" || {
-    error_exit $? "dotpi-led: mkdir ${destination}" $error_exit_code_dotpi_led
-  }
-  cd -- "$destination" || {
-    error_exit $? "dotpi-led: cd ${destination}" $error_exit_code_dotpi_led
-  }
-
-  destination_runtime="${destination}/runtime"
-  sudo rm -rf -- "$destination_runtime" || {
-    error_exit $? "dotpi-led: rm ${destination_runtime}" $error_exit_code_dotpi_led
-  }
-  sudo git clone --depth=1 https://github.com/ircam-ismm/dotpi-led.git "$destination_runtime" || {
-    error_exit $? "dotpi-led: git clone" $error_exit_code_dotpi_led
-  }
-  # bootstrap-install
-  sudo bash -c "\
-    source '${DOTPI_ROOT}/share/dotpi_init.bash' && \
-    source runtime/dotpi/dotpi-led.bash && \
-    dotpi_led_update \
-  " || {
-    error_exit $? "dotpi-led: dotpi_led_update" $error_exit_code_dotpi_led
-  }
-) fi
-
 ############## dotpi modules
 error_exit_code_dotpi_modules=10
 

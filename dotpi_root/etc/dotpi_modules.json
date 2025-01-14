@@ -1,6 +1,7 @@
 {
   "moduleSource": {
     "@dotpi/manager": "git+https://github.com/ircam-ismm/dotpi-manager#feat-dotpi-module",
+    "@dotpi/led": "git+https://github.com/ircam-ismm/dotpi-led#feat-dotpi-module",
 
     "_doc_see": "https://docs.npmjs.com/cli/v10/configuring-npm/package-json#dependencies"
   }
