@@ -11,7 +11,7 @@ export async function symlink(source, destination) {
       .catch(async (error) => {
         if (error.code === 'EISDIR') {
           // remove existing directory and try again
-          await fs.rm(destination, { recursive: true });
+          await fs.rm(destination, { recursive: true, force: true });
           return await fs.rename(destinationTmp, destination);
         }
 
