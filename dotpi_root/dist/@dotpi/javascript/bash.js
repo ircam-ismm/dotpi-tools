@@ -1,16 +1,15 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import nodePath from 'node:path';
 
 import{ $ } from 'execa';
 
-import { regularUserIdGet } from './user.js';
+import { dotpiRootGet } from './system.js';
 
 export async function dotpiInitSourceFileGet({
   dotpiRoot,
 } = {}) {
   dotpiRoot ??= await dotpiRootGet();
 
-  return path.join(dotpiRoot, 'share', 'dotpi_init.bash');
+  return nodePath.join(dotpiRoot, 'share', 'dotpi_init.bash');
 }
 
 export async function sourceAndExecute({
@@ -83,4 +82,22 @@ export async function readVariable({
     throw error;
   }
 
+}
+
+// this handles '~', '$HOME', and other bash expansions
+export async function pathResolve({
+  uid,
+  path,
+  sourceFiles = [],
+  sourceFile, // optional to read from environment
+} = {
+}) {
+  const { stdout } = await sourceAndExecute({
+    uid,
+    sourceFiles,
+    sourceFile,
+    command: `echo ${path}`,
+  });
+
+  return nodePath.resolve(stdout);
 }
