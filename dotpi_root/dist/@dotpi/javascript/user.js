@@ -11,7 +11,7 @@ export function regularUserIdGet() {
     return processUid;
   }
 
-  let regularUserId = process.env.SUDO_UID;
+  let regularUserId = parseInt(process.env.SUDO_UID);
   if (!regularUserId) {
     regularUserId = regularUserIdDefault;
   }
