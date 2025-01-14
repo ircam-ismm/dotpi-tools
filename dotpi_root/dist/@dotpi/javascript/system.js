@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import{ $ } from 'execa';
 
 import { regularUserIdGet } from './user.js';
