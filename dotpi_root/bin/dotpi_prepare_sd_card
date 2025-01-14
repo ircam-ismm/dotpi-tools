@@ -152,6 +152,20 @@ mkdir -p -- "$destination_path"
   exit 1
 }
 
+### copy local over-rides of file-system
+
+source_path="${project_path}/dotpi_filesystem"
+if [[ -d "$source_path" ]] && [[ -r "$source_path" ]] ; then
+  destination_path="${file_system_mirror}/opt/dotpi"
+  mkdir -p -- "$destination_path"
+  (set -o pipefail ; \
+   cd -- "$source_path" && tar c "${tar_options[@]}" '.'  \
+       | tar x -C "$destination_path") || {
+    dotpi_echo_error "Error while copying file-system over-rides from ${source_path} to ${destination_path}"
+    exit 1
+  }
+fi
+
 #### copy project configuration
 
 source_path="$project_path"
