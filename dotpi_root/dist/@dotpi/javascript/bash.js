@@ -43,7 +43,7 @@ export async function sourceAndExecute({
     throw error;
   }
 }
-export async function readVariable({
+export async function variableRead({
   sourceFiles = [],
   sourceFile, // optional to read from environment
   variable, // required, bash variable to read

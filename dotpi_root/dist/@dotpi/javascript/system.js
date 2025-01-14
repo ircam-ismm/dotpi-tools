@@ -1,10 +1,11 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import{ $ } from 'execa';
 
 import { regularUserIdGet } from './user.js';
-import { readVariable } from './bash.js';
+import { variableRead } from './bash.js';
 
-const dotpiRootDefault = '/opt/dotpi';
+export const dotpiRootDefault = '/opt/dotpi';
 const shell = '/bin/bash';
 
 export async function dotpiRootGet() {
@@ -12,7 +13,7 @@ export async function dotpiRootGet() {
   let dotpiRoot = process.env.DOTPI_ROOT;
   if (!dotpiRoot) {
     const uid = regularUserIdGet();
-    dotpiRoot = await readVariable({ uid, variable: 'DOTPI_ROOT' });
+    dotpiRoot = await variableRead({ uid, variable: 'DOTPI_ROOT' });
   }
 
   if (!dotpiRoot) {
