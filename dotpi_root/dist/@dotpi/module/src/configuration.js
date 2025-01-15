@@ -6,6 +6,7 @@ import * as echo from '@dotpi/javascript/echo.js';
 
 export async function dotpiConfigurationGet({
   dotpiRoot,
+  prefix,
 } = {}) {
   dotpiRoot ??= await dotpiRootGet();
 
@@ -13,7 +14,7 @@ export async function dotpiConfigurationGet({
   let modulesConfiguration;
   try {
 
-    modulesPath = path.join(dotpiRoot, 'lib');
+    modulesPath = (prefix ? prefix : path.join(dotpiRoot, 'lib'));
     modulesConfiguration = JSON.parse(
       await fs.readFile(
        path.join(dotpiRoot, 'etc', 'dotpi_modules.json')

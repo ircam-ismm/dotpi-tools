@@ -7,13 +7,12 @@ import { symlink } from '@dotpi/javascript/filesystem.js';
 import * as echo from '@dotpi/javascript/echo.js';
 import { dotpiConfigurationGet } from './configuration.js';
 
-export async function install(modules = []) {
+export async function install(modules = [], {
+  dotpiRoot,
+  prefix,
+} = {}) {
   if (typeof modules === 'string') {
     modules = [modules];
-  }
-  if (process.getuid() !== 0) {
-    echo.error('This script must be run as root');
-    process.exit(1);
   }
 
   let dotpiModulesDestination;
@@ -22,8 +21,9 @@ export async function install(modules = []) {
     ({
       modulesPath: dotpiModulesDestination,
       modulesConfiguration: dotpiModulesConfiguration,
-     } = await dotpiConfigurationGet() );
+     } = await dotpiConfigurationGet({dotpiRoot, prefix}) );
   } catch (error) {
+    echo.error(`Failed to get dotpi configuration: ${error.message}`);
     process.exit(1);
   }
 

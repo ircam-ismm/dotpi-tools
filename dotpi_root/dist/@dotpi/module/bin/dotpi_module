@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 import { program } from 'commander';
 
-import * as echo from '@dotpi/javascript/echo.js';
 import { install } from '../src/install.js';
 import { uninstall } from '../src/uninstall.js';
 
 program
-  .command('install [<modules...>]')
+  .command('install [modules...]')
   .description('install list of modules separated by space')
-  .action((modules) => install(modules));
+  .option('-r, --dotpi-root <path>', 'dotpi root path, to initialise environment')
+  .option('-p, --prefix <path>', 'install modules in this directory')
+  .action((modules, options, command) => install(modules, { ...options, command }));
 ;
 
 program
