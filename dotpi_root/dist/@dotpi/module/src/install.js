@@ -66,6 +66,13 @@ export async function install(modules = []) {
 
       echo.info(`Installing ${moduleToInstall} dependencies`)
       cwd = path.join(dotpiModulesDestination, 'node_modules', moduleName);
+
+      // perform a clean install
+      await fs.rm(path.join(cwd, 'node_modules'), {
+        recursive: true,
+        force: true,
+      });
+
       output = await $({
         cwd,
         env: { FORCE_COLOR: 'true' }, // do not remove colors
