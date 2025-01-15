@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { $ } from 'execa';
 
+import { symlink } from '@dotpi/javascript/filesystem.js';
 import * as echo from '@dotpi/javascript/echo.js';
 import { dotpiConfigurationGet } from './configuration.js';
 
@@ -63,6 +64,11 @@ export async function install(modules = []) {
           --
           ${moduleToInstall}
         `;
+
+      await symlink(
+        path.join('.', 'node_modules'),
+        path.join(dotpiModulesDestination, 'dotpi_modules')
+      );
 
       echo.info(`Installing ${moduleToInstall} dependencies`)
       cwd = path.join(dotpiModulesDestination, 'node_modules', moduleName);
