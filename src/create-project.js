@@ -419,6 +419,9 @@ export default async function createProject() {
   await injectUtilityFiles(data);
   await persistProject(data);
 
+  echo.warning('TODO: install selected modules tp project');
+  echo.warning('TODO: generate configuration files for installed modules');
+
   const { configure } = await prompts({
     type: 'toggle',
     name: 'configure',
