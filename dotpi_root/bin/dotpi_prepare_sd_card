@@ -140,6 +140,9 @@ if [[ "$(uname)" == "Darwin" ]] ; then
 fi
 tar_options+=( '--no-xattrs' )
 
+# no locally installed node_modules
+tar_options+=( '--exclude' 'node_modules' )
+
 #### copy defaults from dotpi_root
 
 source_path="$DOTPI_ROOT"
