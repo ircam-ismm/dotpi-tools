@@ -427,17 +427,10 @@ export async function installModulesInProject(data) {
     variable: 'dotpi_module_install',
   });
 
-  console.log({modules});
-
   await moduleInstall(modules, {
     dotpiRoot,
     prefix: projectPath,
   })
-
-  for(const module of modules) {
-    const definition = await moduleDefinitionGet(module);
-    console.log({module, definition});
-  }
 
 }
 
@@ -479,6 +472,8 @@ export default async function createProject() {
 
     await installModulesInProject(data);
     await generateConfigFilesInProject(data);
+
+    title('Configure local machine for project');
 
     const { configure } = await prompts({
       type: 'toggle',
