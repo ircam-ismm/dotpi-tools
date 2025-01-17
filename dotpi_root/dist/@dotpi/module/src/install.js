@@ -5,7 +5,22 @@ import { $ } from 'execa';
 
 import { symlink } from '@dotpi/javascript/filesystem.js';
 import * as echo from '@dotpi/javascript/echo.js';
+
 import { dotpiConfigurationGet } from './configuration.js';
+import { definitionGet } from './definition.js';
+
+export function installCommandDefine({program}) {
+  program
+    .command('install [modules...]')
+    .summary('install a list of modules')
+    .description('Install a list of modules separated by space.')
+    .option('-r, --dotpi-root <path>', 'dotpi root path, to initialise environment')
+    .option('-p, --prefix <path>', 'install modules in this directory')
+    .action((modules, options, command) => install(modules, { ...options, command }));
+  ;
+
+  return program;
+}
 
 export async function install(modules = [], {
   dotpiRoot,

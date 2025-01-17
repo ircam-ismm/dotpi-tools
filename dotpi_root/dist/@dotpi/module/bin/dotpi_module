@@ -1,22 +1,13 @@
 #!/usr/bin/env node
 import { program } from 'commander';
 
-import { install } from '../src/install.js';
-import { uninstall } from '../src/uninstall.js';
+import { installCommandDefine } from '../src/install.js';
+import { uninstallCommandDefine } from '../src/uninstall.js';
+import { createConfigCommandDefine } from '../src/createConfig.js';
 
-program
-  .command('install [modules...]')
-  .description('install list of modules separated by space')
-  .option('-r, --dotpi-root <path>', 'dotpi root path, to initialise environment')
-  .option('-p, --prefix <path>', 'install modules in this directory')
-  .action((modules, options, command) => install(modules, { ...options, command }));
-;
-
-program
-  .command('uninstall [<modules...>]')
-  .description('uninstall list of modules separated by space')
-  .action((modules) => uninstall(modules));
-;
+installCommandDefine({ program });
+uninstallCommandDefine({ program });
+createConfigCommandDefine({ program });
 
 program.parse();
 

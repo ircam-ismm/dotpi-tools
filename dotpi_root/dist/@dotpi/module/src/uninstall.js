@@ -5,7 +5,21 @@ import { $ } from 'execa';
 import { globby } from 'globby';
 
 import * as echo from '@dotpi/javascript/echo.js';
+
 import { dotpiConfigurationGet } from './configuration.js';
+import { definitionGet } from './definition.js';
+
+export async function uninstallCommandDefine({program}) {
+  program
+    .command('uninstall [modules...]')
+    .summary('uninstall a list of modules')
+    .description('Uninstall a list of modules separated by space.')
+    .option('-r, --dotpi-root <path>', 'dotpi root path, to initialise environment')
+    .option('-p, --prefix <path>', 'install modules in this directory')
+    .action((modules, options, command) => uninstall(modules, { ...options, command }));
+  ;
+  return program;
+}
 
 async function uninstallScriptRun(module) {
   try {
