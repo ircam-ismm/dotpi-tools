@@ -16,12 +16,15 @@ export async function uninstallCommandDefine({program}) {
     .description('Uninstall a list of modules separated by space.')
     .option('-r, --dotpi-root <path>', 'dotpi root path, to initialise environment')
     .option('-p, --prefix <path>', 'install modules in this directory')
+    .option('-v, --verbose [full]', 'print verbose output [full]')
     .action((modules, options, command) => uninstall(modules, { ...options, command }));
   ;
   return program;
 }
 
-async function uninstallScriptRun(module) {
+async function uninstallScriptRun(module, {
+  verbose = 'short',
+} = {}) {
   try {
 
     const cwd = module;
@@ -34,16 +37,18 @@ async function uninstallScriptRun(module) {
 
     if (uninstallScript) {
       // npm does not automatically run preuninstall script
-      echo.info(`Running uninstall script for ${module}`);
+
+      if(verbose !== 'none') {
+        echo.info(`Running uninstall script for ${module}`);
+      }
       await $({
         cwd,
         env: { FORCE_COLOR: 'true' }, // do not remove colors
-        verbose: 'full', // print stdout and stderr
+        verbose: (verbose === 'full' ? 'full' : 'none'),
       })`npm --prefix ${cwd}
              run preuninstall
           `;
     }
-    console.log(output.all);
 
     return output;
   } catch (error) {
@@ -55,9 +60,28 @@ async function uninstallScriptRun(module) {
 export async function uninstall(modules = [], {
   dotpiRoot,
   prefix,
+  verbose = 'short',
 } = {}) {
   if (typeof modules === 'string') {
     modules = [modules];
+  }
+
+  switch (verbose) {
+    case '0':
+    case 'false':
+    case false:
+      verbose = 'none';
+      break;
+
+    case '1':
+    case 'true':
+    case true:
+      verbose = 'short';
+      break;
+
+    case '2':
+      verbose = 'full';
+      break;
   }
 
   let dotpiModulesDestination;
@@ -78,7 +102,9 @@ export async function uninstall(modules = [], {
     try {
       const moduleRegistered = dotpiModulesConfiguration.moduleSource[module];
       if (moduleRegistered) {
-        echo.info(`Module '${module}' is registered as '${moduleRegistered}'`);
+        if(verbose !== 'none') {
+          echo.info(`Module '${module}' is registered as '${moduleRegistered}'`);
+        }
         moduleToUninstall = moduleRegistered;
       } else {
         moduleToUninstall = module;
@@ -87,14 +113,18 @@ export async function uninstall(modules = [], {
       let output;
       let cwd;
 
-      console.log(`Getting '${moduleToUninstall}' definition`);
-      const moduleDefinition = await definitionGet(moduleToInstall);
+      if(verbose === 'full') {
+        console.log(`Getting '${moduleToUninstall}' definition`);
+      }
+      const moduleDefinition = await definitionGet(moduleToUninstall);
       const { name: moduleName } = moduleDefinition;
 
       // uninstall actually installed module
       moduleToUninstall = moduleName;
 
-      echo.info(`Uninstalling module '${moduleToUninstall}' in '${dotpiModulesDestination}'`);
+      if(verbose !== 'none') {
+        echo.info(`Uninstalling module '${moduleToUninstall}' in '${dotpiModulesDestination}'`);
+      }
 
       cwd = path.resolve(dotpiModulesDestination, 'node_modules', moduleName);
 
@@ -110,20 +140,23 @@ export async function uninstall(modules = [], {
       );
       for(const dependency of dependencies) {
         try {
-          await uninstallScriptRun(dependency);
+          await uninstallScriptRun(dependency, { verbose });
         } catch (error) {
           // continue with other dependencies
         }
       }
 
-      output = await uninstallScriptRun(cwd);
+      output = await uninstallScriptRun(cwd, { verbose });
 
-      echo.info(`Uninstalling ${moduleToUninstall}`);
+      if(verbose !== 'none') {
+        echo.info(`Uninstalling ${moduleToUninstall}`);
+      }
+
       cwd = dotpiModulesDestination;
       output = await $({
         cwd,
         env: { FORCE_COLOR: 'true' }, // do not remove colors
-        verbose: 'full', // print stdout and stderr
+        verbose: (verbose === 'full' ? 'full' : 'none'),
       })`
         npm --prefix ${cwd}
           uninstall

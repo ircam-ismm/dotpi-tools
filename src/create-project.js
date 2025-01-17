@@ -430,6 +430,7 @@ export async function installModulesInProject(data) {
   await moduleInstall(modules, {
     dotpiRoot,
     prefix: projectPath,
+    verbose: 'short',
   })
 
 }
@@ -444,6 +445,7 @@ export async function generateConfigFilesInProject(data) {
   await moduleCreateConfig({
     dotpiRoot,
     prefix: projectPath,
+    verbose: 'short',
   })
 
 }

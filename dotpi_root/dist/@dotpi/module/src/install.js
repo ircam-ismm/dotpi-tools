@@ -16,6 +16,7 @@ export function installCommandDefine({program}) {
     .description('Install a list of modules separated by space.')
     .option('-r, --dotpi-root <path>', 'dotpi root path, to initialise environment')
     .option('-p, --prefix <path>', 'install modules in this directory')
+    .option('-v, --verbose [full]', 'print verbose output [full]')
     .action((modules, options, command) => install(modules, { ...options, command }));
   ;
 
@@ -25,9 +26,28 @@ export function installCommandDefine({program}) {
 export async function install(modules = [], {
   dotpiRoot,
   prefix,
+  verbose = 'short',
 } = {}) {
   if (typeof modules === 'string') {
     modules = [modules];
+  }
+
+  switch (verbose) {
+    case '0':
+    case 'false':
+    case false:
+      verbose = 'none';
+      break;
+
+    case '1':
+    case 'true':
+    case true:
+      verbose = 'short';
+      break;
+
+    case '2':
+      verbose = 'full';
+      break;
   }
 
   let dotpiModulesDestination;
@@ -57,16 +77,23 @@ export async function install(modules = [], {
       let output;
       let cwd;
 
-      console.log(`Getting '${moduleToInstall}' definition`);
+      if(verbose === 'full') {
+        console.log(`Getting '${moduleToInstall}' definition`);
+      }
       const moduleDefinition = await definitionGet(moduleToInstall);
       const { name: moduleName } = moduleDefinition;
 
-      echo.info(`Installing module '${moduleToInstall}' in '${dotpiModulesDestination}'`);
+      // 2-steps install as npm errors when installing from git
+      // npm error git dep preparation failed
+
+      if(verbose !== 'none') {
+        echo.info(`Installing module '${moduleToInstall}' in '${dotpiModulesDestination}'`);
+      }
       cwd = dotpiModulesDestination;
       output = await $({
         cwd,
         env: { FORCE_COLOR: 'true' }, // do not remove colors
-        verbose: 'full', // print stdout and stderr
+        verbose: (verbose === 'full' ? 'full' : 'none'),
         // minimal install in the modules directory
       })`
         npm --prefix ${cwd}
@@ -84,7 +111,9 @@ export async function install(modules = [], {
         path.join(dotpiModulesDestination, 'dotpi_modules')
       );
 
-      echo.info(`Installing ${moduleToInstall} dependencies`)
+      if(verbose === 'full') {
+        echo.info(`Installing ${moduleToInstall} dependencies`)
+      }
       cwd = path.resolve(dotpiModulesDestination, 'node_modules', moduleName);
 
       // perform a clean install
@@ -96,7 +125,7 @@ export async function install(modules = [], {
       output = await $({
         cwd,
         env: { FORCE_COLOR: 'true' }, // do not remove colors
-        verbose: 'full', // print stdout and stderr
+        verbose: (verbose === 'full' ? 'full' : 'none'),
         // complete install within the module itself
         // be sure to install links for relative dependencies also
         // run postinstall script

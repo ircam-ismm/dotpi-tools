@@ -15,6 +15,7 @@ export function createConfigCommandDefine({program}) {
     .description('Create configuration files installed modules.')
     .option('-r, --dotpi-root <path>', 'dotpi root path, to initialise environment')
     .option('-p, --prefix <path>', 'look for installed modules in this directory')
+    .option('-v, --verbose [full]', 'print verbose output [full]')
     .action((modules, options, command) => createConfig(modules, { ...options, command }));
   ;
 
@@ -24,7 +25,26 @@ export function createConfigCommandDefine({program}) {
 export async function createConfig({
   dotpiRoot,
   prefix,
+  verbose = 'short',
 } = {}) {
+
+  switch (verbose) {
+    case '0':
+    case 'false':
+    case false:
+      verbose = 'none';
+      break;
+
+    case '1':
+    case 'true':
+    case true:
+      verbose = 'short';
+      break;
+
+    case '2':
+     verbose = 'full';
+      break;
+  }
 
   let installedModulesPath;
   let installedModulesDefinition;
@@ -65,12 +85,14 @@ export async function createConfig({
       ));
 
       if (moduleDefinition.scripts['create-config']) {
-        echo.info(`Creating configuration for '${module}' in '${prefix}'`);
+        if(verbose !== 'none') {
+          echo.info(`Creating configuration for '${module}' in '${prefix}'`);
+        }
 
         const output = await $({
           cwd: modulePath,
           env: { FORCE_COLOR: 'true' }, // do not remove colors
-          verbose: 'full', // print stdout and stderr
+          verbose: (verbose === 'full' ? 'full' : 'none'),
         })`npm run create-config -- ${dotpiRootOption} ${projectOption}`;
       } else {
         console.log(`(No configuration file to create for '${module}')`);
