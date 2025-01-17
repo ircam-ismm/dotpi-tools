@@ -170,7 +170,7 @@ source_path="${DOTPI_ROOT}/dist/${module_name}"
 destination_prefix="${DOTPI_ROOT}/lib"
 destination_path="${destination_prefix}/node_modules/${module_name}"
 {
-  dotpi echo_info "Install dotpi module tool"
+  dotpi echo_info "Install ${modules_name}"
   # minimal install in the modules directory
   sudo npm install --no-fund \
     --prefix "$destination_prefix" \
@@ -188,6 +188,11 @@ destination_path="${destination_prefix}/node_modules/${module_name}"
     # complete install within the module itself
     # be sure to install links for relative dependencies also
     # run postinstall script
+
+    sudo rm -rf "${destination_path}/node_modules" || {
+      error_exit $? "rm ${destination_path}/node_modules" $error_exit_code_services
+    }
+
     sudo npm install --no-fund \
       --prefix "$destination_path" \
       --omit dev \
