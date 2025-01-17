@@ -75,8 +75,7 @@ export async function uninstall(modules = []) {
       let cwd;
 
       console.log(`Getting '${moduleToUninstall}' definition`);
-      output = await $`npm view --json -- ${moduleToUninstall}`;
-      const moduleDefinition = JSON.parse(output.stdout);
+      const moduleDefinition = await definitionGet(moduleToInstall);
       const { name: moduleName } = moduleDefinition;
 
       // uninstall actually installed module

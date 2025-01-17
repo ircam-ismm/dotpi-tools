@@ -43,8 +43,7 @@ export async function install(modules = [], {
       let cwd;
 
       console.log(`Getting '${moduleToInstall}' definition`);
-      output = await $`npm view --json -- ${moduleToInstall}`;
-      const moduleDefinition = JSON.parse(output.stdout);
+      const moduleDefinition = await definitionGet(moduleToInstall);
       const { name: moduleName } = moduleDefinition;
 
       echo.info(`Installing module '${moduleToInstall}' in '${dotpiModulesDestination}'`);
