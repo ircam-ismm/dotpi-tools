@@ -5,11 +5,12 @@ import { fileURLToPath } from 'node:url';
 export const LIB_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const CWD = process.cwd();
 export const HOME = os.homedir();
+export const DOTPI_ROOT = path.join(LIB_ROOT, 'dotpi_root');
 
 // shell scripts that we need to execute
-export const PATH_DOTPI_INIT_BASH = path.join(LIB_ROOT, 'dotpi_root/share/dotpi_init.bash');
-export const PATH_DOTPI_PREPARE_SD_CARD_BASH = path.join(LIB_ROOT, 'dotpi_root/bin/dotpi_prepare_sd_card');
-// directories to read from and write to, repsectively
+export const PATH_DOTPI_INIT_BASH = path.join(DOTPI_ROOT, 'share/dotpi_init.bash');
+export const PATH_DOTPI_PREPARE_SD_CARD_BASH = path.join(DOTPI_ROOT, 'bin/dotpi_prepare_sd_card');
+// directories to read from and write to, respectively
 export const PATH_TEMPLATE_DIRECTORY = path.join(LIB_ROOT, 'src/templates');
 
 // the files / directories that define a project
