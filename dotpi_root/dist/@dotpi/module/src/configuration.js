@@ -10,20 +10,20 @@ export async function dotpiConfigurationGet({
 } = {}) {
   dotpiRoot ??= await dotpiRootGet();
 
-  let modulesPath;
-  let modulesConfiguration;
   try {
-
-    modulesPath = (prefix ? prefix : path.join(dotpiRoot, 'lib'));
-    modulesConfiguration = JSON.parse(
-      await fs.readFile(
-       path.join(dotpiRoot, 'etc', 'dotpi_modules.json')
-      )
+    const modulesPath = (prefix
+      ? path.resolve(prefix)
+      : path.resolve(dotpiRoot, 'lib')
+    );
+    const modulesConfigurationPath = path.resolve(dotpiRoot, 'etc', 'dotpi_modules.json');
+    const modulesConfiguration = JSON.parse(
+      await fs.readFile(modulesConfigurationPath)
     );
 
     return {
       dotpiRoot,
       modulesPath,
+      modulesConfigurationPath,
       modulesConfiguration,
     };
 
