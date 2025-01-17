@@ -5,7 +5,6 @@ import { regularUserIdGet } from './user.js';
 import { variableRead } from './bash.js';
 
 export const dotpiRootDefault = '/opt/dotpi';
-const shell = '/bin/bash';
 
 export async function dotpiRootGet() {
 
