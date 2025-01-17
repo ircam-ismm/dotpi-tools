@@ -71,10 +71,10 @@ export async function install(modules = [], {
       );
 
       echo.info(`Installing ${moduleToInstall} dependencies`)
-      cwd = path.join(dotpiModulesDestination, 'node_modules', moduleName);
+      cwd = path.resolve(dotpiModulesDestination, 'node_modules', moduleName);
 
       // perform a clean install
-      await fs.rm(path.join(cwd, 'node_modules'), {
+      await fs.rm(path.resolve(cwd, 'node_modules'), {
         recursive: true,
         force: true,
       });

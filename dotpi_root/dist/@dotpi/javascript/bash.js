@@ -9,7 +9,7 @@ export async function dotpiInitSourceFileGet({
 } = {}) {
   dotpiRoot ??= await dotpiRootGet();
 
-  return nodePath.join(dotpiRoot, 'share', 'dotpi_init.bash');
+  return nodePath.resolve(dotpiRoot, 'share', 'dotpi_init.bash');
 }
 
 export async function sourceAndExecute({

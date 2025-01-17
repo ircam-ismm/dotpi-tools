@@ -39,5 +39,5 @@ export async function moduleConfigurationPathGet({
 } = {}) {
   dotpiRoot ??= await dotpiRootGet();
 
-  return path.join(dotpiRoot, 'etc', module.name);
+  return path.resolve(dotpiRoot, 'etc', module.name);
 }

@@ -28,13 +28,13 @@ const localPath = path.dirname(localFileName);
 let dotpiRoot;
 try {
   dotpiRoot = await dotpiRootGet();
-  const destinationPath = path.join(dotpiRoot, 'bin');
-  const sourcePath = path.join(localPath, 'bin');
+  const destinationPath = path.resolve(dotpiRoot, 'bin');
+  const sourcePath = path.resolve(localPath, 'bin');
   const sourceBaseNames = await fs.readdir(sourcePath);
 
   // forEach does not wait: parallel execution
   sourceBaseNames.forEach(async (sourceBaseName) => {
-    const destinationFile = path.join(destinationPath, sourceBaseName);
+    const destinationFile = path.resolve(destinationPath, sourceBaseName);
 
     echo.info(`Uninstall ${destinationFile}`);
     await fs.rm(destinationFile, { recursive: true, force: true });
