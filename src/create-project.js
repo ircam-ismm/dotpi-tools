@@ -6,6 +6,12 @@ import { execSync } from 'node:child_process';
 import prompts from 'prompts';
 import chalk from 'chalk';
 
+import * as echo from '@dotpi/javascript/echo.js';
+import * as bash from '@dotpi/javascript/bash.js';
+import { install as moduleInstall } from '@dotpi/module/install.js';
+import { createConfig as moduleCreateConfig } from '@dotpi/module/createConfig.js';
+import { definitionGet as moduleDefinitionGet } from '@dotpi/module/definition.js';
+
 import {
   title,
   renderTemplate,
@@ -19,6 +25,7 @@ import {
   isDotpiProject,
 } from './utils.js';
 import {
+  DOTPI_ROOT,
   // path of the files inside the final project
   PATH_DOTPI_PROJECT_BASH,
   PATH_DOTPI_SECRETS_BASH,
@@ -262,7 +269,11 @@ export async function configureWiFi(data, mocks = null) {
       name: 'wifiSsid',
       message: 'Wifi name (SSID):',
       validate: value => {
-        if(new Blob([value]).size > 32) {
+
+        const ssidSize = new Blob([value]).size;
+        if (ssidSize === 0) {
+          return 'Please provide a non-empty SSID';
+        } else if(ssidSize > 32) {
           return `'${value}' is too long (more than 32 bytes)`;
         }
 
@@ -398,50 +409,101 @@ export async function persistProject(data, mocks = null) {
   title(`Project ${projectName} successfully created!`);
 }
 
-// Wrap it all
-export default async function createProject() {
-  if (isDotpiProject()) {
-    console.log('');
-    console.log(chalk.yellow(`> Cannot create a dotpi project in this directory, it already contains a dotpi project`));
-    console.log('Aborting...');
-    process.exit(0);
-  }
+export async function installModulesInProject(data) {
+  title('Install modules in project');
 
-  const data = {
-    projectName: null,
-    files: {},
-  };
-
-  await prepareProject(data);
-  await configureProject(data);
-  await configureSSH(data);
-  await configureWiFi(data);
-  await injectUtilityFiles(data);
-  await persistProject(data);
-
-  echo.warning('TODO: install selected modules tp project');
-  echo.warning('TODO: generate configuration files for installed modules');
-
-  const { configure } = await prompts({
-    type: 'toggle',
-    name: 'configure',
-    message: 'Do you want to configure your local machine for this project?',
-    initial: true,
-    active: 'yes',
-    inactive: 'no'
-  }, { onCancel });
+  const dotpiRoot = DOTPI_ROOT;
+  const dotpiInit = await bash.dotpiInitSourceFileGet({ dotpiRoot });
 
   const { projectName } = data;
+  const projectPath = path.join(CWD, projectName);
+  const projectDotpiInit = path.join(projectPath, PATH_DOTPI_PROJECT_BASH);
 
-  if (configure) {
-    const projectPath = path.join(CWD, projectName);
-    await configureHost(projectPath);
+  const modules = await bash.variableRead({
+    sourceFiles: [
+      dotpiInit,
+      projectDotpiInit,
+    ],
+    variable: 'dotpi_module_install',
+  });
+
+  console.log({modules});
+
+  await moduleInstall(modules, {
+    dotpiRoot,
+    prefix: projectPath,
+  })
+
+  for(const module of modules) {
+    const definition = await moduleDefinitionGet(module);
+    console.log({module, definition});
   }
 
-  console.log(`\
+}
+
+export async function generateConfigFilesInProject(data) {
+  title('Generate config files for modules in project');
+
+  const dotpiRoot = DOTPI_ROOT;
+  const { projectName } = data;
+  const projectPath = path.join(CWD, projectName);
+
+  await moduleCreateConfig({
+    dotpiRoot,
+    prefix: projectPath,
+  })
+
+}
+
+// Wrap it all
+export default async function createProject() {
+  try {
+    if (isDotpiProject()) {
+      console.log('');
+      console.log(chalk.yellow(`> Cannot create a dotpi project in this directory, it already contains a dotpi project`));
+      console.log('Aborting...');
+      process.exit(0);
+    }
+
+    const data = {
+      projectName: null,
+      files: {},
+    };
+
+    await prepareProject(data);
+    await configureProject(data);
+    await configureSSH(data);
+    await configureWiFi(data);
+    await injectUtilityFiles(data);
+    await persistProject(data);
+
+    await installModulesInProject(data);
+    await generateConfigFilesInProject(data);
+
+    const { configure } = await prompts({
+      type: 'toggle',
+      name: 'configure',
+      message: 'Do you want to configure your local machine for this project?',
+      initial: true,
+      active: 'yes',
+      inactive: 'no'
+    }, { onCancel });
+
+    const { projectName } = data;
+
+    if (configure) {
+      const projectPath = path.join(CWD, projectName);
+      await configureHost(projectPath);
+    }
+
+    console.log(`\
 > The dotpi project "${projectName}" is ready to be installed on some Raspberry Pi
 >
 > Next Step: plug-in a SD Card with a Raspberry Pi OS (Lite) installed and run:
 > ${chalk.yellow('dotpi-tools --install-rpi')}
   `);
+  } catch (error) {
+    echo.error(`Error while creating dotpi project: ${error.message}`, error);
+    process.exit(1);
+  }
 }
