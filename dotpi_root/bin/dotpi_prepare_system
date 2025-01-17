@@ -170,7 +170,7 @@ source_path="${DOTPI_ROOT}/dist/${module_name}"
 destination_prefix="${DOTPI_ROOT}/lib"
 destination_path="${destination_prefix}/node_modules/${module_name}"
 {
-  dotpi echo_info "Install ${modules_name}"
+  dotpi echo_info "Install ${module_name}"
   # minimal install in the modules directory
   sudo npm install --no-fund \
     --prefix "$destination_prefix" \
@@ -273,7 +273,7 @@ for module in "${dotpi_module_uninstall_default[@]}" "${dotpi_module_uninstall[@
 done
 
 dotpi echo_info "Uninstall dotpi modules packages:" "${!dotpi_module_uninstall_modules[@]}"
-sudo dotpi module uninstall "${!dotpi_module_uninstall_modules[@]}"
+sudo dotpi module uninstall --verbose full "${!dotpi_module_uninstall_modules[@]}"
 
 declare -A dotpi_module_install_modules
 for module in "${dotpi_module_install_default[@]}" "${dotpi_module_install[@]}" ; do
@@ -284,7 +284,7 @@ for module in "${dotpi_module_install_default[@]}" "${dotpi_module_install[@]}" 
 done
 
 dotpi echo_info "Install dotpi modules packages:" "${!dotpi_module_install_modules[@]}"
-sudo dotpi module install "${!dotpi_module_install_modules[@]}"
+sudo dotpi module install --verbose full "${!dotpi_module_install_modules[@]}"
 
 ############## finalisation
 
