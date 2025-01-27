@@ -13,3 +13,4 @@ projects/
 !projects/example-*
 
 node_modules
+dotpi_modules

@@ -15,7 +15,7 @@ dotpi_node_version='${d.nodeVersion}'
 # User-defined dotpi modules to install
 dotpi_module_install+=(
   ${!d.installDotpiManager ? '# ' : ''}'@dotpi/manager'
-  ${!d.installDotpiLed ? '# ' : ''}'@dotpi/led'
+  ${!d.installDotpiLed ? '# ' : ''}'@dotpi/led-module'
 )
 
 # Misc
