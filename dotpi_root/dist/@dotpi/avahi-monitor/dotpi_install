@@ -14,7 +14,7 @@ fi
 local_file="$(dotpi readlink_follow "$0")"
 local_path="$(dirname -- "$local_file")"
 
-service_name="dotpi_avahi_monitor.service"
+service_name="dotpi-avahi-monitor.service"
 service_file="${local_path}/${service_name}"
 
 dotpi echo_info "Install ${service_file}"

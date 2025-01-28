@@ -11,7 +11,7 @@ if [[ "$USER" != "root" ]]; then
   exit 1
 fi
 
-service_name="dotpi_avahi_monitor.service"
+service_name="dotpi-avahi-monitor.service"
 
 dotpi echo_info "Uninstall ${service_name}"
 dotpi service_uninstall "${service_name}"

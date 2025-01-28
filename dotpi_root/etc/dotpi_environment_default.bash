@@ -75,8 +75,7 @@ dotpi_module_uninstall=()
 # system default
 dotpi_module_install_default=(
   # '@dotpi/module' is already installed to bootstrap
-  # '@dotpi/manager'
-  '@dotpi/avahi_monitor'
+  '@dotpi/avahi-monitor'
 )
 
 # user-defined, use +=(package1 package2) to add packages to list
