@@ -9,8 +9,7 @@ tmp/
 **/*.BAD
 **/*.bak
 
-projects/
-!projects/example-*
+projects
 
 node_modules
 dotpi_modules
