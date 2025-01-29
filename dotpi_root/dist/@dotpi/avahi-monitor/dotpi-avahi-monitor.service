@@ -4,7 +4,7 @@ After=avahi-daemon.service
 
 [Service]
 Type=exec
-ExecStart=/opt/dotpi/lib/dotpi_modules/@dotpi/avahi-monitor/dotpi-avahi-monitor-command
+ExecStart=/opt/dotpi/lib/dotpi_modules/@dotpi/avahi-monitor-module/dotpi-avahi-monitor-command
 Restart=always
 
 # wait before restarting
