@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+import { program } from 'commander';
+
+import { installCommandDefine } from '@dotpi/module/install.js';
+import { uninstallCommandDefine } from '@dotpi/module/uninstall.js';
+import { createConfigCommandDefine } from '@dotpi/module/createConfig.js';
+
+installCommandDefine({ program });
+uninstallCommandDefine({ program });
+createConfigCommandDefine({ program });
+
+program.parse();
+

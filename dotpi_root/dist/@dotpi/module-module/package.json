@@ -1,0 +1,16 @@
+{
+  "name": "@dotpi/module-module",
+  "version": "1.6.1",
+  "description": "dotpi module management",
+  "type": "module",
+  "bin": "./bin/dotpi_module",
+  "scripts": {
+    "postinstall": "./dotpi_install",
+    "preuninstall": "./dotpi_uninstall"
+  },
+  "license": "BSD-3-clause",
+  "dependencies": {
+    "@dotpi/javascript": "^1.5.0",
+    "@dotpi/module": "^1.6.1"
+  }
+}

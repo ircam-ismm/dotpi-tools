@@ -74,7 +74,7 @@ dotpi_module_uninstall=()
 
 # system default
 dotpi_module_install_default=(
-  # '@dotpi/module' is already installed to bootstrap
+  # '@dotpi/module-module' is already installed to bootstrap
   '@dotpi/avahi-monitor-module'
 )
 

@@ -165,7 +165,7 @@ sudo loginctl enable-linger "$FIRSTUSER" || {
 ############# dotpi module manager
 
 # bootstrap-install
-module_name="@dotpi/module"
+module_name="@dotpi/module-module"
 source_path="${DOTPI_ROOT}/dist/${module_name}"
 destination_prefix="${DOTPI_ROOT}/lib"
 destination_path="${destination_prefix}/node_modules/${module_name}"
