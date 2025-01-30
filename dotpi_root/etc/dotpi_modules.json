@@ -2,7 +2,8 @@
   "moduleSource": {
 
     "_example_git": "git+https://github.com/ircam-ismm/dotpi-led#feat-dotpi-module",
-    "_example_local": "file:///opt/dotpi/dist/@dotpi/avhi_monitor",
+    "_example_local": "file:///opt/dotpi/dist/@dotpi/avhi-monitor-module",
+
     "_see_npm_doc": "https://docs.npmjs.com/cli/v10/configuring-npm/package-json#dependencies"
   }
 }
