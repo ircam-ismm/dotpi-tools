@@ -4,32 +4,34 @@ dotpi_audio_device_supported=(
   'default'
   'none'
   'headphones'
+  'bluetooth'
+  'hifiberry amp+'
+  'hifiberry amp2'
+  'hifiberry amp3'
+  'hifiberry amp4 pro'
+  'hifiberry amp4'
+  'hifiberry beocreate'
+  'hifiberry dac for raspberry pi 1'
+  'hifiberry dac zero'
   'hifiberry dac+ adc pro'
   'hifiberry dac+ adc'
-  'hifiberry dac+ standard'
-  'hifiberry dac+ light'
-  'hifiberry dac zero'
-  'hifiberry miniamp'
-  'hifiberry beocreate'
   'hifiberry dac+ dsp'
+  'hifiberry dac+ light'
   'hifiberry dac+ rtc'
-  'hifiberry pro'
-  'hifiberry amp2'
+  'hifiberry dac+ standard'
   'hifiberry dac2 hd'
-  'hifiberry digi+'
   'hifiberry digi+ pro'
-  'hifiberry amp+'
-  'hifiberry amp3'
-  'hifiberry dac for raspberry pi 1'
-  'raspberry pi dac pro'
-  'raspberry pi dac+'
-  'raspberry pi digiamp+'
-  'raspberry pi codec zero'
+  'hifiberry digi+'
+  'hifiberry miniamp'
+  'hifiberry pro'
+  'iqaudio codec zero'
   'iqaudio dac pro'
   'iqaudio dac+'
   'iqaudio digiamp+'
-  'iqaudio codec zero'
-  'bluetooth'
+  'raspberry pi codec zero'
+  'raspberry pi dac pro'
+  'raspberry pi dac+'
+  'raspberry pi digiamp+'
   'ue boom 2'
   'ue boom 3'
   'ue megaboom 2'
@@ -211,7 +213,7 @@ dotpi_audio_device_select() (
       _dotpi_audio_device_select_hifiberry
       ;;
 
-    'hifiberry dac+ standard'|'hifiberry pro'|'hifiberry amp2')
+    'hifiberry dac+ standard'|'hifiberry pro'|'hifiberry amp2'|'hifiberry amp4')
       dtoverlay=hifiberry-dacplus
       _dotpi_audio_device_select_hifiberry
       ;;
@@ -248,6 +250,11 @@ dotpi_audio_device_select() (
 
     'hifiberry amp3')
       dtoverlay=hifiberry-amp3
+      _dotpi_audio_device_select_hifiberry
+      ;;
+
+    'hifiberry amp4 pro')
+      dtoverlay=hifiberry-amp4pro
       _dotpi_audio_device_select_hifiberry
       ;;
 

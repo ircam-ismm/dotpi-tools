@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 
-import { readBashArray, readBashVariable, packageVersion } from '../js/utils.js';
+import { readBashArray, readBashVariable, packageVersion } from '../src/utils.js';
 
 describe('# utils', () => {
   it('packageVersion()', () => {
@@ -21,28 +21,30 @@ describe('# utils', () => {
       'default',
       'none',
       'headphones',
+      'bluetooth',
+      'hifiberry amp+',
+      'hifiberry amp2',
+      'hifiberry amp3',
+      'hifiberry amp4 pro',
+      'hifiberry amp4',
+      'hifiberry beocreate',
+      'hifiberry dac for raspberry pi 1',
+      'hifiberry dac zero',
       'hifiberry dac+ adc pro',
       'hifiberry dac+ adc',
-      'hifiberry dac+ standard',
-      'hifiberry dac+ light',
-      'hifiberry dac zero',
-      'hifiberry miniamp',
-      'hifiberry beocreate',
       'hifiberry dac+ dsp',
+      'hifiberry dac+ light',
       'hifiberry dac+ rtc',
-      'hifiberry pro',
-      'hifiberry amp2',
+      'hifiberry dac+ standard',
       'hifiberry dac2 hd',
-      'hifiberry digi+',
       'hifiberry digi+ pro',
-      'hifiberry amp+',
-      'hifiberry amp3',
-      'bluetooth',
+      'hifiberry digi+',
+      'hifiberry miniamp',
+      'hifiberry pro',
       'ue boom 2',
       'ue boom 3',
       'ue megaboom 2',
       'ue megaboom 3',
-      'hifiberry dac for raspberry pi 1'
     ]);
   });
 });
