@@ -4,6 +4,10 @@
   "description": "dotpi javascript utilities",
   "type": "module",
   "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./*.js": "./*.js"
+  },
   "dependencies": {
     "chalk": "^5.4.0",
     "execa": "^9.5.2",
