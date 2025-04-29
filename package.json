@@ -28,7 +28,7 @@
   },
   "files": [
     "*.js",
-    "./src/**/*.js",
+    "./src/**/*",
     "./dotpi_root/**/*"
   ],
   "scripts": {
