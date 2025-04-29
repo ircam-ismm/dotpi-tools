@@ -1,6 +1,6 @@
 {
   "name": "@dotpi/javascript",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "dotpi javascript utilities",
   "type": "module",
   "main": "index.js",
