@@ -7,14 +7,6 @@
     "Jean-Philippe Lambert",
     "Benjamin Matuszewski"
   ],
-  "workspaces": [
-    ".",
-    "dotpi_root/dist/@dotpi/*"
-  ],
-  "type": "module",
-  "bin": {
-    "dotpi-tools": "./dotpi-tools.js"
-  },
   "homepage": "https://ircam-ismm.github.io/dotpi/",
   "publishConfig": {
     "access": "public"
@@ -26,6 +18,19 @@
   "bugs": {
     "url": "https://github.com/ircam-ismm/dotpi-tools/issues"
   },
+  "workspaces": [
+    ".",
+    "dotpi_root/dist/@dotpi/*"
+  ],
+  "type": "module",
+  "bin": {
+    "dotpi-tools": "./dotpi-tools.js"
+  },
+  "files": [
+    "*.js",
+    "./src/**/*.js",
+    "./dotpi_root/**/*"
+  ],
   "scripts": {
     "test": "node --test"
   },
