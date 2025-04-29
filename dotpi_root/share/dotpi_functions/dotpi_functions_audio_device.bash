@@ -214,7 +214,7 @@ dotpi_audio_device_select() (
       ;;
 
     'hifiberry dac+ standard'|'hifiberry pro'|'hifiberry amp2'|'hifiberry amp4')
-      dtoverlay=hifiberry-dacplus
+      dtoverlay=hifiberry-dacplus-std
       _dotpi_audio_device_select_hifiberry
       ;;
 
@@ -527,7 +527,7 @@ dotpi_audio_device_volume_set() (
       _dotpi_audio_device_volume_set_alsa
       ;;
 
-    'hifiberry amp+')
+    'hifiberry amp+'|'hifiberry amp4'|'hifiberry amp4 pro')
       control='Master'
       _dotpi_audio_device_volume_set_alsa
       ;;
