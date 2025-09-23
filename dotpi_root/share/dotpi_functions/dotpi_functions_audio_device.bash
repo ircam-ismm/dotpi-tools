@@ -32,6 +32,8 @@ dotpi_audio_device_supported=(
   'raspberry pi dac pro'
   'raspberry pi dac+'
   'raspberry pi digiamp+'
+  'raspiaudio mic+ v1'
+  'raspiaudio mic+ v2'
   'ue boom 2'
   'ue boom 3'
   'ue megaboom 2'
@@ -258,6 +260,11 @@ dotpi_audio_device_select() (
       _dotpi_audio_device_select_hifiberry
       ;;
 
+    'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
+      dtoverlay=googlevoicehat-soundcard
+      _dotpi_audio_device_select_raspiaudio
+      ;;
+
     ####### Ultimate Ears (UE)
 
     'ue boom 2'|'ue boom 3'|'ue megaboom 2'|'ue megaboom 3')
@@ -328,6 +335,10 @@ _dotpi_audio_device_disable_all() (
     _dotpi_audio_device_disable_hifiberry
   fi
 
+  if [[ ! "$exception_family" = "raspiaudio" ]] ; then
+    _dotpi_audio_device_disable_raspiaudio
+  fi
+
 )
 
 _dotpi_audio_device_select_headphones() (
@@ -374,6 +385,20 @@ dtoverlay=${dtoverlay}
 EOF
 )
 
+_dotpi_audio_device_select_raspiaudio() (
+  dotpi_echo_info "Configuring Raspiaudio device '${model}'"
+
+  _dotpi_audio_device_disable_all raspiaudio
+
+  mkdir -p "$(dirname -- "$config_file")"
+  cat >> "$config_file" << EOF
+
+# dotpi: overlay for audio device '${model}'
+dtoverlay=${dtoverlay}
+
+EOF
+)
+
 _dotpi_audio_device_disable_headphones() (
   dotpi_echo_info "Disabling headphones"
   # disable internal audio device
@@ -406,6 +431,14 @@ _dotpi_audio_device_disable_hifiberry() (
 
   # disable hifiberry
   pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=hifiberry-")"
+  perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i -- "$config_file"
+)
+
+_dotpi_audio_device_disable_raspiaudio() (
+  dotpi_echo_info "Disabling Raspiaudio"
+
+  # disable hifiberry
+  pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=googlevoicehat-soundcard")"
   perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i -- "$config_file"
 )
 
@@ -485,6 +518,14 @@ dotpi_audio_device_init() (
       alsactl store
     ;;
 
+    'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
+
+      amixer -D sysdefault sset -- 'Master' 'on'
+      amixer -D sysdefault sset -- 'Master' '0%'
+
+      alsactl store
+      ;;
+
   esac
 
 )
@@ -531,6 +572,12 @@ dotpi_audio_device_volume_set() (
       control='Master'
       _dotpi_audio_device_volume_set_alsa
       ;;
+
+    'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
+      control='Master'
+      _dotpi_audio_device_volume_set_alsa
+      ;;
+
 
     ####### Ultimate Ears (UE)
 
