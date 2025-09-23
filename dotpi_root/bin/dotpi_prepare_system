@@ -71,7 +71,13 @@ sudo dotpi apt_get update || {
   error_exit $? 'apt_get update' $error_exit_code_package
 }
 sudo dotpi apt_get dist-upgrade || {
-  error_exit $? 'apt_get dist-upgrade' $error_exit_code_package
+  dotpi echo_error "Error while doing apt_get dist-upgrade"
+  dotpi echo_warning "Try to fix broken configuration and retry dist-upgrade"
+  sudo dpkg --configure -a --force-confdef --force-confnew
+
+  sudo dotpi apt_get dist-upgrade || {
+    error_exit $? 'apt_get dist-upgrade' $error_exit_code_package
+  }
 }
 
 declare -A apt_install_packages
