@@ -8,7 +8,7 @@ local_path="$(dirname -- "$local_file")"
 log_file="${1:-${local_file}-$(date +"%Y%m%d-%H%M%S").log}"
 
 # Self log
-exec &> >(dotpi log "$log_file")
+exec &> >(tee -a "$log_file")
 
 DOTPI_ROOT="${DOTPI_ROOT:-/opt/dotpi}"
 
