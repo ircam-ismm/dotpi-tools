@@ -14,7 +14,7 @@ while true ; do
         (
             (( trial_count = 0 ))
             while (( trial_count < trial_count_max )) ; do
-                "${local_path}/../bin/dotpi_pipewire_relink" && exit 0
+                nice "${local_path}/../bin/dotpi_pipewire_relink" && exit 0
                 sleep 3
                 (( ++trial_count ))
             done
