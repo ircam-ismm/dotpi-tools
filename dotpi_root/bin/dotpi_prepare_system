@@ -101,7 +101,11 @@ dotpi echo_info "Install Node.js"
 
 word_size="$(dotpi file_word_size "$(which file)" )"
 if [[ $word_size == "32" ]] ; then
-   node_arch=armv7l
+   if [[ "$(uname -m)" == "armv6l" ]] ; then
+      node_arch=armv6l
+   else
+      node_arch=armv7l
+   fi
 else
    node_arch=arm64
 fi
@@ -112,8 +116,10 @@ sudo rm -rf -- "$N_PREFIX" || {
   error_exit $? "rm ${N_PREFIX}" $error_exit_code_node
 }
 
-
-sudo mkdir -p -- "$N_PREFIX" || {
+{
+  sudo mkdir -p -- "$N_PREFIX"
+  sudo chmod a+rw "$N_PREFIX"
+} || {
   error_exit $? "mkdir ${N_PREFIX}" $error_exit_code_node
 }
 
@@ -123,7 +129,38 @@ while ! curl -L https://bit.ly/n-install -o /tmp/n-install ; do
   echo "trying again"
 done
 
-while ! sudo N_PREFIX="${DOTPI_ROOT}/share/n" bash /tmp/n-install -y -a "$node_arch" "$dotpi_node_version" ; do
+environment_definitions=(
+  # n-install checks for N_PREFIX to not be set in .bashrc
+  # "N_PREFIX='${N_PREFIX}'"
+
+  "N_ARCH='${node_arch}'"
+)
+
+if [[ $node_arch == "armv6l" ]] ; then
+  # armv6 is not supported any more in offical node.js builds
+  environment_definitions+=(
+    "N_NODE_MIRROR='https://unofficial-builds.nodejs.org/download/release'"
+  )
+fi
+
+echo "
+
+# dotpi: environment variables for n (node version manager)
+" >> "${HOME}/.bashrc" || {
+  error_exit $? "n environment in ${HOME}/.bashrc" $error_exit_code_node
+}
+
+for definition in "${environment_definitions[@]}" ; do
+  cmd="export ${definition}"
+  eval "$cmd"
+  echo "$cmd" >> "${HOME}/.bashrc" || {
+  error_exit $? "n environment in ${HOME}/.bashrc" $error_exit_code_node
+}
+done
+
+# n-install checks for N_PREFIX to not be set in bashrc
+# however, it must be set for the installation
+while ! N_PREFIX="$N_PREFIX" bash /tmp/n-install -y -a "$node_arch" "$dotpi_node_version" ; do
   dotpi echo_warning "Error with n-install"
   sleep 1
   echo "trying again"
@@ -131,21 +168,22 @@ while ! sudo N_PREFIX="${DOTPI_ROOT}/share/n" bash /tmp/n-install -y -a "$node_a
   sudo mkdir -p -- "$N_PREFIX"
 done
 
-rm /tmp/n-install
-sudo bash -c "cat >> '/root/.bashrc' << EOF
 
-# dotpi: force the usage of -a for correct architecture
-# (n relies on uname, which tells about the kernel, not the executables)
+rm -f /tmp/n-install
 
-alias n='n -a ${node_arch}'
 
-EOF
-" || {
-  error_exit $? "n alias in /root/.bashrc" $error_exit_code_node
-}
 
-source="${N_PREFIX}/bin"
-destination="/usr/bin"
+# echo "
+# # dotpi: force the usage of -a for correct architecture
+# # (n relies on uname, which tells about the kernel, not the executables)
+
+# alias n='${environment_variables[*]} n -a ${node_arch}'
+# " >> "${HOME}/.bashrc" || {
+#   error_exit $? "n alias in /root/.bashrc" $error_exit_code_node
+# }
+
+source_path="${N_PREFIX}/bin"
+destination_path="/usr/bin"
 executables=(
    corepack
    n
@@ -154,8 +192,8 @@ executables=(
    npx
 )
 for executable in "${executables[@]}" ; do
-    sudo ln -s -f "${source}/${executable}" "${destination}/${executable}" || {
-      error_exit $? "symlink to ${destination}/${executable}" $error_exit_code_node
+    sudo ln -s -f "${source_path}/${executable}" "${destination_path}/${executable}" || {
+      error_exit $? "symlink to ${destination_path}/${executable}" $error_exit_code_node
     }
 done
 
