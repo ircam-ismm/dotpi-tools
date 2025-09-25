@@ -520,8 +520,9 @@ dotpi_audio_device_init() (
 
     'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
 
-      amixer -D sysdefault sset -- 'Master' 'on'
-      amixer -D sysdefault sset -- 'Master' '0%'
+      # no controller for device, use default 'Master' control
+      amixer sset -- 'Master' 'on'
+      amixer sset -- 'Master' '80%'
 
       alsactl store
       ;;
