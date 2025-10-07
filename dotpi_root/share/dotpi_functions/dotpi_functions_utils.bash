@@ -144,7 +144,7 @@ dotpi_file_word_size() {
       return 1
   fi
 
-  echo "$(file "$1" | perl -pe 's/.*(32|64)-bit.*/$1/' )"
+  echo "$(file "$(dotpi readlink_follow "$1")" | perl -pe 's/.*(32|64)-bit.*/$1/' )"
 }
 
 # requires ts form moretuils
