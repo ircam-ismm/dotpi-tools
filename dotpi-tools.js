@@ -19,6 +19,11 @@ const options = program.opts();
 
 greetings();
 
+if (Object.keys(options).length === 0) {
+  console.log('');
+  program.help();
+}
+
 if (options.createProject) {
   await createProject();
 } else if (options.installRpi) {
