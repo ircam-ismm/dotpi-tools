@@ -215,7 +215,7 @@ dotpi_audio_device_select() (
       _dotpi_audio_device_select_hifiberry
       ;;
 
-    'hifiberry dac+ standard'|'hifiberry pro'|'hifiberry amp2'|'hifiberry amp4')
+    'hifiberry dac+ standard'|'hifiberry pro')
       dtoverlay=hifiberry-dacplus-std
       _dotpi_audio_device_select_hifiberry
       ;;
@@ -252,6 +252,11 @@ dotpi_audio_device_select() (
 
     'hifiberry amp3')
       dtoverlay=hifiberry-amp3
+      _dotpi_audio_device_select_hifiberry
+    ;;
+
+    'hifiberry amp2'|'hifiberry amp4')
+      dtoverlay=hifiberry-dacplus
       _dotpi_audio_device_select_hifiberry
       ;;
 
