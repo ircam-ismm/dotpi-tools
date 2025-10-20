@@ -320,12 +320,15 @@ Please do report them.
 
 ## Todo
 
-- [ ] allow to use configuration files from project
-  - [ ] dotpi-led
-
 - [ ] dotpi-manager: dependency to audio should be soft
   - [ ] allow client to run without audio
   - [ ] client should continue to run if audio stops
 
-- [ ] @dotpi/audio module
+- [ ] @dotpi/audio-module
   - [ ] generate
+  - [ ] soft limiter at audio output
+    - [ ] pipewire filter-chain
+      Cf. <https://flaterco.com/kb/audio/pipewire/volume.html>
+    - [ ] easy effect
+      Cf. <https://github.com/wwmm/easyeffects/wiki/Command-Line-Options>
+
