@@ -122,8 +122,35 @@ dotpi_sed() {
   return $?
 }
 
+dotpi_envsubst() {
+  # envsubst with support for default values:
+  #   $VAR
+  #   ${VAR}
+  #   ${VAR:-default}   -> use default if VAR is unset or empty
+  #   ${VAR-default}    -> use default if VAR is unset (empty allowed)
+  perl -pe '
+    s/\$(\w+)|\$\{(\w+)(?:(:?-)([^}]*))?\}/
+      do {
+        my ($simple,$name,$op,$def) = ($1,$2,$3,$4);
+        if ($simple) {
+          defined $ENV{$simple} ? $ENV{$simple} : ""
+        } else {
+          if (defined $op) {
+            if ($op eq ":-") {
+              (defined $ENV{$name} && length $ENV{$name}) ? $ENV{$name} : $def
+            } else { # "-" operator: use default only if unset
+              defined $ENV{$name} ? $ENV{$name} : $def
+            }
+          } else {
+            defined $ENV{$name} ? $ENV{$name} : ""
+          }
+        }
+      }/ge
+  '
+}
+
 # dotpi_uuidgen
-if $( command -v uuidgen > /dev/null ) ; then
+if command -v uuidgen > /dev/null ; then
     dotpi_uuidgen() {
       uuidgen | tr '[:upper:]' '[:lower:]'
     }
