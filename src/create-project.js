@@ -249,10 +249,21 @@ export async function configureWiFi(data, mocks = null) {
     prompts.inject(Object.values(mocks));
   }
 
+  const wifiApInstanceSuffix = '-${dotpi_instance_number}';
+
   // https://people.freedesktop.org/~lkundrak/nm-dbus-api/nm-settings.html
   // @note - let's consider we always use wpa-psk for now
 
   const computedValues = {};
+
+  const onSubmit = (prompt, answer, answers) => {
+    Object.assign(computedValues, { [prompt.name]: answer });
+    if (answers.wifiMode === 'ap') {
+      // will be specialised with instance number
+      Object.assign(computedValues, { connectionIsTemplate: true } );
+    }
+  };
+
   const answers = await prompts([
     {
       type: 'select',
@@ -270,24 +281,63 @@ export async function configureWiFi(data, mocks = null) {
       message: 'Wifi name (SSID):',
       validate: value => {
 
-        const ssidSize = new Blob([value]).size;
+        let ssid = value;
+
+        // remove instance number suffix
+        const instanceNumberRegexp = new RegExp(
+          // escape dollar sign for regexp
+          wifiApInstanceSuffix.replace(/\$/g, '\\$'),
+          // replace all occurrences
+          'g'
+        );
+
+        ssid = ssid.replace(instanceNumberRegexp, '');
+        let wifiId = ssid
+          .toLowerCase()
+          .replace(/[^a-z0-9\-_]/g, '-');
+
+        if (computedValues.wifiMode === 'ap') {
+          // reserve size for instance number substitution
+          ssid += '-0000';
+
+          // for NetworkManager identifier
+          wifiId += '-ap';
+        }
+
+        const ssidSize = new Blob([ssid]).size;
         if (ssidSize === 0) {
           return 'Please provide a non-empty SSID';
         } else if(ssidSize > 32) {
-          return `'${value}' is too long (more than 32 bytes)`;
+          return `'${ssid}' is too long (more than 32 bytes)`;
         }
 
-        const wifiId = value.toLowerCase().replace(/[^a-z0-9\-_]/g, '_');
-        const configPath = path.join(PATH_NETWORK_DIRECTORY, value);
+        const configPath = path.join(PATH_NETWORK_DIRECTORY, wifiId);
 
         // @TODO: file is created later, this test is bypassed
         if (fs.existsSync(configPath)) {
-          return `A WiFi configuration named "${value}" already exists`;
+          return `A WiFi configuration named "${wifiId}" already exists`;
         }
 
         Object.assign(computedValues, { wifiId });
         return true;
       },
+      initial: (previous, values) => {
+        if (values.wifiMode === 'ap') {
+          return `dotpi-${data.projectName}${wifiApInstanceSuffix}`;
+        }
+        return null;
+      }
+    },
+    {
+      type: 'select',
+      name: 'wifiBand',
+      message: 'Select WiFi band:',
+      choices: [
+        { title: 'Automatic', value: 'automatic' },
+        { title: '2.4 GHz only', value: 'bg' },
+        { title: '5 GHz only', value: 'a' },
+      ],
+      initial: 0,
     },
     {
       type: 'text',
@@ -305,12 +355,17 @@ export async function configureWiFi(data, mocks = null) {
         return true;
       },
     },
-  ], { onCancel });
+  ], { onCancel, onSubmit });
 
   Object.assign(answers, computedValues);
 
-  const { wifiId, wifiMode } = answers;
-  const connectionPath = path.join(PATH_NETWORK_DIRECTORY, `${wifiId}.nmconnection`);
+  const { wifiId, wifiMode, connectionIsTemplate } = answers;
+  let connectionPath = path.join(PATH_NETWORK_DIRECTORY, `${wifiId}.nmconnection`);
+
+  if (connectionIsTemplate) {
+    connectionPath += '.template';
+  }
+
   let connectionConfig = null;
 
   switch (wifiMode) {
@@ -323,7 +378,7 @@ export async function configureWiFi(data, mocks = null) {
         max: 2147483647,
         round: 0,
         initial: 0,
-      }, { onCancel });
+      }, { onCancel, onSubmit });
 
       connectionConfig = renderTemplate('infrastructure.nmconnection', {
         wifiPriority,
@@ -332,7 +387,7 @@ export async function configureWiFi(data, mocks = null) {
       break;
     }
     case 'ap': {
-      connectionConfig = renderTemplate('ap.nmconnection', {
+      connectionConfig = renderTemplate('ap.nmconnection.template', {
         ...answers,
       });
       break;

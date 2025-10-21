@@ -194,3 +194,29 @@ dotpi_connection_delete() (
   return $?
 )
 
+dotpi_connections_update() (
+  if [[ "$USER" != "root" ]]; then
+    dotpi_echo_error "This command must be run as root"
+    return 1
+  fi
+
+  source_path="${DOTPI_ROOT}/etc/network"
+  destination_path='/etc/NetworkManager/system-connections'
+  mkdir -p -- "$destination_path"
+
+  # instantiate nmconnection templates
+  while IFS= read -r -d '' f ; do
+    destination_filename="$(basename -- "${f%.template}")"
+    dotpi envsubst < "$f" > "${destination_path}/${destination_filename}"
+  done < <(find "${source_path}" -name '*.nmconnection.template' -print0)
+
+  # copy regular nmconnection files
+  while IFS= read -r -d '' f ; do
+    destination_filename="$(basename -- "${f}")"
+    cp --force -- "$f" "${destination_path}/${destination_filename}"
+  done < <(find "${source_path}" -name '*.nmconnection' -print0)
+
+  # NetworkManager requires secure permissions
+  chmod 'u=rw,go=' "${destination_path}"/*
+  chown -R root:root "${destination_path}"
+)

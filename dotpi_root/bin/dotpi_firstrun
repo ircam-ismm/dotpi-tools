@@ -126,12 +126,8 @@ dotpi echo_info "Configure wifi"
 # - Bullseye: it should be sufficient in /boot
 # - Bookworm: it breaks NetworkManager
 
-source_path="${DOTPI_ROOT}/etc/network"
-destination_path='/etc/NetworkManager/system-connections'
-if [ -d "${source_path}" ] ; then
-   tar c -C "$source_path" '.' | tar xv -C "$destination_path"
-fi
-chmod 'u=rw,go=' "${destination_path}"/*
+# apply from ${DOTPI_ROOT}/etc/network to /etc/NetworkManager/system-connections
+dotpi connections_update
 
 # unblock wifi in any case
 #

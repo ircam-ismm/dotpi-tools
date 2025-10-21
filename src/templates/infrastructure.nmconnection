@@ -11,9 +11,12 @@ auth-retries=0
 [wifi]
 mode=infrastructure
 ssid=${d.wifiSsid}
+
 # disable power management
 powersave=2
-# band=a
+
+# "a" for 5Ghz only, "bg" for 2.4GHz only, default for automatic selection
+# band=
 
 [wifi-security]
 key-mgmt=wpa-psk

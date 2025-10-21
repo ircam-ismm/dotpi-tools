@@ -2,7 +2,7 @@
 id=${d.wifiId}
 type=wifi
 # do not use external AP by default
-autoconnect=true
+autoconnect=false
 interface-name=wlan0
 
 [wifi]
@@ -11,12 +11,20 @@ ssid=${d.wifiSsid}
 # disable power management
 powersave=2
 
+# "a" for 5Ghz only, "bg" for 2.4GHz only, default for automatic selection
+band=${d.wifiBand === 'automatic' ? '' : d.wifiBand}
+
 [wifi-security]
 key-mgmt=wpa-psk
 psk=${d.wifiPsk}
+# disable WPA1
+proto=rsn;
 
 [ipv4]
+# access-point
 method=shared
+# no route via clients
+never-default=true
 
 [ipv6]
 addr-gen-mode=default
