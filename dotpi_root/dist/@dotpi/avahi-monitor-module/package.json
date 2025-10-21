@@ -1,6 +1,6 @@
 {
   "name": "@dotpi/avahi-monitor-module",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "A tool to monitor and restart Avahi service",
   "scripts": {
     "postinstall": "./dotpi_install",

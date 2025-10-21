@@ -1,6 +1,6 @@
 {
   "name": "@dotpi/tools",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "description": "Set of scripts for managing dotpi fleets of Raspberry Pi",
   "author": "Jean-Philippe Lambert",
   "contributors": [
@@ -36,7 +36,7 @@
   },
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@dotpi/javascript": "^1.6.0",
+    "@dotpi/javascript": "^1.6.1",
     "@dotpi/module": "^1.5.0",
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
