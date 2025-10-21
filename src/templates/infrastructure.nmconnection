@@ -2,6 +2,7 @@
 id=${d.wifiId}
 type=wifi
 interface-name=wlan0
+autoconnect=true
 autoconnect-priority=${d.wifiPriority}
 # always retry to connect
 autoconnect-retries=0
