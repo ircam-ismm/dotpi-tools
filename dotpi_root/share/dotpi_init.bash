@@ -16,8 +16,13 @@ export DOTPI_ROOT
 export PATH="${PATH}:${DOTPI_ROOT}/usr/bin"
 export PATH="${PATH}:${DOTPI_ROOT}/bin"
 
+# functions are needed to initialise environment
 source "${DOTPI_ROOT}/share/dotpi_functions.bash"
+
+# export defined variables
+set -a
 source "${DOTPI_ROOT}/share/dotpi_environment.bash"
+set +a
 
 #### installed modules
 
