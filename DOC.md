@@ -1,4 +1,4 @@
-DOC.md
+# Documentation
 
 ## Bluetooth  [private]
 
