@@ -76,15 +76,15 @@ dotpi_color_orange='\e[0;33m'
 dotpi_color_green='\e[0;32m'
 
 dotpi_echo_error() {
-  printf "${dotpi_color_red}ERROR: ${dotpi_color_none}${*}\n" >&2
+  printf "${dotpi_color_red}ERROR: ${dotpi_color_none}%s\n" "${*}" >&2
 }
 
 dotpi_echo_warning() {
-  printf "${dotpi_color_orange}WARNING: ${dotpi_color_none}${*}\n" >&2
+  printf "${dotpi_color_orange}WARNING: ${dotpi_color_none}%s\n" "${*}" >&2
 }
 
 dotpi_echo_info() {
-  printf "${dotpi_color_green}INFO: ${dotpi_color_none}${*}\n" >&2
+  printf "${dotpi_color_green}INFO: ${dotpi_color_none}%s\n" "${*}" >&2
 }
 
 

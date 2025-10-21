@@ -84,7 +84,6 @@ dotpi_connection_write() (
   file=
   key=
   value=
-  prepend_line_if_new=
   if ! _dotpi_connection_get_options "${@}" ; then
       return $?
   fi
@@ -125,7 +124,6 @@ dotpi_connection_read() (
   file=
   key=
   value=
-  prepend_line_if_new=
   if ! _dotpi_connection_get_options "${@}" ; then
       return $?
   fi
@@ -150,7 +148,7 @@ dotpi_connection_read() (
 
   # use printf to unquote strings
   value="$(git config --file "$file" "$key")"
-  printf "$value\n"
+  printf '%s\n' "$value"
 
   return $?
 )
@@ -169,7 +167,6 @@ dotpi_connection_delete() (
   file=
   key=
   value=
-  prepend_line_if_new=
   if ! _dotpi_connection_get_options "${@}" ; then
       return $?
   fi

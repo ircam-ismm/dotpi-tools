@@ -58,7 +58,7 @@ export async function variableRead({
       uid,
       command: ` \
         for v in "\${${variable}[@]}" ; do \
-          printf "\$v\\0" ; \
+          printf '%s\\0' "\$v"; \
         done \
       `,
     });
