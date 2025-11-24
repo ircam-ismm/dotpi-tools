@@ -359,6 +359,9 @@ _dotpi_audio_device_select_headphones() (
 
 _dotpi_audio_device_select_bluetooth() (
   _dotpi_audio_device_disable_all bluetooth
+  bluetoothctl power off
+  rfkill unblock all
+  sudo bluetoothctl power on
 )
 
 _dotpi_audio_device_select_raspberry_pi() (
