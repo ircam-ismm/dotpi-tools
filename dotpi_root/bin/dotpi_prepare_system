@@ -41,6 +41,14 @@ sudo raspi-config nonint do_wifi_country "${dotpi_wifi_country_code}" || {
 sudo nmcli radio wifi on
 sudo rfkill unblock wifi
 
+# wait for system time update to be able to verify certificates needed by apt
+dotpi echo_info "Wait for the system clock to update from network"
+while [[ $(timedatectl show --property NTPSynchronized --value | grep yes | wc -l) == 0 ]] ; do
+  date
+  sleep 5
+done
+date
+
 ############### system packages via apt
 error_exit_code_package=2
 
