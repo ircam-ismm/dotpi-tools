@@ -233,6 +233,13 @@ dotpi_connections_update() (
   # NetworkManager requires secure permissions
   chmod 'u=rw,go=' "${destination_path}"/*
   chown -R root:root "${destination_path}"
+
+  systemctl restart NetworkManager.service || {
+    return_code=$?
+    dotpi echo_error "error while restarting NetworkManager.service: ${return_code}"
+    return "${return_code}"
+  }
+
 )
 
 dotpi_connection_ap_id_get() (
@@ -365,11 +372,6 @@ dotpi_connection_ap_activate() (
   done < <(find "${connections_path}" -name '*.nmconnection*' -print0)
 
   dotpi_connections_update
-  systemctl restart NetworkManager.service || {
-    return_code=$?
-    dotpi echo_error "error while restarting NetworkManager.service: ${return_code}"
-    return "${return_code}"
-  }
 )
 
 
@@ -434,10 +436,4 @@ dotpi_connection_ap_deactivate() (
   done < <(find "${connections_path}" -name '*.nmconnection*' -print0)
 
   dotpi_connections_update
-  systemctl restart NetworkManager.service || {
-    return_code=$?
-    dotpi echo_error "error while restarting NetworkManager.service: ${return_code}"
-    return "${return_code}"
-  }
-
 )
