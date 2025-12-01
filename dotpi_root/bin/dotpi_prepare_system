@@ -29,12 +29,13 @@ if [[ $(whoami) != "${FIRSTUSER}" ]] ; then
    error_exit 255 "This script MUST be executed by pi user (or first user)" $error_exit_code_init
 fi
 
-dotpi echo_info "Configure wifi"
-
 DOTPI_ROOT="${DOTPI_ROOT:-/opt/dotpi}"
 source "${DOTPI_ROOT}/share/dotpi_init.bash" || {
   error_exit $? "source dotpi_init.bash" $error_exit_code_init
 }
+
+####### wifi
+dotpi echo_info "Configure wifi"
 
 # set wifi country code
 #
@@ -45,19 +46,21 @@ sudo raspi-config nonint do_wifi_country "${dotpi_wifi_country_code}" || {
   error_exit $? "set wifi country code" $error_exit_code_init
 }
 
+dotpi echo_info "Update network configurations"
+sudo dotpi connections_update
+nmcli connection show
+
 # unblock wifi in any case
 sudo nmcli radio wifi on
 sudo rfkill unblock wifi
 
-dotpi echo_info "Update network configurations"
-sudo dotpi connections_update
-
 # wait for system time update to be able to verify certificates needed by apt
 dotpi echo_info "Wait for the system clock to update from network"
-while [[ $(timedatectl show --property NTPSynchronized --value | grep yes | wc -l) == 0 ]] ; do
+while [[ $(timedatectl --property NTPSynchronized --value | grep yes | wc -l) == 0 ]] ; do
   date
   sleep 5
 done
+timedatectl status
 date
 
 ############### system packages via apt
