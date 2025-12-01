@@ -48,10 +48,18 @@ echo "$bashrc_append" >> "${FIRSTUSERHOME}/.bashrc"
 substitution="# dotpi: source even if non-interactive"
 dotpi configuration_replace_region 'case $- in' 'esac' "$substitution" "${FIRSTUSERHOME}/.bashrc"
 
+####### disable Raspberry Pi imager configuration
+# otherwise it will apply again at next boot
+
+user_data_file="/boot/firmware/user-data"
+if [ -f "$user_data_file" ] ; then
+    dotpi echo_info "Disable Raspberry Pi imager configuration"
+    mv "$user_data_file" "${user_data_file}.disabled"
+fi
+
 ####### hostname
 
 dotpi echo_info "Set hostname to ${dotpi_instance_hostname}"
-
 dotpi system_set_hostname "$dotpi_instance_hostname"
 
 ####### ssh
