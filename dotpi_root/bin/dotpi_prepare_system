@@ -2,6 +2,12 @@
 
 set +e
 
+# duplicate log to SD card
+log_path='/boot/firmware'
+log_file="${1:-${log_path}/dotpi_prepare_system-$(date +"%Y%m%d-%H%M%S").log}"
+# Self log
+exec &> >(sudo tee -a "$log_file")
+
 error_exit() {
   error_code="${1:-255}"
   error_context="${2:-dotpi_prepare_system}"
