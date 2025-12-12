@@ -1,0 +1,5 @@
+# This file is for Debian Bookworm
+# Force a 2GB swap on constrained device (eg. Raspberry Pi Zero 2 W)
+
+# set size to absolute value
+CONF_SWAPSIZE=2048

@@ -186,6 +186,31 @@ KBEOF
    dpkg-reconfigure -f noninteractive keyboard-configuration
 fi
 
+# Adapt swap to low-memory devices (eg. Raspberry Pi Zero 2 W)
+memory_kb=$(cat /proc/meminfo | grep MemTotal | awk '{ print $2 }')
+
+# test for 3GB, to cope with some unavailable memory (MemTotal reports less)
+if (( memory_kb < $(( 3 * 1024 * 1024 )) )) ; then
+    dotpi echo_warning "Low memory device detected: configure 2GB swap"
+
+    rpi_swap_directory="/etc/rpi"
+
+    # Trixie
+    if [[ -f "${rpi_swap_directory}/swap.conf" ]] ; then
+        rpi_swap_directory_user="${rpi_swap_directory}/swap.conf.d"
+        sudo mkdir -p "$rpi_swap_directory_user"
+        sudo cp "${DOTPI_ROOT}/share/swap/99-dotpi-2GB-swapfile.conf" "${rpi_swap_directory_user}"
+
+    # Bookworm
+    elif [[ -f /etc/dphys-swapfile ]] ; then
+        sudo cp "${DOTPI_ROOT}/share/swap/dotpi-2GB-dphys-swapfile" /etc/dphys-swapfile
+
+    else
+        dotpi echo_ERROR "No known swap configuration found, unable to configure."
+    fi
+
+fi
+
 # read again as it may have changed
 FIRSTUSER="$(getent passwd 1000 | cut -d: -f1)"
 
