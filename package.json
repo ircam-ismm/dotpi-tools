@@ -1,6 +1,6 @@
 {
   "name": "@dotpi/tools",
-  "version": "2.9.7",
+  "version": "2.10.0",
   "description": "Set of scripts for managing dotpi fleets of Raspberry Pi",
   "author": "Jean-Philippe Lambert",
   "contributors": [
