@@ -190,34 +190,36 @@ while ! N_PREFIX="$N_PREFIX" bash /tmp/n-install -y -a "$node_arch" "$dotpi_node
   sudo mkdir -p -- "$N_PREFIX"
 done
 
-
 rm -f /tmp/n-install
 
 
-
-# echo "
-# # dotpi: force the usage of -a for correct architecture
-# # (n relies on uname, which tells about the kernel, not the executables)
-
-# alias n='${environment_variables[*]} n -a ${node_arch}'
-# " >> "${HOME}/.bashrc" || {
-#   error_exit $? "n alias in /root/.bashrc" $error_exit_code_node
-# }
-
 source_path="${N_PREFIX}/bin"
 destination_path="/usr/bin"
-executables=(
-   corepack
-   n
-   node
-   npm
-   npx
+
+n_path_to_symlinks() (
+  cd "${N_PREFIX}/bin" || {
+    error_exit $? "cd ${N_PREFIX}/bin" $error_exit_code_node
+  }
+
+  for executable in * ; do
+      sudo ln -s -f "${source_path}/${executable}" "${destination_path}/${executable}" || {
+        error_exit $? "symlink to ${destination_path}/${executable}" $error_exit_code_node
+      }
+  done
 )
-for executable in "${executables[@]}" ; do
-    sudo ln -s -f "${source_path}/${executable}" "${destination_path}/${executable}" || {
-      error_exit $? "symlink to ${destination_path}/${executable}" $error_exit_code_node
-    }
+
+# bootstrap: node, npm
+n_path_to_symlinks
+
+# pnpm is mandatory for node modules
+for package in "${dotpi_node_install_default[@]}" "${dotpi_node_install[@]}" ; do
+  npm -g install "$package" || {
+  error_exit $? "npm install ${package}" $error_exit_code_node
+}
 done
+
+# update: pnpm
+n_path_to_symlinks
 
 ############## services and modules
 error_exit_code_services=4
@@ -230,46 +232,46 @@ sudo loginctl enable-linger "$FIRSTUSER" || {
 
 ############# dotpi module manager
 
-# bootstrap-install
-module_name="@dotpi/module-module"
-source_path="${DOTPI_ROOT}/dist/${module_name}"
-destination_prefix="${DOTPI_ROOT}/lib"
-destination_path="${destination_prefix}/node_modules/${module_name}"
-{
-  dotpi echo_info "Install ${module_name}"
-  # minimal install in the modules directory
-  sudo npm install --no-fund \
-    --prefix "$destination_prefix" \
-    --install-strategy nested \
-    --omit dev \
-    --save \
-    --ignore-scripts \
-    -- \
-    "$source_path" || {
-    error_exit $? "dotpi_module: error when installing '${module_name}'" $error_exit_code_services
-  }
+# # bootstrap-install
+# module_name="@dotpi/module-module"
+# source_path="${DOTPI_ROOT}/dist/${module_name}"
+# destination_prefix="${DOTPI_ROOT}/lib"
+# destination_path="${destination_prefix}/node_modules/${module_name}"
+# {
+#   dotpi echo_info "Install ${module_name}"
+#   # minimal install in the modules directory
+#   sudo npm install --no-fund \
+#     --prefix "$destination_prefix" \
+#     --install-strategy nested \
+#     --omit dev \
+#     --save \
+#     --ignore-scripts \
+#     -- \
+#     "$source_path" || {
+#     error_exit $? "dotpi_module: error when installing '${module_name}'" $error_exit_code_services
+#   }
 
-  (
-    echo "# Install '${module_name}' dependencies"
-    # complete install within the module itself
-    # be sure to install links for relative dependencies also
-    # run postinstall script
+#   (
+#     echo "# Install '${module_name}' dependencies"
+#     # complete install within the module itself
+#     # be sure to install links for relative dependencies also
+#     # run postinstall script
 
-    sudo rm -rf "${destination_path}/node_modules" || {
-      error_exit $? "rm ${destination_path}/node_modules" $error_exit_code_services
-    }
+#     sudo rm -rf "${destination_path}/node_modules" || {
+#       error_exit $? "rm ${destination_path}/node_modules" $error_exit_code_services
+#     }
 
-    sudo npm install --no-fund \
-      --prefix "$destination_path" \
-      --omit dev \
-      --install-links \
-      || {
-      error_exit $? "dotpi_module: error when installing '${module_name}' dependencies'" $error_exit_code_services
-    }
-  )
-} || {
-  error_exit $? "${module_name}" $error_exit_code_services
-}
+#     sudo npm install --no-fund \
+#       --prefix "$destination_path" \
+#       --omit dev \
+#       --install-links \
+#       || {
+#       error_exit $? "dotpi_module: error when installing '${module_name}' dependencies'" $error_exit_code_services
+#     }
+#   )
+# } || {
+#   error_exit $? "${module_name}" $error_exit_code_services
+# }
 
 ############## audio
 error_exit_code_audio=6

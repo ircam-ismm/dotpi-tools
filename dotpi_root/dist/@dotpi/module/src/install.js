@@ -35,17 +35,20 @@ export async function install(modules = [], {
   switch (verbose) {
     case '0':
     case 'false':
+    case 'none':
     case false:
       verbose = 'none';
       break;
 
     case '1':
     case 'true':
+    case 'short':
     case true:
       verbose = 'short';
       break;
 
     case '2':
+    case 'full':
       verbose = 'full';
       break;
   }
@@ -78,62 +81,29 @@ export async function install(modules = [], {
       let cwd;
 
       if(verbose === 'full') {
-        console.log(`Getting '${moduleToInstall}' definition`);
+        console.log(`Installing '${moduleToInstall}'`);
       }
-      const moduleDefinition = await definitionGet(moduleToInstall);
-      const { name: moduleName } = moduleDefinition;
 
-      // 2-steps install as npm errors when installing from git
-      // npm error git dep preparation failed
-
-      if(verbose !== 'none') {
-        echo.info(`Installing module '${moduleToInstall}' in '${dotpiModulesDestination}'`);
-      }
-      cwd = dotpiModulesDestination;
-      output = await $({
-        cwd,
-        env: { FORCE_COLOR: 'true' }, // do not remove colors
-        verbose: (verbose === 'full' ? 'full' : 'none'),
-        // minimal install in the modules directory
-      })`
-        npm --prefix ${cwd}
-          install --no-fund
-          --install-strategy nested
-          --omit dev
-          --save
-          --ignore-scripts
-          --
-          ${moduleToInstall}
-        `;
-
+      // create link first, it may be used in postinstall scripts
       await symlink(
         path.join('.', 'node_modules'),
         path.join(dotpiModulesDestination, 'dotpi_modules')
       );
 
-      if(verbose === 'full') {
-        echo.info(`Installing ${moduleToInstall} dependencies`)
-      }
-      cwd = path.resolve(dotpiModulesDestination, 'node_modules', moduleName);
+      const moduleDefinition = await definitionGet(moduleToInstall);
+      const { name: moduleName } = moduleDefinition;
 
-      // perform a clean install
-      await fs.rm(path.resolve(cwd, 'node_modules'), {
-        recursive: true,
-        force: true,
-      });
-
+      cwd = dotpiModulesDestination;
       output = await $({
         cwd,
         env: { FORCE_COLOR: 'true' }, // do not remove colors
         verbose: (verbose === 'full' ? 'full' : 'none'),
-        // complete install within the module itself
-        // be sure to install links for relative dependencies also
-        // run postinstall script
+        // full install with postinstall scripts for each request
       })`
-        npm --prefix ${cwd}
-          install --no-fund
-          --omit dev
-          --install-links
+        npx pnpm install
+          --dangerously-allow-all-builds
+          --
+          ${moduleToInstall}
         `;
 
     } catch (error) {
