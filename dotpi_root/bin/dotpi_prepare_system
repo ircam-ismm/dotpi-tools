@@ -238,7 +238,7 @@ source_path="${DOTPI_ROOT}/dist/${module_name}"
 destination_prefix="${DOTPI_ROOT}/lib"
 destination_path="${destination_prefix}/node_modules/${module_name}"
 
-(
+{
   cd "$destination_prefix" || {
     error_exit $? "cd ${destination_prefix}" $error_exit_code_services
   }
@@ -247,7 +247,7 @@ destination_path="${destination_prefix}/node_modules/${module_name}"
     "$module_name" || {
     error_exit $? "dotpi_module: error when installing '${module_name}'" $error_exit_code_services
   }
-)
+}
 
 ############## audio
 error_exit_code_audio=6
