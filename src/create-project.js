@@ -34,6 +34,7 @@ import {
   PATH_GITIGNORE,
   PATH_README,
   PATH_DOTPI_FILE,
+  PATH_PACKAGE_JSON,
   // utilities
   DOTPI_SSH_KEYS_PREFIX,
   PROJECT_NAME_REGEXP,
@@ -434,6 +435,10 @@ export async function injectUtilityFiles(data) {
     PATH_DOTPI_SECRETS_BASH,
     PATH_SSH_DIRECTORY,
     PATH_NETWORK_DIRECTORY,
+  });
+
+  data.files[PATH_PACKAGE_JSON] = renderTemplate('package.json', {
+    projectName,
   });
 }
 

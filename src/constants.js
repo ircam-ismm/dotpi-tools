@@ -21,6 +21,7 @@ export const PATH_NETWORK_DIRECTORY = 'network';
 export const PATH_GITIGNORE = '.gitignore';
 export const PATH_README = 'README.md';
 export const PATH_DOTPI_FILE = '.dotpi';
+export const PATH_PACKAGE_JSON = 'package.json';
 // these ones are within a project, e.g. where the next instance number is stored
 export const PATH_DOTPI_TMP_DIRECTORY = 'tmp';
 export const PATH_DOTPI_TMP_BASH = path.join(PATH_DOTPI_TMP_DIRECTORY, 'dotpi_tmp.bash');
