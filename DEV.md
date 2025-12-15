@@ -1,5 +1,15 @@
 # Developer documentation
 
+## NPM
+
+This is a mono-repository that uses workspaces and lerna.
+
+To publish a new `minor` version, for any NPM module that changed, commit all changes, then type:
+
+```shell
+npx lerna publish`
+```
+
 ## Working on functions
 
 With `watch` and `rsync` installed on the developer's machine, on can update the functions on a dotpi machine.
