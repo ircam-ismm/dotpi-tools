@@ -80,8 +80,8 @@ export async function install(modules = [], {
       let output;
       let cwd;
 
-      if(verbose === 'full') {
-        console.log(`Installing '${moduleToInstall}'`);
+      if(verbose !== 'none') {
+        echo.info(`Installing module '${moduleToInstall}' in '${dotpiModulesDestination}'`);
       }
 
       // create link first, it may be used in postinstall scripts
@@ -101,6 +101,7 @@ export async function install(modules = [], {
         // full install with postinstall scripts for each request
       })`
         npx pnpm install
+          --prod
           --dangerously-allow-all-builds
           --
           ${moduleToInstall}
