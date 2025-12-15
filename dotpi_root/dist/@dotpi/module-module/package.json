@@ -1,6 +1,6 @@
 {
   "name": "@dotpi/module-module",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "dotpi module management",
   "type": "module",
   "bin": "./bin/dotpi_module",
@@ -11,7 +11,7 @@
   "license": "BSD-3-clause",
   "dependencies": {
     "@dotpi/javascript": "^1.6.3",
-    "@dotpi/module": "^1.9.0",
+    "@dotpi/module": "^1.10.0",
     "commander": "^12.1.0"
   }
 }
