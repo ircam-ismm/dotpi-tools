@@ -233,45 +233,21 @@ sudo loginctl enable-linger "$FIRSTUSER" || {
 ############# dotpi module manager
 
 # # bootstrap-install
-# module_name="@dotpi/module-module"
-# source_path="${DOTPI_ROOT}/dist/${module_name}"
-# destination_prefix="${DOTPI_ROOT}/lib"
-# destination_path="${destination_prefix}/node_modules/${module_name}"
-# {
-#   dotpi echo_info "Install ${module_name}"
-#   # minimal install in the modules directory
-#   sudo npm install --no-fund \
-#     --prefix "$destination_prefix" \
-#     --install-strategy nested \
-#     --omit dev \
-#     --save \
-#     --ignore-scripts \
-#     -- \
-#     "$source_path" || {
-#     error_exit $? "dotpi_module: error when installing '${module_name}'" $error_exit_code_services
-#   }
+module_name="@dotpi/module-module"
+source_path="${DOTPI_ROOT}/dist/${module_name}"
+destination_prefix="${DOTPI_ROOT}/lib"
+destination_path="${destination_prefix}/node_modules/${module_name}"
 
-#   (
-#     echo "# Install '${module_name}' dependencies"
-#     # complete install within the module itself
-#     # be sure to install links for relative dependencies also
-#     # run postinstall script
+(
+  cd "$destination_prefix" || {
+    error_exit $? "cd ${destination_prefix}" $error_exit_code_services
+  }
 
-#     sudo rm -rf "${destination_path}/node_modules" || {
-#       error_exit $? "rm ${destination_path}/node_modules" $error_exit_code_services
-#     }
-
-#     sudo npm install --no-fund \
-#       --prefix "$destination_path" \
-#       --omit dev \
-#       --install-links \
-#       || {
-#       error_exit $? "dotpi_module: error when installing '${module_name}' dependencies'" $error_exit_code_services
-#     }
-#   )
-# } || {
-#   error_exit $? "${module_name}" $error_exit_code_services
-# }
+  sudo npx pnpm install --dangerously-allow-all-builds -- \
+    "$$module_name" || {
+    error_exit $? "dotpi_module: error when installing '${module_name}'" $error_exit_code_services
+  }
+)
 
 ############## audio
 error_exit_code_audio=6
