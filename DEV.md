@@ -10,6 +10,18 @@ To publish a new `minor` version, for any NPM module that changed, commit all ch
 npx lerna publish`
 ```
 
+When it fails for some reason, be sure to first log into your NPM account:
+
+```shell
+npm login
+```
+
+In order to publish an already committed version use:
+
+```shell
+npx lerna publish from-git
+```
+
 ## Working on functions
 
 With `watch` and `rsync` installed on the developer's machine, on can update the functions on a dotpi machine.
