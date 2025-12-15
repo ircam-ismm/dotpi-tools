@@ -1,6 +1,6 @@
 {
   "name": "@dotpi/module",
-  "version": "1.8.3",
+  "version": "1.9.0",
   "description": "dotpi module management",
   "type": "module",
   "exports": {
