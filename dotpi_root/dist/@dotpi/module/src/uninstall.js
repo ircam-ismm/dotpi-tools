@@ -69,17 +69,20 @@ export async function uninstall(modules = [], {
   switch (verbose) {
     case '0':
     case 'false':
+    case 'none':
     case false:
       verbose = 'none';
       break;
 
     case '1':
     case 'true':
+    case 'sort':
     case true:
       verbose = 'short';
       break;
 
     case '2':
+    case 'full':
       verbose = 'full';
       break;
   }
@@ -158,9 +161,8 @@ export async function uninstall(modules = [], {
         env: { FORCE_COLOR: 'true' }, // do not remove colors
         verbose: (verbose === 'full' ? 'full' : 'none'),
       })`
-        npm --prefix ${cwd}
-          uninstall
-          --save
+        npx pnpm
+          remove
           --
           ${moduleName}
         `;
