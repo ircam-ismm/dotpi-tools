@@ -30,4 +30,3 @@ Please do report them.
       Cf. <https://flaterco.com/kb/audio/pipewire/volume.html>
     - [ ] easy effect
       Cf. <https://github.com/wwmm/easyeffects/wiki/Command-Line-Options>
-
