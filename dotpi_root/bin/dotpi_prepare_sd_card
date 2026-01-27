@@ -308,8 +308,7 @@ if [ -d "$source_path" ] && [ -r "$source_path" ] ; then
   (set -o pipefail ; \
    cd -- "$source_path" && tar c "${tar_options[@]}" -- *.nmconnection* \
        | tar x -C "$destination_path") || {
-    dotpi_echo_error "No network connection found in ${source_path}"
-    exit 1
+    dotpi_echo_warning "No network connection found in ${source_path}"
   }
 fi
 
@@ -319,7 +318,7 @@ if ! $(wpa_passphrase test 12345678 > /dev/null 2>&1) ; then
   dotpi_echo_warning "Network password won't be salted, 'wpa_passphrase' is needed to salt passwords."
 else
 
-  for file in "${destination_path}"/*.nmconnection ; do
+  while IFS= read -r -d '' file ; do
     key='wifi-security.psk'
     psk="$(dotpi_connection_read --file "$file" --key "$key")"
 
@@ -332,7 +331,8 @@ else
       dotpi_connection_write --file "$file" --key "$key" --value "$passphrase"
     fi
 
-  done
+  # do not salt templates, as ssid and psk may depend on variables
+  done < <(find "${destination_path}" -name '*.nmconnection' -print0)
 fi
 
 
