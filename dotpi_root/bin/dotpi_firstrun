@@ -2,6 +2,13 @@
 
 set +e
 
+#############################################################################
+# Notes
+#
+# - this script is ran with admin privileges
+# - log files are located in `/opt/dotpi/var/log/`
+#############################################################################
+
 local_file="$(readlink -f -- "$0")"
 local_path="$(dirname -- "$local_file")"
 
@@ -57,12 +64,16 @@ if [ -f "$user_data_file" ] ; then
     mv "$user_data_file" "${user_data_file}.disabled"
 fi
 
-####### hostname
+#############################################################################
+####### HOSTNAME
+#############################################################################
 
 dotpi echo_info "Set hostname to ${dotpi_instance_hostname}"
 dotpi system_set_hostname "$dotpi_instance_hostname"
 
-####### ssh
+#############################################################################
+####### SSH
+#############################################################################
 
 dotpi echo_info "Configure SSH"
 
@@ -94,9 +105,11 @@ sed -i -e '/^PasswordAuthentication/d' /etc/ssh/sshd_config
 
 # allow for password authentication
 # (after exclusive imager_custom enable_ssh -k)
-echo "PasswordAuthentication ${dotpi_ssh_allow_password_authentication}" >>/etc/ssh/sshd_config
+echo "PasswordAuthentication ${dotpi_ssh_allow_password_authentication}" >> /etc/ssh/sshd_config
 
-####### user
+#############################################################################
+####### USER
+#############################################################################
 
 dotpi echo_info "Configure first user login"
 
@@ -114,6 +127,7 @@ else
       usermod -l "$dotpi_user" "$FIRSTUSER"
       usermod -m -d "/home/${dotpi_user}" "$dotpi_user"
       groupmod -n "$dotpi_user" "$FIRSTUSER"
+
       if grep -q "^autologin-user=" /etc/lightdm/lightdm.conf ; then
          sed /etc/lightdm/lightdm.conf -i -e "s/^autologin-user=.*/autologin-user=PI-USER/"
       fi
@@ -126,7 +140,16 @@ else
    fi
 fi
 
-####### wifi
+# From Raspberry Pi OS version 6.2, `sudo` without password is disabled by default
+# cf. https://www.raspberrypi.com/news/a-security-update-for-raspberry-pi-os/
+if [ ! -f /etc/sudoers.d/010_pi-nopasswd ]; then
+   dotpi echo_info "Enable sudo without password"
+   echo "${dotpi_user} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/010_pi-nopasswd
+fi
+
+#############################################################################
+####### WIFI
+#############################################################################
 
 dotpi echo_info "Configure wifi"
 
@@ -154,7 +177,9 @@ fi
 nmcli radio wifi on
 rfkill unblock wifi
 
-####### limits (real-time audio)
+#############################################################################
+####### LIMITS (real-time audio)
+#############################################################################
 
 dotpi echo_info "Configure limits"
 
@@ -165,7 +190,9 @@ if [ -r "$source_path" ] ; then
    tar c -C "$source_path" '.' | tar x -C "$destination_path"
 fi
 
-###### keymap and timezone
+#############################################################################
+###### Keymap and timezone
+#############################################################################
 
 dotpi echo_info "Configure keymap and timezone"
 
