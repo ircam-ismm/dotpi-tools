@@ -134,21 +134,18 @@ else
       if [ -f /etc/systemd/system/getty@tty1.service.d/autologin.conf ]; then
          sed /etc/systemd/system/getty@tty1.service.d/autologin.conf -i -e "s/${FIRSTUSER}/${dotpi_user}/"
       fi
+      if [ -f /etc/sudoers.d/010_pi-nopasswd ]; then
+         sed -i "s/^${FIRSTUSER} /${dotpi_user} /" /etc/sudoers.d/010_pi-nopasswd
+      fi
    fi
 fi
 
 # From Raspberry Pi OS version 6.2, `sudo` without password is disabled by default
 # cf. https://www.raspberrypi.com/news/a-security-update-for-raspberry-pi-os/
 dotpi echo_info "Enable sudo without password for ${dotpi_user}"
-
+# add dotpi user to sudoers
 sudoers_directory='/etc/sudoers.d'
-sudoers_default_file='010_pi-nopasswd'
 sudoers_file='zzz_dotpi_nopasswd'
-# Remove default pi user from sudoers, exists before RPi OS v6.2
-if [ -f "${sudoers_directory}/${sudoers_default_file}" ]; then
-   rm -f "${sudoers_directory}/${sudoers_default_file}"
-fi
-# Add dotpi user to sudoers
 mkdir -p -- "$sudoers_directory"
 echo "${dotpi_user} ALL=(ALL) NOPASSWD: ALL" > "${sudoers_directory}/${sudoers_file}"
 
