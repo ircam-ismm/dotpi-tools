@@ -32,7 +32,7 @@
     "./dotpi_root/**/*"
   ],
   "scripts": {
-    "test": "node --test"
+    "test": "node --test test/*.spec.js"
   },
   "license": "BSD-3-Clause",
   "dependencies": {
