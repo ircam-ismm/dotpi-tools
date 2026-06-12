@@ -101,7 +101,23 @@ You will be able to find all the relevant files in: ${formatPath(projectSshPath)
   const distPrivateKey = path.join(targetSshPath, path.basename(srcPrivateKey));
   const distPublicKey = path.join(targetSshPath, path.basename(srcPublicKey));
 
-  if (!fs.existsSync(distPrivateKey) && !fs.existsSync(distPublicKey)) {
+  let installKeys = true;
+
+  // if keys already exists, let the user decide if they should be overridden ot not
+  if (fs.existsSync(distPrivateKey) || fs.existsSync(distPublicKey)) {
+    const answers = await prompts([
+      {
+        type: 'confirm',
+        name: 'installKeys',
+        message: `Existing SSH keys "${srcPrivateKey}" found, override?`,
+        initial: true
+      }
+    ], { onCancel });
+
+    installKeys = answers.installKeys;
+  }
+
+  if (installKeys) {
     // copy ssh keys
     console.log(chalk.grey(`> Copy private key "${path.basename(srcPrivateKey)}" into "${formatPath(targetSshPath)}" with 600 permissions`));
     fs.copyFileSync(srcPrivateKey, distPrivateKey);
@@ -112,7 +128,7 @@ You will be able to find all the relevant files in: ${formatPath(projectSshPath)
     fs.copyFileSync(srcPublicKey, distPublicKey);
     fs.chmodSync(distPublicKey, 0o644);
   } else {
-    console.log(chalk.grey(`> SSH keys with same name found in "${formatPath(targetSshPath)}", skip...`));
+    console.log(chalk.grey(`> SSH keys not installed`));
   }
 
 
