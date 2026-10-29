@@ -34,6 +34,7 @@ dotpi_audio_device_supported=(
   'raspberry pi digiamp+'
   'raspiaudio mic+ v1'
   'raspiaudio mic+ v2'
+  'raspiaudio ultra'
   'ue boom 2'
   'ue boom 3'
   'ue megaboom 2'
@@ -270,6 +271,13 @@ dotpi_audio_device_select() (
       _dotpi_audio_device_select_raspiaudio
       ;;
 
+    # Raspiaudio ULTRA (WM8960 codec, driver in kernel)
+    # Cf. https://forum.raspiaudio.com/t/ultra-installation-guide/21
+    'raspiaudio ultra')
+      dtoverlay=wm8960-soundcard
+      _dotpi_audio_device_select_raspiaudio
+      ;;
+
     ####### Ultimate Ears (UE)
 
     'ue boom 2'|'ue boom 3'|'ue megaboom 2'|'ue megaboom 3')
@@ -445,9 +453,11 @@ _dotpi_audio_device_disable_hifiberry() (
 _dotpi_audio_device_disable_raspiaudio() (
   dotpi_echo_info "Disabling Raspiaudio"
 
-  # disable hifiberry
-  pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=googlevoicehat-soundcard")"
-  perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i -- "$config_file"
+  # disable Mic+ (googlevoicehat) and ULTRA (wm8960)
+  for overlay in googlevoicehat-soundcard wm8960-soundcard ; do
+    pattern="$(dotpi_configuration_get_pattern --prefix "dtoverlay=${overlay}")"
+    perl -pe "s/${pattern}/"'${1}# ${2}${3}/' -i -- "$config_file"
+  done
 )
 
 _dotpi_audio_device_volume_set_alsa() (
@@ -498,6 +508,24 @@ dotpi_audio_device_init() (
       fi
 
       alsactl restore -f "${usr_directory}/Codec_Zero_StereoMIC_record_and_HP_playback.state"
+      ;;
+
+    'raspiaudio ultra')
+
+      usr_repository="RASPIAUDIO/ULTRA"
+      usr_directory="${DOTPI_ROOT}/usr/${usr_repository}"
+
+      # clone once to be able to init offline
+      if ! [[ -d "${usr_directory}" ]] ; then
+        mkdir -p "${usr_directory}"
+        git clone "https://github.com/${usr_repository}.git" "${usr_directory}" || {
+          dotpi_echo_error "Unable to clone repository ${usr_repository}"
+          return 1
+        }
+      fi
+
+      # routes DAC to headphones and speakers, onboard mics to ADC
+      alsactl restore -f "${usr_directory}/headphones.alsa"
       ;;
 
     esac
@@ -584,6 +612,12 @@ dotpi_audio_device_volume_set() (
 
     'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
       control='Master'
+      _dotpi_audio_device_volume_set_alsa
+      ;;
+
+    'raspiaudio ultra')
+      # WM8960 DAC digital volume, acts on both headphones and speakers
+      control='Playback'
       _dotpi_audio_device_volume_set_alsa
       ;;
 
