@@ -82,8 +82,5 @@ dotpi_module_install_default=(
 dotpi_module_install=()
 
 dotpi_node_version='lts'
-dotpi_node_install_default=(
-  'pnpm' # for @dotpi/module-module
-  'yarn' # convenience
-)
+dotpi_node_install_default=()
 dotpi_node_install=()
