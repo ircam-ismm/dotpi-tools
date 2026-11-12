@@ -163,8 +163,7 @@ export async function uninstall(modules = [], {
         env: { FORCE_COLOR: 'true' }, // do not remove colors
         verbose: (verbose === 'full' ? 'full' : 'none'),
       })`
-        ${pnpmExecutable}
-          remove
+        ${pnpmExecutable} remove
           --
           ${moduleName}
         `;
