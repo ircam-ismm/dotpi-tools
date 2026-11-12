@@ -9,6 +9,8 @@ import * as echo from '@dotpi/javascript/echo.js';
 import { dotpiConfigurationGet } from './configuration.js';
 import { definitionGet } from './definition.js';
 
+import { pnpmExecutable } from './pnpm.js';
+
 export async function uninstallCommandDefine({program}) {
   program
     .command('uninstall [modules...]')
@@ -161,7 +163,7 @@ export async function uninstall(modules = [], {
         env: { FORCE_COLOR: 'true' }, // do not remove colors
         verbose: (verbose === 'full' ? 'full' : 'none'),
       })`
-        npx pnpm
+        ${pnpmExecutable}
           remove
           --
           ${moduleName}

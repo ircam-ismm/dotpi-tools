@@ -7,7 +7,7 @@ This is a mono-repository that uses workspaces and lerna.
 To publish a new `minor` version, for any NPM module that changed, commit all changes, then type:
 
 ```shell
-npx lerna publish`
+npx lerna publish
 ```
 
 When it fails for some reason, be sure to first log into your NPM account:

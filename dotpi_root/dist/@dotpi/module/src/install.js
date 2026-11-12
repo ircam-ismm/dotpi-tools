@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { $ } from 'execa';
@@ -7,7 +6,8 @@ import { symlink } from '@dotpi/javascript/filesystem.js';
 import * as echo from '@dotpi/javascript/echo.js';
 
 import { dotpiConfigurationGet } from './configuration.js';
-import { definitionGet } from './definition.js';
+
+import { pnpmExecutable } from './pnpm.js';
 
 export function installCommandDefine({program}) {
   program
@@ -90,9 +90,7 @@ export async function install(modules = [], {
         path.join(dotpiModulesDestination, 'dotpi_modules')
       );
 
-      const moduleDefinition = await definitionGet(moduleToInstall);
-      const { name: moduleName } = moduleDefinition;
-
+      // There is no prefix for pnpm install, use cwd of command
       cwd = dotpiModulesDestination;
       output = await $({
         cwd,
@@ -100,10 +98,10 @@ export async function install(modules = [], {
         verbose: (verbose === 'full' ? 'full' : 'none'),
         // full install with postinstall scripts for each request
       })`
-        npx pnpm install
-          --prod
-          --dangerously-allow-all-builds
-          --
+        ${pnpmExecutable} install
+            --prod
+            --dangerously-allow-all-builds
+            --
           ${moduleToInstall}
         `;
 
