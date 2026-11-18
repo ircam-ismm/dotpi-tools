@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "chalk": "^5.4.0",
-    "execa": "^9.5.2",
+    "execa": "^9.6.1",
     "template-literal": "^1.0.4"
   }
 }
