@@ -2,7 +2,7 @@
 
 ## NPM
 
-This is a mono-repository that uses workspaces and lerna.
+This is a mono-repository that uses workspaces and `lerna`, that both rely on `npm`. For any problem relative to them, try to update `npm`.
 
 To publish a new `minor` version, for any NPM module that changed, commit all changes, then type:
 
