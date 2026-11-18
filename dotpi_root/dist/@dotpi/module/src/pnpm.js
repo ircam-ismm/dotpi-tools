@@ -1,17 +1,20 @@
-import { createRequire } from 'node:module';
-import path from 'node:path';
+import { $ } from 'execa';
 
-// Resolve pnpm's package.json, then read its "bin" entry
-// require.resolve('pnpm') returns the package.json path in both v11 and v12
-const require = createRequire(import.meta.url);
-const pnpmPackagePath = require.resolve('pnpm');
-const pnpmPackage = require(pnpmPackagePath);
-const pnpmExecutableRelativePath = (typeof pnpmPackage.bin === 'string'
-  ? pnpmPackage.bin
-  : pnpmPackage.bin.pnpm
-);
+// pnpm is required for @dotpi/module-module
+// It can not installed locally with npm.
+// Version 11, needed for 32 bit systems may not respect versions from package.json, and try to upgrade.
+// Version 12 breaks on 32 bit systems.
 
-export const pnpmExecutable = path.join(
-  path.dirname(pnpmPackagePath),
-  pnpmExecutableRelativePath,
-);
+// do not run locally or via npx
+export const pnpmExecutable = 'pnpm';
+
+export async function pnpmResolveInPath() {
+
+  try {
+    const output = await $`which ${pnpmExecutable}`;
+    return output.exitCode === 0;
+  } catch (error) {
+    return false;
+  }
+
+}

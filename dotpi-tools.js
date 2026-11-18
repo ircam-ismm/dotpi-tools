@@ -1,12 +1,19 @@
 #!/usr/bin/env node
 import { program } from 'commander';
-import chalk from 'chalk';
+
+import { pnpmResolveInPath } from '@dotpi/module/pnpm.js';
+import * as echo from '@dotpi/javascript/echo.js';
 
 import { greetings } from './src/utils.js';
 import createProject from './src/create-project.js';
 import installRpi from './src/install-rpi.js';
 import configureHost from './src/configure-host.js';
 import { packageVersion } from './src/utils.js';
+
+if(!await pnpmResolveInPath()) {
+  echo.error('> pnpm is not in path: please install pnpm before.');
+  process.exit(1);
+}
 
 program
   .option('--create-project', 'create a new dotpi project')
@@ -37,11 +44,13 @@ if (options.createProject) {
   displayGreetings = false;
   console.log(packageVersion());
 } else if (options.launchManager) {
-  console.log(chalk.yellow('> launchManager is not implemented yet'));
+  echo.error('> launchManager is not implemented yet');
+  exit(2);
 } else {
   // @todo prompt
-  console.log(chalk.yellow('> Invalid option:'));
+  echo.error('> Invalid option:');
   console.log(options);
+  exit(3);
 }
 
 

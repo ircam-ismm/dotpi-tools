@@ -9,7 +9,7 @@ import * as echo from '@dotpi/javascript/echo.js';
 import { dotpiConfigurationGet } from './configuration.js';
 import { definitionGet } from './definition.js';
 
-import { pnpmExecutable } from './pnpm.js';
+import { pnpmResolveInPath, pnpmExecutable } from './pnpm.js';
 
 export async function uninstallCommandDefine({program}) {
   program
@@ -28,6 +28,11 @@ async function uninstallScriptRun(module, {
   verbose = 'short',
 } = {}) {
   try {
+
+    if (!await pnpmResolveInPath()) {
+      echo.error('pnpm is not in path: please install pnpm');
+      process.exit(1);
+    }
 
     const cwd = module;
     const output = await $({

@@ -7,7 +7,7 @@ import * as echo from '@dotpi/javascript/echo.js';
 
 import { dotpiConfigurationGet } from './configuration.js';
 
-import { pnpmExecutable } from './pnpm.js';
+import { pnpmResolveInPath, pnpmExecutable } from './pnpm.js';
 
 export function installCommandDefine({program}) {
   program
@@ -30,6 +30,11 @@ export async function install(modules = [], {
 } = {}) {
   if (typeof modules === 'string') {
     modules = [modules];
+  }
+
+  if(!await pnpmResolveInPath()) {
+    echo.error('pnpm is not in path: please install pnpm');
+    process.exit(1);
   }
 
   switch (verbose) {

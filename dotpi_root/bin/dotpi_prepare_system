@@ -211,7 +211,23 @@ n_path_to_symlinks() (
 # bootstrap: node, npm
 n_path_to_symlinks
 
-for package in "${dotpi_node_install_default[@]}" "${dotpi_node_install[@]}" ; do
+# pnpm is required globally for @dotpi/module-module
+# it could not be installed locally as it may upgrade, while upgrade produces an error for 32 bit systems
+for package in \
+  "${dotpi_node_install_default[@]}" \
+  "${dotpi_node_install[@]}" \
+  "pnpm" \
+  ; do
+
+  if [[ "$package" == "pnpm" ]] ; then
+
+    if [[ $word_size == "32" ]] ; then
+      # pnpm@11 is last version that supports 32 bit systems
+      package="pnpm@11"
+    fi
+
+  fi
+
   npm -g install "$package" || {
     error_exit $? "npm install ${package}" $error_exit_code_node
   }
@@ -228,31 +244,29 @@ dotpi echo_info "Enable linger to run user services without login"
 sudo loginctl enable-linger "$FIRSTUSER" || {
   error_exit $? "loginctl enable-linger" $error_exit_code_services
 }
-
 ############# dotpi module manager
 
 # # bootstrap-install
-module_name="@dotpi/module-module"
-source_path="${DOTPI_ROOT}/dist/${module_name}"
-destination_prefix="${DOTPI_ROOT}/lib"
-destination_path="${destination_prefix}/node_modules/${module_name}"
+dist_path="${DOTPI_ROOT}/dist"
+lib_path="${DOTPI_ROOT}/lib"
 
-{
-  cd "$destination_prefix" || {
-    error_exit $? "cd ${destination_prefix}" $error_exit_code_services
-  }
-
-  # pnpm@11 works with both 32 bit and 64 systems
-  sudo npm install pnpm@11 --save || {
-    error_exit $? "npm install pnpm@11" $error_exit_code_services
-  }
-
-  # use local pnpm to install @dotpi/module-module
-  sudo npx pnpm install --dangerously-allow-all-builds -- \
-    "$module_name" || {
-    error_exit $? "dotpi_module: error when installing '${module_name}'" $error_exit_code_services
-  }
+cd "${dist_path}/@dotpi/module" || {
+  error_exit $? "cd ${dist_path}/@dotpi/module" $error_exit_code_services
 }
+sudo pnpm install --prod --dangerously-allow-all-builds || {
+  error_exit $? "pnpm install @dotpi/module" $error_exit_code_services
+}
+
+cd "${dist_path}/@dotpi/module-module" || {
+  error_exit $? "cd ${dist_path}/@dotpi/module-module" $error_exit_code_services
+}
+sudo pnpm link -- ../module
+sudo pnpm install --prod --dangerously-allow-all-builds
+
+cd "${lib_path}" || {
+  error_exit $? "cd ${lib_path}" $error_exit_code_services
+}
+sudo pnpm add --prod --dangerously-allow-all-builds -- "${dist_path}/@dotpi/module-module"
 
 ############## audio
 error_exit_code_audio=6
