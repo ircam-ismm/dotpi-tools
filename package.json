@@ -45,8 +45,5 @@
   },
   "devDependencies": {
     "lerna": "^10.1.1"
-  },
-  "allowScripts": {
-    "nx": true
   }
 }
