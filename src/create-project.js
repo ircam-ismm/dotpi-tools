@@ -98,8 +98,12 @@ export async function configureProject(data, mocks = null) {
   const answers = await prompts([
     {
       type: 'select',
-      name: 'soundCard',
-      message: 'Choose your soundcard:',
+      name: 'audioDevice',
+      message: `Choose your audio device.
+  > Select 'default' to keep all the default devices (eg. headphones, HDMI).
+  > Select 'none' to keep only automatically configured devices (e.g. USB, raspiaudio mic+ v3).
+  > Select a specific device to keep only this one, and to configure it.
+`,
       choices: readBashArray('dotpi_audio_device_supported').map(s => ({ title: s, value: s })),
     },
     {

@@ -16,7 +16,7 @@ const prepareProject = {
 };
 
 const configureProjectMocks = {
-  soundcard: 'hifiberry dac+ adc pro',
+  audioDevice: 'hifiberry dac+ adc pro',
   nodeVersion: 'lts',
   timeZone: 'Europe/Paris',
   keyMap: 'fr',

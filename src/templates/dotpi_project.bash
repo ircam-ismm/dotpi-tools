@@ -6,8 +6,8 @@ dotpi_tools_version='${d.version}'
 # Project name
 dotpi_project_name='${d.projectName}'
 
-# Define soundcard
-dotpi_audio_device='${d.soundCard}'
+# Define audio device
+dotpi_audio_device='${d.audioDevice}'
 
 # Node.js version
 dotpi_node_version='${d.nodeVersion}'

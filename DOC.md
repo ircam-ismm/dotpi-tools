@@ -60,7 +60,7 @@ dotpi_system_is_raspberry_pi
 ## dotpi_functions_audio_device
 
 [sudo] dotpi_audio_device_select --model <model>
-> select the soundcard
+> select the audio device
 
 [sudo] dotpi_audio_device_volume_set
 [sudo] dotpi_audio_device_volume_init

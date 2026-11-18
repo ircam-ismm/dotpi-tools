@@ -5,7 +5,7 @@ dotpi_project_name='example'
 # default to "yes" (password and/or ssh keys must be defined in "secrets")
 dotpi_ssh_allow_password_authentication='yes'
 
-# define soundcard
+# define audio device
 dotpi_audio_device='HiFiBerry DAC+ ADC Pro'
 
 # define node.js version (defaults to lts)
