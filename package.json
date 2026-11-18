@@ -44,6 +44,6 @@
     "template-literal": "^1.0.4"
   },
   "devDependencies": {
-    "lerna": "^8.2.4"
+    "lerna": "^10.1.1"
   }
 }
