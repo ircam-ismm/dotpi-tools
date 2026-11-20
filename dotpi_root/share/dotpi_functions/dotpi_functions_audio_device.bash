@@ -34,6 +34,7 @@ dotpi_audio_device_supported=(
   'raspberry pi digiamp+'
   'raspiaudio mic+ v1'
   'raspiaudio mic+ v2'
+  'raspiaudio mic+ v3'
   'raspiaudio ultra'
   'ue boom 2'
   'ue boom 3'
@@ -271,10 +272,17 @@ dotpi_audio_device_select() (
       _dotpi_audio_device_select_raspiaudio
       ;;
 
+    'raspiaudio mic+ v3')
+      # driver in kernel
+      dtoverlay=''
+      _dotpi_audio_device_select_raspiaudio
+      ;;
+
+
     # Raspiaudio ULTRA (WM8960 codec, driver in kernel)
     # Cf. https://forum.raspiaudio.com/t/ultra-installation-guide/21
     'raspiaudio ultra')
-      dtoverlay=wm8960-soundcard
+      dtoverlay='wm8960-soundcard'
       _dotpi_audio_device_select_raspiaudio
       ;;
 
@@ -311,7 +319,7 @@ dotpi_audio_device_select() (
 
   # comment setting in project
   dotpi_configuration_comment --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
-                            --key dotpi_audio_device
+    --key dotpi_audio_device
 
   # escape double-quote for now, to quote when writing later
   model_value="$(echo "$model" | dotpi_sed 's/"/\\"/g')"
@@ -319,45 +327,28 @@ dotpi_audio_device_select() (
   # write changed setting in instance
   # be sure to quote value
   dotpi_configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
-                            --key dotpi_audio_device \
-                            --value \""${model_value}"\"
+    --key dotpi_audio_device \
+    --value \""${model_value}"\"
+
+  source "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash"
+
+  dotpi_audio_device_init
 )
 
 _dotpi_audio_device_disable_all() (
-  exception_family="$1"
 
-  if [[ "$exception_family" = "" ]] ; then
-    dotpi_echo_info "Disabling all audio devices"
-  else
-    dotpi_echo_info "Disabling all audio devices except ${exception_family}"
-  fi
+  dotpi_echo_info "Disabling all audio devices"
 
-  if [[ ! "$exception_family" = "headphones" ]] ; then
-    _dotpi_audio_device_disable_headphones
-  fi
-
-  if [[ ! "$exception_family" = "hdmi" ]] ; then
-    _dotpi_audio_device_disable_hdmi
-  fi
-
-  if [[ ! "$exception_family" = "raspberry_pi" ]] ; then
-    _dotpi_audio_device_disable_raspberry_pi
-  fi
-
-  if [[ ! "$exception_family" = "hifiberry" ]] ; then
-    _dotpi_audio_device_disable_hifiberry
-  fi
-
-  if [[ ! "$exception_family" = "raspiaudio" ]] ; then
-    _dotpi_audio_device_disable_raspiaudio
-  fi
-
+  _dotpi_audio_device_disable_headphones
+  _dotpi_audio_device_disable_hdmi
+  _dotpi_audio_device_disable_raspberry_pi
+  _dotpi_audio_device_disable_hifiberry
+  _dotpi_audio_device_disable_raspiaudio
 )
 
 _dotpi_audio_device_select_headphones() (
+  _dotpi_audio_device_disable_all
   dotpi_echo_info "Installing Headphones (default) audio device"
-
-  _dotpi_audio_device_disable_all headphones
 
   # un-comment  dtparam=audio as it must be set first
   # (setting at the end the the file fails)
@@ -366,16 +357,17 @@ _dotpi_audio_device_select_headphones() (
 )
 
 _dotpi_audio_device_select_bluetooth() (
-  _dotpi_audio_device_disable_all bluetooth
+  _dotpi_audio_device_disable_all
+  dotpi_echo_info "Enabling Bluetooth"
+
   bluetoothctl power off
   rfkill unblock all
   sudo bluetoothctl power on
 )
 
 _dotpi_audio_device_select_raspberry_pi() (
+  _dotpi_audio_device_disable_all
   dotpi_echo_info "Configuring Raspberry Pi audio device '${model}'"
-
-  _dotpi_audio_device_disable_all raspberry_pi
 
   mkdir -p "$(dirname -- "$config_file")"
   cat >> "$config_file" << EOF
@@ -388,9 +380,8 @@ EOF
 
 
 _dotpi_audio_device_select_hifiberry() (
+  _dotpi_audio_device_disable_all
   dotpi_echo_info "Configuring HiFiBerry audio device '${model}'"
-
-  _dotpi_audio_device_disable_all hifiberry
 
   mkdir -p "$(dirname -- "$config_file")"
   cat >> "$config_file" << EOF
@@ -402,9 +393,12 @@ EOF
 )
 
 _dotpi_audio_device_select_raspiaudio() (
+  _dotpi_audio_device_disable_all
   dotpi_echo_info "Configuring Raspiaudio device '${model}'"
 
-  _dotpi_audio_device_disable_all raspiaudio
+  if [[ "$dtoverlay" == "" ]] ; then
+    return 0
+  fi
 
   mkdir -p "$(dirname -- "$config_file")"
   cat >> "$config_file" << EOF
@@ -461,7 +455,7 @@ _dotpi_audio_device_disable_raspiaudio() (
 )
 
 _dotpi_audio_device_volume_set_alsa() (
-  amixer -- sset "$control" "$volume"
+  amixer -D sysdefault -- sset "$control" "$volume"
   alsactl store
 
   if [[ "$volume" ==  "$dotpi_audio_volume" ]] ; then
@@ -478,8 +472,8 @@ _dotpi_audio_device_volume_set_alsa() (
 
   # write changed setting in instance
   dotpi_configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
-                            --key dotpi_audio_volume \
-                            --value "$volume"
+    --key dotpi_audio_volume \
+    --value "$volume"
 )
 
 dotpi_audio_device_init() (
@@ -508,6 +502,7 @@ dotpi_audio_device_init() (
       fi
 
       alsactl restore -f "${usr_directory}/Codec_Zero_StereoMIC_record_and_HP_playback.state"
+      alsactl_store
       ;;
 
     'raspiaudio ultra')
@@ -526,6 +521,7 @@ dotpi_audio_device_init() (
 
       # routes DAC to headphones and speakers, onboard mics to ADC
       alsactl restore -f "${usr_directory}/headphones.alsa"
+      alsactl store
       ;;
 
     esac
@@ -555,12 +551,7 @@ dotpi_audio_device_init() (
     ;;
 
     'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
-
-      # no controller for device, use default 'Master' control
-      amixer sset -- 'Master' 'on'
-      amixer sset -- 'Master' '80%'
-
-      alsactl store
+      # no controller for device, keep default volume
       ;;
 
   esac
@@ -571,7 +562,7 @@ dotpi_audio_device_init() (
 dotpi_audio_device_volume_set() (
   volume="$1"
 
-  model="$dotpi_audio_device"
+  model="$(echo "$dotpi_audio_device" | xargs)" # unquote value
   # lowercase everything
   model_normalised="$(dotpi_audio_device_model_normalise "$model")"
 
@@ -611,8 +602,7 @@ dotpi_audio_device_volume_set() (
       ;;
 
     'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
-      control='Master'
-      _dotpi_audio_device_volume_set_alsa
+      dotpi_echo_warning "No volume control for Raspiaudio Mic+ device, keeping default volume"
       ;;
 
     'raspiaudio ultra')
