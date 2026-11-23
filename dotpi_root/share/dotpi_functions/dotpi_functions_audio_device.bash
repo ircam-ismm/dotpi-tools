@@ -358,10 +358,6 @@ _dotpi_audio_device_select_headphones() (
 _dotpi_audio_device_select_bluetooth() (
   _dotpi_audio_device_disable_all
   dotpi_echo_info "Enabling Bluetooth"
-
-  bluetoothctl power off
-  rfkill unblock all
-  sudo bluetoothctl power on
 )
 
 _dotpi_audio_device_select_raspberry_pi() (
@@ -565,6 +561,8 @@ dotpi_audio_device_init() (
 
   esac
 
+
+  dotpi_audio_device_volume_init
 )
 
 # set and store volume for the current audio device
