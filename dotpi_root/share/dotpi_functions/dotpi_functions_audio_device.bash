@@ -315,7 +315,6 @@ dotpi_audio_device_select() (
     return 0;
   fi
 
-  dotpi_echo_warning 'Audio device model is specific to this instance'
 
   # comment setting in project
   dotpi_configuration_comment --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
@@ -332,7 +331,7 @@ dotpi_audio_device_select() (
 
   source "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash"
 
-  dotpi_audio_device_init
+  dotpi_echo_warning "To finalise the audio device selection, please reboot and run 'sudo dotpi audio_device_init'"
 )
 
 _dotpi_audio_device_disable_all() (
