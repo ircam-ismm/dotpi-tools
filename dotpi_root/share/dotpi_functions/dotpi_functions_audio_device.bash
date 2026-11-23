@@ -455,7 +455,6 @@ _dotpi_audio_device_disable_raspiaudio() (
 
 _dotpi_audio_device_volume_set_alsa() (
   amixer -D sysdefault -- sset "$control" "$volume"
-  alsactl store
 
   if [[ "$volume" ==  "$dotpi_audio_volume" ]] ; then
     # no change to write
@@ -500,8 +499,9 @@ dotpi_audio_device_init() (
         }
       fi
 
-      alsactl restore -f "${usr_directory}/Codec_Zero_StereoMIC_record_and_HP_playback.state"
-      alsactl_store
+      alsactl restore \
+      --file "${usr_directory}/Codec_Zero_StereoMIC_record_and_HP_playback.state" \
+      hw:0
       ;;
 
     'raspiaudio ultra')
@@ -519,20 +519,18 @@ dotpi_audio_device_init() (
       fi
 
       # routes DAC to headphones and speakers, onboard mics to ADC
-      alsactl restore -f "${usr_directory}/headphones.alsa"
-      alsactl store
+      alsactl restore \
+      --file "${usr_directory}/headphones.alsa" \
+      hw:0
       ;;
-
-    esac
+  esac
 
   # alsa
   case "$model_normalised" in
 
     'headphones')
-
-      amixer -D sysdefault sset -- 'PCM' 'on'
-      amixer -D sysdefault sset -- 'PCM' '0dB'
-      alsactl store
+    # 'PCM' control is aliased to default master
+    # no need for concurrent control
     ;;
 
     'raspberry pi dac pro'|'iqaudio dac pro' \
@@ -545,12 +543,24 @@ dotpi_audio_device_init() (
 
       amixer -D sysdefault sset -- 'Lineout' 'on'
       amixer -D sysdefault sset -- 'Lineout' '0dB'
-
-      alsactl store
     ;;
 
-    'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
-      # no controller for device, keep default volume
+    'hifiberry dac+ dsp'|'hifiberry dac+ rtc'|'hifiberry dac+ standard'|'hifiberry amp2'|'hifiberry dac+ adc'|'hifiberry dac+ adc pro'|'hifiberry amp3')
+      control='Digital'
+      amixer -D sysdefault sset -- "$control" 'on'
+      amixer -D sysdefault sset -- "$control" '0dB'
+      ;;
+
+    'hifiberry dac2 hd')
+      control='DAC'
+      amixer -D sysdefault sset -- "$control" 'on'
+      amixer -D sysdefault sset -- "$control" '0dB'
+      ;;
+
+    'hifiberry amp+'|'hifiberry amp4'|'hifiberry amp4 pro')
+      control='Master'
+      amixer -D sysdefault sset -- "$control" 'on'
+      amixer -D sysdefault sset -- "$control" '0dB'
       ;;
 
   esac
@@ -561,82 +571,46 @@ dotpi_audio_device_init() (
 dotpi_audio_device_volume_set() (
   volume="$1"
 
-  model="$(echo "$dotpi_audio_device" | xargs)" # unquote value
-  # lowercase everything
-  model_normalised="$(dotpi_audio_device_model_normalise "$model")"
+  if [[ -z "$volume" ]] ; then
+    dotpi_echo_error "Missing volume argument"
+    return 1
+  fi
 
-  case "$model_normalised" in
+  if [[ ! "$volume" =~ %$ ]] ; then
+    dotpi_echo_error "Volume argument must be a percentage (e.g. '40%')"
+    return 1
+  fi
 
-    ####### Generic devices
+  amixer -D default sset -- Master "$volume"
 
-    'headphones')
-      control='PCM'
-      _dotpi_audio_device_volume_set_alsa
-      ;;
+  if [[ "$volume" ==  "$dotpi_audio_volume" ]] ; then
+    # no change to write
+    return 0
+  fi
 
-    'bluetooth')
-      dotpi_audio_bluetooth_destination_volume_set "$volume"
-      ;;
+  # comment setting in project
+  sudo dotpi configuration_comment --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
+                              --key dotpi_audio_volume
 
+  # escape double-quote for now, to quote when writing later
+  model_value="$(echo "$model" | dotpi_sed 's/"/\\"/g')"
 
-    ####### Specific devices
-
-    # HiFiBerry
-    # Cf. https://www.hifiberry.com/docs/archive/mixer-controls-on-the-hifiberry-boards/
-
-
-    'hifiberry dac+ dsp'|'hifiberry dac+ rtc'|'hifiberry dac+ standard'|'hifiberry amp2'|'hifiberry dac+ adc'|'hifiberry dac+ adc pro'|'hifiberry amp3')
-      control='Digital'
-      _dotpi_audio_device_volume_set_alsa
-      ;;
-
-    'hifiberry dac2 hd')
-      control='DAC'
-      _dotpi_audio_device_volume_set_alsa
-      ;;
-
-    'hifiberry amp+'|'hifiberry amp4'|'hifiberry amp4 pro')
-      control='Master'
-      _dotpi_audio_device_volume_set_alsa
-      ;;
-
-    'raspiaudio mic+ v1' | 'raspiaudio mic+ v2')
-      dotpi_echo_warning "No volume control for Raspiaudio Mic+ device, keeping default volume"
-      ;;
-
-    'raspiaudio ultra')
-      # WM8960 DAC digital volume, acts on both headphones and speakers
-      control='Playback'
-      _dotpi_audio_device_volume_set_alsa
-      ;;
-
-
-    ####### Ultimate Ears (UE)
-
-    'ue boom 2'|'ue boom 3'|'ue megaboom 2'|'ue megaboom 3')
-      dotpi_audio_bluetooth_destination_volume_set "$volume"
-      ;;
-
-    ########### Unknown device
-
-    *) # other
-      dotpi_echo_error "Unable to set volume for unknown audio device model: ${model}"
-      return 1
-      ;;
-
-
-  esac
+  # write changed setting in instance
+  sudo dotpi configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
+    --key dotpi_audio_volume \
+    --value "$volume"
 )
 
 # restore volume for the current audio device
 dotpi_audio_device_volume_init() (
-  if [[ -z "$dotpi_audio_volume" ]] ; then
+  volume="$dotpi_audio_volume"
+
+  if [[ -z "$volume" ]] ; then
     dotpi_echo_warning "dotpi_audio_volume not set, keeping default volume"
     return 0
   fi
 
-  destination_volume="$dotpi_audio_volume"
-  dotpi_audio_device_volume_set "$destination_volume"
+  dotpi_audio_device_volume_set "$volume"
 )
 
 

@@ -164,8 +164,8 @@ _dotpi_audio_bluetooth_destination_start_ue() (
     echo "$output" >&2
 
     # Connected and transport volume available
-    if [[ "$output" =~ [CHG].*Transport.*/org/bluez/.*dev_"${destination_descriptor}".*Volume ]] \
-         || [[ "$output" =~ ^Transport.*/org/bluez/.*dev_"${destination_descriptor}" ]] ; then
+    if [[ "$output" =~ [CHG].*Transport.*/org/bluez/.*dev_"${destination_descriptor}" ]] \
+         || [[ "$output" =~ [NEW].*Transport.*/org/bluez/.*dev_"${destination_descriptor}" ]] ; then
       kill ${btctl_process_PID}
       dotpi_echo_info "Destination started"
       return 0
@@ -296,51 +296,13 @@ dotpi_audio_bluetooth_destination_stop() (
 
 # set and save volume
 dotpi_audio_bluetooth_destination_volume_set() (
-  destination_volume="$1"
-  destination_device="dev_${dotpi_audio_bluetooth_mac//:/_}"
-  destination_transport="$(bluetoothctl transport.list \
-    | perl -ne 'if(m/Transport\s+(\/*${destination_device}[^\s]+).*$/) { print "${1}\n"; }')"
-
-  if [[ -z "$destination_transport" ]] ; then
-    dotpi_echo_error "Failed to set volume: audio bluetooth device not found"
-    return 1
-  fi
-
-  bluetoothctl transport.volume "$destination_transport" "$destination_volume"
-  if (( $? != 0 )) ; then
-    dotpi_echo_error "Failed to set bluetooth destination volume"
-    return 1
-  else
-    dotpi_echo_info "Bluetooth destination volume set to ${destination_volume}"
-  fi
-
-  if [[ "$destination_volume" ==  "$dotpi_audio_volume" ]] ; then
-    # no change to write
-    return 0
-  fi
-
-  # comment setting in project
-  dotpi_configuration_comment --file "${DOTPI_ROOT}/etc/dotpi_environment_project.bash" \
-                              --key dotpi_audio_volume
-
-  # escape double-quote for now, to quote when writing later
-  model_value="$(echo "$model" | dotpi_sed 's/"/\\"/g')"
-
-  # write changed setting in instance
-  dotpi_configuration_write --file "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash" \
-                            --key dotpi_audio_volume \
-                            --value "$destination_volume"
-
+  # keep for compatibility
+  dotpi_audio_device_volume_set "$@"
 )
 
 # set volume to default
 dotpi_audio_bluetooth_destination_volume_init() (
-  if [[ -z "$dotpi_audio_volume" ]] ; then
-    dotpi_echo_warning "dotpi_audio_volume not set, keeping default volume"
-    return 0
-  fi
-
-  destination_volume="$dotpi_audio_volume"
-  dotpi_audio_bluetooth_destination_volume_set "$destination_volume"
+  # keep for compatibility
+  dotpi_audio_device_volume_init
 )
 
