@@ -41,6 +41,18 @@ dotpi_audio_bluetooth_destination_connect() (
     fi
 
     if [[ "$status" == 'destination discovered' ]] ; then
+      dotpi_echo_info "Trusting destination"
+      echo "trust ${destination_mac}" >&${btctl_process[1]}
+      status='trusting'
+    fi
+
+    if [[ "$status" == "trusting" ]] \
+         && [[ "$output" =~ "trust succeeded" ]] ; then
+      dotpi_echo_info "Destination trusted"
+      status='destination trusted'
+    fi
+
+    if [[ "$status" == "destination trusted" ]] ; then
       dotpi_echo_info "Pairing destination"
       echo "pair ${destination_mac}" >&${btctl_process[1]}
       status='pairing'
