@@ -6,5 +6,6 @@ dotpi_bluetooth_enable() {
 
   bluetoothctl power off
   sudo rfkill unblock bluetooth
+  sudo systemctl restart bluetooth
   bluetoothctl power on
 }

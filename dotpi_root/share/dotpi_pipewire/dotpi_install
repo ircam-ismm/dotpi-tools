@@ -9,6 +9,7 @@ if [[ "$USER" == "root" ]]; then
     user="${FIRSTUSER:-pi}"
   fi
   sudo -u "${user}" "$0" "$@"
+  exit $?
 fi
 
 local_file="$(dotpi readlink_follow "$0")"

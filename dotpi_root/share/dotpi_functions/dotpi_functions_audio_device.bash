@@ -488,8 +488,8 @@ dotpi_audio_device_init() (
 
       # clone once to be able to init offline
       if ! [[ -d "${usr_directory}" ]] ; then
-        mkdir -p "${usr_directory}"
-        git clone "https://github.com/${usr_repository}.git" "${usr_directory}" || {
+        sudo mkdir -p "${usr_directory}"
+        sudo git clone "https://github.com/${usr_repository}.git" "${usr_directory}" || {
           dotpi_echo_error "Unable to clone repository ${usr_repository}"
           return 1
         }
@@ -507,8 +507,8 @@ dotpi_audio_device_init() (
 
       # clone once to be able to init offline
       if ! [[ -d "${usr_directory}" ]] ; then
-        mkdir -p "${usr_directory}"
-        git clone "https://github.com/${usr_repository}.git" "${usr_directory}" || {
+        sudo mkdir -p "${usr_directory}"
+        sudo git clone "https://github.com/${usr_repository}.git" "${usr_directory}" || {
           dotpi_echo_error "Unable to clone repository ${usr_repository}"
           return 1
         }
@@ -567,6 +567,14 @@ dotpi_audio_device_init() (
 
 # set and store volume for the current audio device
 dotpi_audio_device_volume_set() (
+
+  # Master volume is handled by pipewire, and pipewire requires a regular user session.
+  if [[ "$USER" == "root" ]]; then
+    # drop sudo privileges
+    dotpi_regular_user_run dotpi audio_device_volume_set "$@"
+    return $?
+  fi
+
   volume="$1"
 
   if [[ -z "$volume" ]] ; then
@@ -579,7 +587,11 @@ dotpi_audio_device_volume_set() (
     return 1
   fi
 
-  amixer -D default sset -- Master "$volume"
+  amixer -D default sset -- Master "$volume" || {
+    error_code=$?
+    dotpi_echo_error "Unable to set volume to ${volume}"
+    return "$error_code"
+  }
 
   if [[ "$volume" ==  "$dotpi_audio_volume" ]] ; then
     # no change to write
