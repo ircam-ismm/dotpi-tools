@@ -109,6 +109,9 @@ DOTPI_ROOT="${local_path}/.."
 
 source "${DOTPI_ROOT}/share/dotpi_init.bash"
 
+# not a running dotpi system
+dotpi_filesystem_only='true'
+
 tmp_path="${project_path}/tmp"
 mkdir -p -- "$tmp_path"
 
@@ -502,8 +505,6 @@ if [ -f "$source_file_path" ] ; then
      mkdir -p -- "$destination_path"
      cp -- "$source_file_path" "${destination_path}/${destination_filename}"
   fi
-else
-  dotpi_echo_warning "firstrun.sh not found"
 fi
 
 # configure cmdline.txt for firstun script, if not already here

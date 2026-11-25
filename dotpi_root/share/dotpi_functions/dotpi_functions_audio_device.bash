@@ -331,7 +331,10 @@ dotpi_audio_device_select() (
 
   source "${DOTPI_ROOT}/etc/dotpi_environment_instance.bash"
 
-  dotpi_echo_warning "To finalise the audio device selection, please reboot and run 'sudo dotpi audio_device_init'"
+  # test for a running dotpi system
+  if [[ -z "$dotpi_filesystem_only" ]] ; then
+    dotpi_echo_warning "To finalise the audio device selection, please reboot and run 'sudo dotpi audio_device_init'"
+  fi
 )
 
 _dotpi_audio_device_disable_all() (
