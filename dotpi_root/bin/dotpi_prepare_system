@@ -275,12 +275,6 @@ error_exit_code_audio=6
 
 dotpi echo_info "Configure audio"
 
-# set alsa default output volume and unmute
-dotpi audio_device_init || {
-    dotpi echo_warning "Error while initialising audio device ${dotpi_audio_device}"
-    $error_exit_code_audio
-  }
-
 # over-ride calls to jack, to use pipewire instead
 # copy with prefix 000- to ensure it is loaded before default aarch64-linux-gnu.conf
 for f in /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf ; do
@@ -315,20 +309,50 @@ if [ -r "$source_path" ] ; then
    fi
 fi
 
-systemctl --user enable --now wireplumber.service || {
-  dotpi echo_warning "error while enabling wireplumber.service now: ${?}"
-  dotpi echo_warning "wireplumber.service will be available after a reboot"
-  # do not exit
-}
-
+# pipewire
 "${DOTPI_ROOT}/share/dotpi_pipewire/dotpi_install" || {
   dotpi echo_error "error while installing dotpi_pipewire: ${?}"
   # do not exit
 }
 
+regular_user="$(dotpi regular_user_get_name)"
+# Before next boot, pipewire is only available in a pi@ machine
+sudo systemd-run --quiet --pipe --wait --collect --machine="${regular_user}@" --user -- /bin/bash -c "$(cat <<'EOF'
+
+  # wireplumber
+  systemctl --user enable --now wireplumber.service || {
+    dotpi echo_error "Error while enabling wireplumber.service now: ${?}"
+    dotpi echo_warning "wireplumber.service will be available after a reboot"
+    # do not exit
+  }
+
+  # wait for pipewire Master volume to be available
+  (( i_max = 60 ))
+  (( i = 0 ))
+  while ! amixer sget -- Master > /dev/null 2>&1 ; do
+    sleep 1
+    (( i++ ))
+    if (( i > i_max )) ; then
+      dotpi echo_error "Error while waiting for pipewire Master volume to be available"
+      break
+    fi
+  done
+
+  # hardware and software audio device initialisation
+  dotpi audio_device_init || {
+    dotpi echo_error "Error while initialising audio device ${dotpi_audio_device}: ${?}"
+    dotpi echo_warning "Please run 'dotpi audio_device_init' after a reboot"
+    # do not exit
+  }
+
+EOF
+)" || {
+  dotpi echo_error "Error with audio setup. Please check it after a reboot"
+  # do not exit
+}
+
 ############## dotpi modules
 error_exit_code_dotpi_modules=10
-
 
 declare -A dotpi_module_uninstall_modules
 for module in "${dotpi_module_uninstall_default[@]}" "${dotpi_module_uninstall[@]}" ; do

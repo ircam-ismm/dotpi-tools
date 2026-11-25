@@ -31,7 +31,9 @@ dotpi_regular_user_get_home() (
 dotpi_regular_user_run() (
   if [[ "$USER" == "root" ]]; then
     regular_user="$(dotpi_regular_user_get_name)"
-    sudo systemd-run --quiet --pipe --wait --collect --machine="${regular_user}@" --user -- /bin/bash -c '"$@"' - "$@"
+    # no sudo as user is root
+    # prefer systemd-run as it returns the exit code (unlike machinectl shell)
+    systemd-run --quiet --pipe --wait --collect --machine="${regular_user}@" --user -- /bin/bash -c '"$@"' - "$@"
   else
     "$@"
   fi
