@@ -9,6 +9,11 @@ fi
 # connect an audio bluetooth device, corresponding to dotpi_audio_bluetooth_mac,
 # using bluetoothctl,
 dotpi_audio_bluetooth_destination_connect() (
+  if [[ "$USER" != "root" ]]; then
+    dotpi echo_error "This command must be run as root"
+    return 1
+  fi
+
   destination_mac="$dotpi_audio_bluetooth_mac"
 
   dotpi_echo_info "Starting bluetoothctl process"
@@ -104,6 +109,11 @@ dotpi_audio_bluetooth_destination_connect() (
 )
 
 dotpi_audio_bluetooth_destination_disconnect() (
+  if [[ "$USER" != "root" ]]; then
+    dotpi echo_error "This command must be run as root"
+    return 1
+  fi
+
   bluetoothctl -- remove "$dotpi_audio_bluetooth_mac"
 )
 
