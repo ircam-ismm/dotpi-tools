@@ -11,8 +11,9 @@ ssid=${d.wifiSsid}
 # disable power management
 powersave=2
 
-# "a" for 5Ghz only, "bg" for 2.4GHz only, default for automatic selection
-band=${d.wifiBand === 'automatic' ? '' : d.wifiBand}
+# band: "a" for 5Ghz only, "bg" for 2.4GHz only
+# omit parameter to keep default automatic selection
+${d.wifiBand !== 'automatic' ? band=d.wifiBand : ''}
 
 [wifi-security]
 key-mgmt=wpa-psk
